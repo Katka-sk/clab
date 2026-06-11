@@ -29,7 +29,7 @@ type Pikoska = {
   obsah: any[];
   casCtania: string;
   obrazok?: any;
-  pioskaDna?: boolean;
+  datumPublikacie?: string;
 };
 
 function GreenTitle({ nadpis, size }: { nadpis: string; size: 'hero' | 'detail' }) {
@@ -54,10 +54,13 @@ export default function Home() {
 
   useEffect(() => {
     client.fetch(`*[_type == "pikoska" && datumPublikacie <= now()] | order(poradoveCislo asc) {
-      _id, poradoveCislo, nadpis, slug, kategoria, perex, obsah, casCtania, obrazok, pioskaDna
+      _id, poradoveCislo, nadpis, slug, kategoria, perex, obsah, casCtania, obrazok, datumPublikacie
     }`).then(data => {
       setPikoskyAll(data);
-      const hero = data.find((p: Pikoska) => p.pioskaDna) || data[0];
+      const today = new Date().toISOString().split('T')[0];
+      const hero =
+        data.find((p: Pikoska) => p.datumPublikacie?.slice(0, 10) === today)
+        || data[data.length - 1];
       setHeroPikoska(hero);
       setLoading(false);
     });
