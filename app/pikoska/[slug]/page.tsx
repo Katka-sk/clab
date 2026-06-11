@@ -90,7 +90,7 @@ function GreenTitle({ nadpis }: { nadpis: string }) {
   const lastWord = words.pop();
   const rest = words.join(' ');
   return (
-    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '80px', lineHeight: '0.95', marginBottom: '28px' }}>
+    <div className="green-title-detail" style={{ fontFamily: "'Bebas Neue', sans-serif", lineHeight: '0.95', marginBottom: '28px' }}>
       {rest} <span style={{ color: '#c8f135' }}>{lastWord}</span>
     </div>
   );
@@ -158,6 +158,22 @@ export default async function PikoskaDetail(
         .flinks { display: flex; gap: 28px; }
         .flink { color: #444; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 1px; cursor: pointer; background: none; border: none; }
         .flink:hover { color: #c8f135; }
+        .green-title-detail { font-size: 80px; }
+        @media (max-width: 768px) {
+          .navbar { padding: 10px 0; }
+          .navbar-inner { padding: 0 16px; }
+          .green-title-detail { font-size: 48px; }
+          .detail-img-block { padding: 16px 16px 0; }
+          .detail-img { height: 220px; border-radius: 10px; }
+          .detail-article { padding: 28px 16px 0; }
+          .detail-perex { font-size: 17px; margin-bottom: 32px; }
+          .eline { padding: 0 16px 32px; }
+          .bottom-actions { padding: 0 16px 48px; flex-direction: column; align-items: stretch; }
+          .btn-back { justify-content: center; }
+          .btn-next { border-radius: 16px; }
+          .foot-in { padding: 0 16px; flex-direction: column; gap: 20px; align-items: flex-start; }
+          .flinks { flex-wrap: wrap; gap: 16px; }
+        }
       `}</style>
 
       <nav className="navbar">

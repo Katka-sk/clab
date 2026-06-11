@@ -36,9 +36,8 @@ function GreenTitle({ nadpis, size }: { nadpis: string; size: 'hero' | 'detail' 
   const words = nadpis.split(' ');
   const lastWord = words.pop();
   const rest = words.join(' ');
-  const fontSize = size === 'hero' ? '60px' : '80px';
   return (
-    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize, lineHeight: size === 'hero' ? '1.0' : '0.95', marginBottom: size === 'detail' ? '28px' : '0' }}>
+    <div className={`green-title green-title-${size}`} style={{ fontFamily: "'Bebas Neue', sans-serif", lineHeight: size === 'hero' ? '1.0' : '0.95', marginBottom: size === 'detail' ? '28px' : '0' }}>
       {rest} <span style={{ color: '#c8f135' }}>{lastWord}</span>
     </div>
   );
@@ -177,6 +176,33 @@ export default function Home() {
         .flinks { display: flex; gap: 28px; }
         .flink { color: #444; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 1px; cursor: pointer; background: none; border: none; }
         .flink:hover { color: #c8f135; }
+        .green-title-hero { font-size: 60px; }
+        .green-title-detail { font-size: 80px; }
+        @media (max-width: 768px) {
+          .navbar { padding: 10px 0; }
+          .navbar-inner { padding: 0 16px; }
+          .cats-inner { padding: 0 16px; }
+          .hero { flex-direction: column; padding: 20px 16px; gap: 20px; }
+          .hero-img { width: 100%; aspect-ratio: 16/9; }
+          .hero-con { width: 100%; overflow: hidden; }
+          .green-title-hero { font-size: 40px !important; word-break: break-word; overflow: hidden; }
+          .green-title-detail { font-size: 48px !important; word-break: break-word; overflow: hidden; }
+          .hero-desc { overflow: hidden; word-break: break-word; }
+          .archive { padding: 12px 16px 0; }
+          .grid { grid-template-columns: 1fr !important; }
+          .pag { padding: 28px 16px 48px; }
+          .detail-img-block { padding: 16px 16px 0; }
+          .detail-img { height: 220px; border-radius: 10px; }
+          .detail-article { padding: 28px 16px 0; overflow: hidden; }
+          .detail-perex { font-size: 17px; margin-bottom: 32px; word-break: break-word; }
+          .eline { padding: 0 16px 32px; }
+          .bottom-actions { padding: 0 16px 48px; flex-direction: column; align-items: stretch; }
+          .btn-back { justify-content: center; }
+          .btn-next { border-radius: 16px; }
+          .btn-next-title { word-break: break-word; }
+          .foot-in { padding: 0 16px; flex-direction: column; gap: 20px; align-items: flex-start; }
+          .flinks { flex-wrap: wrap; gap: 16px; }
+        }
       `}</style>
 
       <nav className="navbar">
