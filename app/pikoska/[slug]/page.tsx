@@ -13,7 +13,10 @@ const client = createClient({
 
 const builder = imageUrlBuilder(client);
 function urlFor(source: any) {
-  return builder.image(source).url();
+  return builder.image(source).width(1600).auto('format').url();
+}
+function urlForThumb(source: any) {
+  return builder.image(source).width(120).height(120).fit('crop').auto('format').url();
 }
 function urlForOg(source: any) {
   return builder.image(source).width(1200).height(630).fit('crop').url();
@@ -130,15 +133,15 @@ export default async function PikoskaDetail(
         .detail-img { width: 100%; height: 420px; border-radius: 16px; overflow: hidden; position: relative; background: #111; }
         .detail-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
         .detail-img-badge { position: absolute; bottom: 20px; left: 20px; background: #c8f135; color: #000; padding: 6px 14px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
-        .detail-img-cat { position: absolute; top: 20px; right: 20px; color: #888; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 3px; border: 1px solid #333; padding: 5px 12px; border-radius: 4px; background: rgba(0,0,0,0.5); }
+        .detail-img-cat { position: absolute; top: 20px; right: 20px; color: #000; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; border: none; padding: 6px 14px; border-radius: 4px; background: #c8f135; }
         .detail-article { max-width: 900px; margin: 0 auto; padding: 48px 80px 0; }
         .detail-perex { font-size: 20px; color: #999; line-height: 1.8; margin-bottom: 48px; font-style: italic; border-left: 3px solid #c8f135; padding-left: 20px; }
         .eline { max-width: 900px; margin: 0 auto; padding: 0 80px 48px; display: flex; align-items: center; gap: 20px; }
         .eline hr { flex: 1; border: none; border-top: 1px solid #222; }
         .eline span { color: #333; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 3px; white-space: nowrap; }
         .bottom-actions { max-width: 1300px; margin: 0 auto; padding: 0 80px 80px; display: flex; align-items: center; gap: 16px; }
-        .btn-back { display: inline-flex; align-items: center; gap: 10px; color: #888; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; background: transparent; border: 1px solid #333; padding: 16px 28px; border-radius: 50px; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
-        .btn-back:hover { border-color: #666; color: white; }
+        .btn-back { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; background: transparent; border: 2px solid #c8f135; padding: 18px 34px; border-radius: 50px; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
+        .btn-back:hover { background: #c8f135; color: #000; }
         .btn-next { display: flex; align-items: center; gap: 20px; flex: 1; background: #111; border: 1px solid #1a1a1a; padding: 20px 28px; border-radius: 50px; transition: all 0.25s; text-align: left; text-decoration: none; }
         .btn-next:hover { border-color: #c8f135; box-shadow: 0 0 0 1px #c8f135, 0 4px 20px #c8f13520; background: #141414; }
         .btn-next-thumb { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: #1a1a1a; flex-shrink: 0; }
@@ -205,12 +208,12 @@ export default async function PikoskaDetail(
       <div className="eline"><hr /><span>KONIEC VEREJNÉHO SPISU</span><hr /></div>
 
       <div className="bottom-actions">
-        <Link href="/" className="btn-back">← ARCHÍV</Link>
+        <Link href="/" className="btn-back">← SPÄŤ DO ARCHÍVU</Link>
         {next && (
           <Link href={`/pikoska/${next.slug.current}`} className="btn-next">
             <div className="btn-next-thumb">
               {next.obrazok
-                ? <img src={urlFor(next.obrazok)} alt={next.nadpis} />
+                ? <img src={urlForThumb(next.obrazok)} alt={next.nadpis} loading="lazy" />
                 : <div style={{ width: '100%', height: '100%', background: '#1a1a1a' }} />
               }
             </div>
