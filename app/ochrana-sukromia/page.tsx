@@ -217,8 +217,8 @@ export default function OchranaSukromiaPage() {
           </ul>
           <p style={styles.p}>
             Pre uplatnenie ktoréhokoľvek z týchto práv nás kontaktujte na{' '}
-            <a href="mailto:hello.curiositylab@gmail.com" style={styles.email}>
-              hello.curiositylab@gmail.com
+            <a href="mailto:info.curiositylab@gmail.com" style={styles.email}>
+              info.curiositylab@gmail.com
             </a>
             .
           </p>
@@ -235,8 +235,8 @@ export default function OchranaSukromiaPage() {
         <Section n="09 — KONTAKT" title="Napíšte nám">
           <p style={styles.p}>
             V prípade akýchkoľvek otázok nás kontaktujte na:{' '}
-            <a href="mailto:hello.curiositylab@gmail.com" style={styles.email}>
-              hello.curiositylab@gmail.com
+            <a href="mailto:info.curiositylab@gmail.com" style={styles.email}>
+              info.curiositylab@gmail.com
             </a>
           </p>
         </Section>
