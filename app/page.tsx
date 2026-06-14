@@ -83,7 +83,7 @@ export default async function Home({
   const { total, items } = await client.fetch<{ total: number; items: Pikoska[] }>(
     `{
       "total": count(*[${base}]),
-      "items": *[${base}] | order(poradoveCislo asc)[$start...$end]{
+      "items": *[${base}] | order(poradoveCislo desc)[$start...$end]{
         _id, poradoveCislo, nadpis, slug, kategoria, perex, casCtania, obrazok
       }
     }`,
