@@ -258,7 +258,7 @@ export default async function Home({
           <div className="flinks">
             <button className="flink">O NÁS</button>
             <button className="flink">KONTAKT</button>
-            <button className="flink">OCHRANA SÚKROMIA</button>
+            <Link href="/ochrana-sukromia" className="flink">OCHRANA SÚKROMIA</Link>
           </div>
         </div>
       </footer>
