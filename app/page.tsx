@@ -149,7 +149,7 @@ export default async function Home({
         .fic { background: #c8f135; width: 32px; height: 32px; border-radius: 8px; overflow: hidden; }
         .fic img { width: 100%; height: 100%; object-fit: cover; }
         .fnm { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; }
-        .fsub { color: #ccc; font-size: 17px; font-weight: 500; margin-top: 6px; }
+        .fsub { color: #ccc; font-size: 17px; font-style: italic; font-weight: 400; margin-top: 6px; }
         .flinks { display: flex; gap: 28px; }
         .flink { color: #ddd; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 1px; cursor: pointer; background: none; border: none; text-decoration: none; }
         .flink:hover { color: #c8f135; }
