@@ -13,7 +13,7 @@ const styles: Record<string, CSSProperties> = {
     background: '#0a0a0a',
     color: 'white',
     minHeight: '100vh',
-    fontFamily: "'Barlow', sans-serif",
+    fontFamily: "var(--font-barlow), sans-serif",
   },
   container: {
     maxWidth: 900,
@@ -28,7 +28,7 @@ const styles: Record<string, CSSProperties> = {
     border: '2px solid #c8f135',
     borderRadius: 50,
     padding: '10px 24px',
-    fontFamily: "'Barlow Condensed', sans-serif",
+    fontFamily: "var(--font-barlow-condensed), sans-serif",
     fontSize: 13,
     fontWeight: 700,
     letterSpacing: 2,
@@ -36,7 +36,7 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 48,
   },
   title: {
-    fontFamily: "'Bebas Neue', sans-serif",
+    fontFamily: "var(--font-bebas), sans-serif",
     fontSize: 64,
     lineHeight: 1.05,
     marginBottom: 12,
@@ -44,7 +44,7 @@ const styles: Record<string, CSSProperties> = {
   accent: { color: '#c8f135' },
   updated: {
     color: '#444',
-    fontFamily: "'Barlow Condensed', sans-serif",
+    fontFamily: "var(--font-barlow-condensed), sans-serif",
     fontSize: 13,
     letterSpacing: 2,
     marginBottom: 56,
@@ -57,14 +57,14 @@ const styles: Record<string, CSSProperties> = {
   },
   sectionLabel: {
     color: '#c8f135',
-    fontFamily: "'Barlow Condensed', sans-serif",
+    fontFamily: "var(--font-barlow-condensed), sans-serif",
     fontSize: 13,
     letterSpacing: 4,
     fontWeight: 700,
     marginBottom: 8,
   },
   sectionTitle: {
-    fontFamily: "'Bebas Neue', sans-serif",
+    fontFamily: "var(--font-bebas), sans-serif",
     fontSize: 28,
     letterSpacing: 1,
     marginBottom: 16,

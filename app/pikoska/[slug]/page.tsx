@@ -93,7 +93,7 @@ function GreenTitle({ nadpis }: { nadpis: string }) {
   const lastWord = words.pop();
   const rest = words.join(' ');
   return (
-    <div className="green-title-detail" style={{ fontFamily: "'Bebas Neue', sans-serif", lineHeight: '0.95', marginBottom: '28px' }}>
+    <div className="green-title-detail" style={{ fontFamily: "var(--font-bebas), sans-serif", lineHeight: '0.95', marginBottom: '28px' }}>
       {rest} <span style={{ color: '#c8f135' }}>{lastWord}</span>
     </div>
   );
@@ -102,7 +102,7 @@ function GreenTitle({ nadpis }: { nadpis: string }) {
 function renderObsah(obsah: any[]) {
   if (!obsah) return null;
   return obsah.map((block, i) => (
-    <p key={i} style={{ marginBottom: '24px', fontSize: '18px', color: '#bbb', lineHeight: '1.9', fontFamily: "'Barlow', sans-serif" }}>
+    <p key={i} style={{ marginBottom: '24px', fontSize: '18px', color: '#bbb', lineHeight: '1.9', fontFamily: "var(--font-barlow), sans-serif" }}>
       {block.children?.map((child: any) => child.text).join('')}
     </p>
   ));
@@ -120,35 +120,34 @@ export default async function PikoskaDetail(
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; color: white; font-family: 'Barlow', sans-serif; }
+        body { background: #0a0a0a; color: white; font-family: var(--font-barlow), sans-serif; }
         .navbar { border-bottom: 1px solid #1a1a1a; padding: 16px 0; position: sticky; top: 0; background: #0a0a0a; z-index: 100; }
         .navbar-inner { max-width: 1300px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; }
         .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .logo-icon { background: #c8f135; width: 38px; height: 38px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px #c8f13544; }
         .logo-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 4px; color: white; }
+        .logo-text { font-family: var(--font-bebas), sans-serif; font-size: 20px; letter-spacing: 4px; color: white; }
         .detail-img-block { max-width: 1300px; margin: 0 auto; padding: 32px 80px 0; }
         .detail-img { width: 100%; height: 420px; border-radius: 16px; overflow: hidden; position: relative; background: #111; }
         .detail-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-        .detail-img-badge { position: absolute; bottom: 20px; left: 20px; background: #c8f135; color: #000; padding: 6px 14px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
-        .detail-img-cat { position: absolute; top: 20px; right: 20px; color: #000; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; border: none; padding: 6px 14px; border-radius: 4px; background: #c8f135; }
+        .detail-img-badge { position: absolute; bottom: 20px; left: 20px; background: #c8f135; color: #000; padding: 6px 14px; border-radius: 4px; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+        .detail-img-cat { position: absolute; top: 20px; right: 20px; color: #000; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; border: none; padding: 6px 14px; border-radius: 4px; background: #c8f135; }
         .detail-article { max-width: 900px; margin: 0 auto; padding: 48px 80px 0; }
         .detail-perex { font-size: 20px; color: #999; line-height: 1.8; margin-bottom: 48px; font-style: italic; border-left: 3px solid #c8f135; padding-left: 20px; }
         .eline { max-width: 900px; margin: 0 auto; padding: 0 80px 48px; display: flex; align-items: center; gap: 20px; }
         .eline hr { flex: 1; border: none; border-top: 1px solid #222; }
-        .eline span { color: #333; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 3px; white-space: nowrap; }
+        .eline span { color: #333; font-family: var(--font-barlow-condensed), sans-serif; font-size: 12px; letter-spacing: 3px; white-space: nowrap; }
         .bottom-actions { max-width: 1300px; margin: 0 auto; padding: 0 80px 80px; display: flex; align-items: center; gap: 16px; }
-        .btn-back { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; background: transparent; border: 2px solid #c8f135; padding: 18px 34px; border-radius: 50px; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
+        .btn-back { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-family: var(--font-barlow-condensed), sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; background: transparent; border: 2px solid #c8f135; padding: 18px 34px; border-radius: 50px; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
         .btn-back:hover { background: #c8f135; color: #000; }
         .btn-next { display: flex; align-items: center; gap: 20px; flex: 1; background: #111; border: 1px solid #1a1a1a; padding: 20px 28px; border-radius: 50px; transition: all 0.25s; text-align: left; text-decoration: none; }
         .btn-next:hover { border-color: #c8f135; box-shadow: 0 0 0 1px #c8f135, 0 4px 20px #c8f13520; background: #141414; }
         .btn-next-thumb { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: #1a1a1a; flex-shrink: 0; }
         .btn-next-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
         .btn-next-text { flex: 1; }
-        .btn-next-label { color: #c8f135; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 2px; margin-bottom: 4px; }
-        .btn-next-title { color: white; font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1.0; }
+        .btn-next-label { color: #c8f135; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; letter-spacing: 2px; margin-bottom: 4px; }
+        .btn-next-title { color: white; font-family: var(--font-bebas), sans-serif; font-size: 28px; line-height: 1.0; }
         .btn-next-arrow { color: #c8f135; font-size: 28px; transition: transform 0.2s; flex-shrink: 0; }
         .btn-next:hover .btn-next-arrow { transform: translateX(6px); }
         .foot { border-top: 1px solid #1a1a1a; padding: 28px 0; }
@@ -156,10 +155,10 @@ export default async function PikoskaDetail(
         .flogo { display: flex; align-items: center; gap: 12px; }
         .fic { background: #c8f135; width: 32px; height: 32px; border-radius: 8px; overflow: hidden; }
         .fic img { width: 100%; height: 100%; object-fit: cover; }
-        .fnm { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; }
+        .fnm { font-family: var(--font-bebas), sans-serif; font-size: 16px; letter-spacing: 2px; }
         .fsub { color: #ccc; font-size: 17px; font-style: italic; font-weight: 400; margin-top: 6px; }
         .flinks { display: flex; gap: 28px; }
-        .flink { color: #ddd; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 1px; cursor: pointer; background: none; border: none; text-decoration: none; }
+        .flink { color: #ddd; font-family: var(--font-barlow-condensed), sans-serif; font-size: 15px; letter-spacing: 1px; cursor: pointer; background: none; border: none; text-decoration: none; }
         .flink:hover { color: #c8f135; }
         .green-title-detail { font-size: 80px; }
         @media (max-width: 768px) {

@@ -37,7 +37,7 @@ function GreenTitle({ nadpis }: { nadpis: string }) {
   const lastWord = words.pop();
   const rest = words.join(' ');
   return (
-    <div className="green-title green-title-hero" style={{ fontFamily: "'Bebas Neue', sans-serif", lineHeight: '1.0', marginBottom: '0' }}>
+    <div className="green-title green-title-hero" style={{ fontFamily: "var(--font-bebas), sans-serif", lineHeight: '1.0', marginBottom: '0' }}>
       {rest} <span style={{ color: '#c8f135' }}>{lastWord}</span>
     </div>
   );
@@ -96,32 +96,31 @@ export default async function Home({
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; color: white; font-family: 'Barlow', sans-serif; }
+        body { background: #0a0a0a; color: white; font-family: var(--font-barlow), sans-serif; }
         .navbar { border-bottom: 1px solid #1a1a1a; padding: 16px 0; position: sticky; top: 0; background: #0a0a0a; z-index: 100; }
         .navbar-inner { max-width: 1300px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; }
         .logo { display: flex; align-items: center; gap: 12px; background: none; border: none; cursor: pointer; text-decoration: none; }
         .logo-icon { background: #c8f135; width: 38px; height: 38px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px #c8f13544; }
         .logo-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 4px; color: white; }
+        .logo-text { font-family: var(--font-bebas), sans-serif; font-size: 20px; letter-spacing: 4px; color: white; }
         .cats { border-bottom: 1px solid #1a1a1a; padding: 12px 0; }
         .cats-inner { max-width: 1300px; margin: 0 auto; padding: 0 80px; display: flex; gap: 8px; flex-wrap: wrap; }
-        .pill { padding: 7px 18px; border-radius: 50px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1px; cursor: pointer; border: 1px solid #222; color: #777; background: transparent; transition: all 0.2s; text-decoration: none; }
+        .pill { padding: 7px 18px; border-radius: 50px; font-family: var(--font-barlow-condensed), sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1px; cursor: pointer; border: 1px solid #222; color: #777; background: transparent; transition: all 0.2s; text-decoration: none; }
         .pill:hover { border-color: #c8f135; color: #c8f135; }
         .pill.on { background: #c8f135; color: #000; border-color: #c8f135; }
         .hero { max-width: 1300px; margin: 0 auto; padding: 32px 80px; display: flex; gap: 48px; align-items: center; }
         .hero-img { width: 50%; aspect-ratio: 4/3; background: #111; border-radius: 14px; position: relative; overflow: hidden; flex-shrink: 0; cursor: pointer; display: block; }
         .hero-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transition: transform 0.4s; }
         .hero-img:hover img { transform: scale(1.04); }
-        .hero-badge { position: absolute; top: 16px; left: 16px; background: #c8f135; color: #000; padding: 6px 14px; border-radius: 50px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; z-index: 2; }
+        .hero-badge { position: absolute; top: 16px; left: 16px; background: #c8f135; color: #000; padding: 6px 14px; border-radius: 50px; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; z-index: 2; }
         .hero-con { flex: 1; display: flex; flex-direction: column; gap: 14px; }
-        .hero-cat { color: #d4ff4f; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 3px; }
+        .hero-cat { color: #d4ff4f; font-family: var(--font-barlow-condensed), sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 3px; }
         .hero-desc { color: #bbb; font-size: 16px; line-height: 1.8; }
         .hero-actions { display: flex; align-items: center; gap: 20px; margin-top: 8px; }
-        .rbtn { background: white; color: black; padding: 14px 32px; border-radius: 50px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 2px; cursor: pointer; border: none; transition: background 0.2s; text-decoration: none; display: inline-block; }
+        .rbtn { background: white; color: black; padding: 14px 32px; border-radius: 50px; font-family: var(--font-barlow-condensed), sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 2px; cursor: pointer; border: none; transition: background 0.2s; text-decoration: none; display: inline-block; }
         .rbtn:hover { background: #c8f135; }
-        .rtime { color: #555; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 1px; }
+        .rtime { color: #555; font-family: var(--font-barlow-condensed), sans-serif; font-size: 12px; letter-spacing: 1px; }
         .archive { max-width: 1300px; margin: 0 auto; padding: 16px 80px 0; }
         .divider { border-top: 1px solid #1a1a1a; padding-top: 32px; margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -130,16 +129,16 @@ export default async function Home({
         .card-img-wrap { overflow: hidden; height: 220px; position: relative; background: #1a1a1a; }
         .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transition: transform 0.4s; }
         .card:hover .card-img-wrap img { transform: scale(1.06); }
-        .card-meta { position: absolute; top: 12px; left: 12px; color: #c8f135; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 2px; font-weight: 700; }
+        .card-meta { position: absolute; top: 12px; left: 12px; color: #c8f135; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; letter-spacing: 2px; font-weight: 700; }
         .card-body { padding: 20px; }
-        .card-cat { display: inline-block; color: #000; background: #c8f135; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 2px; font-weight: 700; padding: 3px 10px; border-radius: 4px; margin-bottom: 10px; }
-        .card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; line-height: 1.3; margin-bottom: 14px; }
+        .card-cat { display: inline-block; color: #000; background: #c8f135; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; letter-spacing: 2px; font-weight: 700; padding: 3px 10px; border-radius: 4px; margin-bottom: 10px; }
+        .card-title { font-family: var(--font-barlow-condensed), sans-serif; font-size: 20px; font-weight: 700; line-height: 1.3; margin-bottom: 14px; }
         .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1a1a1a; padding-top: 12px; }
-        .card-time { color: #888; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 1px; }
+        .card-time { color: #888; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; letter-spacing: 1px; }
         .card-arrow { color: #c8f135; font-size: 16px; transition: transform 0.2s; display: inline-block; }
         .card:hover .card-arrow { transform: translateX(4px); }
         .pag { max-width: 1300px; margin: 0 auto; padding: 40px 80px 80px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .pb { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #222; color: #888; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: transparent; text-decoration: none; }
+        .pb { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #222; color: #888; font-family: var(--font-barlow-condensed), sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: transparent; text-decoration: none; }
         .pb:hover { border-color: #c8f135; color: #c8f135; }
         .pb.on { background: #c8f135; color: #000; border-color: #c8f135; }
         .pb.disabled { opacity: 0.3; pointer-events: none; }
@@ -148,10 +147,10 @@ export default async function Home({
         .flogo { display: flex; align-items: center; gap: 12px; }
         .fic { background: #c8f135; width: 32px; height: 32px; border-radius: 8px; overflow: hidden; }
         .fic img { width: 100%; height: 100%; object-fit: cover; }
-        .fnm { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; }
+        .fnm { font-family: var(--font-bebas), sans-serif; font-size: 16px; letter-spacing: 2px; }
         .fsub { color: #ccc; font-size: 17px; font-style: italic; font-weight: 400; margin-top: 6px; }
         .flinks { display: flex; gap: 28px; }
-        .flink { color: #ddd; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 1px; cursor: pointer; background: none; border: none; text-decoration: none; }
+        .flink { color: #ddd; font-family: var(--font-barlow-condensed), sans-serif; font-size: 15px; letter-spacing: 1px; cursor: pointer; background: none; border: none; text-decoration: none; }
         .flink:hover { color: #c8f135; }
         .green-title-hero { font-size: 60px; }
         @media (max-width: 768px) {
