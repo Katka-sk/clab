@@ -151,7 +151,7 @@ export default async function Home({
         .fnm { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; }
         .fsub { color: #444; font-size: 11px; margin-top: 2px; }
         .flinks { display: flex; gap: 28px; }
-        .flink { color: #444; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 1px; cursor: pointer; background: none; border: none; }
+        .flink { color: #ddd; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 1px; cursor: pointer; background: none; border: none; text-decoration: none; }
         .flink:hover { color: #c8f135; }
         .green-title-hero { font-size: 60px; }
         @media (max-width: 768px) {
@@ -256,8 +256,7 @@ export default async function Home({
             </div>
           </div>
           <div className="flinks">
-            <button className="flink">O NÁS</button>
-            <button className="flink">KONTAKT</button>
+            <a href="mailto:info.curiositylab@gmail.com" className="flink">KONTAKT</a>
             <Link href="/ochrana-sukromia" className="flink">OCHRANA SÚKROMIA</Link>
           </div>
         </div>
