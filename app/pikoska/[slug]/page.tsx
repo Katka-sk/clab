@@ -131,7 +131,6 @@ export default async function PikoskaDetail(
         .detail-img-block { max-width: 1300px; margin: 0 auto; padding: 32px 80px 0; }
         .detail-img { width: 100%; height: 420px; border-radius: 16px; overflow: hidden; position: relative; background: #111; }
         .detail-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-        .detail-img-badge { position: absolute; bottom: 20px; left: 20px; background: #c8f135; color: #000; padding: 6px 14px; border-radius: 4px; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
         .detail-img-cat { position: absolute; top: 20px; right: 20px; color: #000; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; border: none; padding: 6px 14px; border-radius: 4px; background: #c8f135; }
         .detail-article { max-width: 900px; margin: 0 auto; padding: 48px 80px 0; }
         .detail-perex { font-size: 20px; color: #999; line-height: 1.8; margin-bottom: 48px; font-style: italic; border-left: 3px solid #c8f135; padding-left: 20px; }
@@ -193,7 +192,6 @@ export default async function PikoskaDetail(
             ? <img src={urlFor(pikoska.obrazok)} alt={pikoska.nadpis} />
             : <div style={{ width: '100%', height: '100%', background: '#1a1a1a' }} />
           }
-          <div className="detail-img-badge">SPIS #{String(pikoska.poradoveCislo).padStart(3, '0')}</div>
           <div className="detail-img-cat">{pikoska.kategoria}</div>
         </div>
       </div>
