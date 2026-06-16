@@ -45,7 +45,7 @@ async function getPikoska(slug: string): Promise<Pikoska | null> {
 
 async function getNextPikoska(poradoveCislo: number): Promise<Pikoska | null> {
   return client.fetch(
-    `*[_type == "pikoska" && poradoveCislo > $num] | order(poradoveCislo asc)[0] {
+    `*[_type == "pikoska" && datumPublikacie <= now() && poradoveCislo < $num] | order(poradoveCislo desc)[0] {
       _id, poradoveCislo, nadpis, slug, obrazok
     }`,
     { num: poradoveCislo }
