@@ -557,16 +557,21 @@ function scheduledAt(datum: string | undefined, hh: number, mm: number): string 
   return new Date(instant).toISOString();
 }
 
-// Buffer GraphQL API (nový). Obrázok musí byť verejná URL (z Vercel Blobu).
-// Vráti údaje o naplánovanom poste; pri MutationError alebo HTTP chybe throwne.
+// Buffer GraphQL API (nový). Obrázky musia byť verejné URL (z Vercel Blobu).
+// CAROUSEL: posielame celé pole obrázkov cez `assets: [{ image: { url } }]`.
+// Pri MutationError alebo HTTP chybe throwne.
 async function postToBuffer(params: {
   channelId: string;
   text: string;
-  imageUrl: string;
+  imageUrls: string[];
   dueAt: string;
-  uploadedCount: number;
 }): Promise<any> {
-  // dueAt aj imageUrl/text bezpečne vložené ako GraphQL string literály.
+  // assets je zoznam – každý slide ako { image: { url: "..." } } = carousel.
+  const assetsGql = params.imageUrls
+    .map((u) => `{ image: { url: ${JSON.stringify(u)} } }`)
+    .join(', ');
+
+  // dueAt aj text bezpečne vložené ako GraphQL string literály.
   const query = `mutation {
     createPost(input: {
       text: ${JSON.stringify(params.text)},
@@ -574,7 +579,7 @@ async function postToBuffer(params: {
       schedulingType: automatic,
       mode: customScheduled,
       dueAt: ${JSON.stringify(params.dueAt)},
-      imageUrl: ${JSON.stringify(params.imageUrl)}
+      assets: [${assetsGql}]
     }) {
       __typename
       ... on PostActionSuccess { post { id dueAt assets { id } } }
@@ -601,15 +606,15 @@ async function postToBuffer(params: {
     throw new Error(`Buffer MutationError: ${result.message || 'neznáma chyba'}`);
   }
 
-  const accepted = Array.isArray(result.post?.assets) ? result.post.assets.length : 1;
+  const accepted = Array.isArray(result.post?.assets) ? result.post.assets.length : 0;
   console.log(
-    `Buffer post OK (kanál ${params.channelId}): nahraných ${params.uploadedCount} slidov na Blob, Buffer prijal ${accepted} obrázok/ov.`
+    `Buffer post OK (kanál ${params.channelId}): poslaných ${params.imageUrls.length} slidov, Buffer prijal ${accepted} obrázok/ov.`
   );
 
   return {
     postId: result.post?.id ?? null,
     dueAt: result.post?.dueAt ?? params.dueAt,
-    uploadedSlides: params.uploadedCount,
+    sentSlides: params.imageUrls.length,
     bufferAccepted: accepted,
   };
 }
@@ -673,8 +678,7 @@ async function run() {
         buffer.ig = await postToBuffer({
           channelId: igChannel,
           text: caption,
-          imageUrl: igUrls[0],
-          uploadedCount: igUrls.length,
+          imageUrls: igUrls,
           dueAt: scheduledAt(pik.datumPublikacie, 19, 0),
         });
       }
@@ -685,8 +689,7 @@ async function run() {
         buffer.tiktok = await postToBuffer({
           channelId: ttChannel,
           text: caption,
-          imageUrl: ttUrls[0],
-          uploadedCount: ttUrls.length,
+          imageUrls: ttUrls,
           dueAt: scheduledAt(pik.datumPublikacie, 18, 30),
         });
       }
