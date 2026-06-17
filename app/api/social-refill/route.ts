@@ -565,11 +565,20 @@ async function postToBuffer(params: {
   text: string;
   imageUrls: string[];
   dueAt: string;
+  platform: 'instagram' | 'tiktok';
 }): Promise<any> {
   // assets je zoznam – každý slide ako { image: { url: "..." } } = carousel.
   const assetsGql = params.imageUrls
     .map((u) => `{ image: { url: ${JSON.stringify(u)} } }`)
     .join(', ');
+
+  // Instagram vyžaduje metadata.instagram.type (POVINNÉ) + shouldShareToFeed (POVINNÉ).
+  // type: post = klasický feed post (zvládne viac obrázkov = carousel).
+  // TikTok žiadne povinné metadata nemá, preto ho vynechávame.
+  const metadataGql =
+    params.platform === 'instagram'
+      ? `metadata: { instagram: { type: post, shouldShareToFeed: true } },`
+      : '';
 
   // dueAt aj text bezpečne vložené ako GraphQL string literály.
   const query = `mutation {
@@ -579,6 +588,7 @@ async function postToBuffer(params: {
       schedulingType: automatic,
       mode: customScheduled,
       dueAt: ${JSON.stringify(params.dueAt)},
+      ${metadataGql}
       assets: [${assetsGql}]
     }) {
       __typename
@@ -680,6 +690,7 @@ async function run() {
           text: caption,
           imageUrls: igUrls,
           dueAt: scheduledAt(pik.datumPublikacie, 19, 0),
+          platform: 'instagram',
         });
       }
       if (ttChannel) {
@@ -691,6 +702,7 @@ async function run() {
           text: caption,
           imageUrls: ttUrls,
           dueAt: scheduledAt(pik.datumPublikacie, 18, 30),
+          platform: 'tiktok',
         });
       }
 
