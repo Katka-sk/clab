@@ -590,9 +590,11 @@ async function markPublished(id: string): Promise<void> {
 // Handler
 // ---------------------------------------------------------------------------
 async function run() {
+  // Hobby plán má limit 60 s na funkciu – spracujeme 1 pikošku na beh.
+  // Cron beží denne, takže fronta sa postupne vyprázdni.
   const pikosky: Pikoska[] = await sanity.fetch(
     `*[_type == "pikoska" && datumPublikacie <= now() && publikovaneSocial != true]
-      | order(datumPublikacie asc)[0...3]{
+      | order(datumPublikacie asc)[0...1]{
         _id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie
       }`
   );
