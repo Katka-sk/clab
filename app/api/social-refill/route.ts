@@ -5,6 +5,7 @@ import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { put } from '@vercel/blob';
 
 // Cron route – generuje carousel (IG + TikTok) z najbližších nepublikovaných
 // pikošiek, naplánuje ich do Bufferu a označí ako publikované v Sanity.
@@ -499,11 +500,22 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
 }
 
 // ---------------------------------------------------------------------------
+// Vercel Blob – Buffer GraphQL neberie base64, obrázok musí byť verejná URL.
+// ---------------------------------------------------------------------------
+async function uploadToBlob(buf: Buffer, filename: string): Promise<string> {
+  const { url } = await put(filename, buf, {
+    access: 'public',
+    contentType: 'image/png',
+    addRandomSuffix: true,
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  });
+  return url;
+}
+
+// ---------------------------------------------------------------------------
 // Buffer naplánovanie
 // ---------------------------------------------------------------------------
 function scheduledAt(datum: string | undefined, hh: number, mm: number): string {
-  const d = (datum || new Date().toISOString()).slice(0, 10);
-  const [y, m, day] = d.split('-').map(Number);
   const tz = 'Europe/Bratislava';
   const offsetMinutes = (instant: number) => {
     const dtf = new Intl.DateTimeFormat('en-US', {
@@ -522,42 +534,84 @@ function scheduledAt(datum: string | undefined, hh: number, mm: number): string 
     );
     return (asUTC - instant) / 60000;
   };
-  let utc = Date.UTC(y, m - 1, day, hh, mm, 0);
-  let off = offsetMinutes(utc);
-  utc = Date.UTC(y, m - 1, day, hh, mm, 0) - off * 60000;
-  off = offsetMinutes(utc);
-  const instant = Date.UTC(y, m - 1, day, hh, mm, 0) - off * 60000;
+  // UTC instant pre dané lokálne hh:mm (Bratislava) na konkrétny deň.
+  const instantFor = (dateStr: string) => {
+    const [y, m, day] = dateStr.split('-').map(Number);
+    let off = offsetMinutes(Date.UTC(y, m - 1, day, hh, mm, 0));
+    off = offsetMinutes(Date.UTC(y, m - 1, day, hh, mm, 0) - off * 60000);
+    return Date.UTC(y, m - 1, day, hh, mm, 0) - off * 60000;
+  };
+
+  let dateStr = (datum || new Date().toISOString()).slice(0, 10);
+  let instant = instantFor(dateStr);
+  // Ak je termín v minulosti (alebo do 5 min od teraz), posuň na ďalší deň.
+  const minFuture = Date.now() + 5 * 60000;
+  let guard = 0;
+  while (instant < minFuture && guard < 400) {
+    const next = new Date(dateStr + 'T00:00:00Z');
+    next.setUTCDate(next.getUTCDate() + 1);
+    dateStr = next.toISOString().slice(0, 10);
+    instant = instantFor(dateStr);
+    guard++;
+  }
   return new Date(instant).toISOString();
 }
 
+// Buffer GraphQL API (nový). Obrázok musí byť verejná URL (z Vercel Blobu).
+// Vráti údaje o naplánovanom poste; pri MutationError alebo HTTP chybe throwne.
 async function postToBuffer(params: {
   channelId: string;
-  caption: string;
-  slides: Buffer[];
-  scheduledAt: string;
+  text: string;
+  imageUrl: string;
+  dueAt: string;
+  uploadedCount: number;
 }): Promise<any> {
-  const body = new URLSearchParams();
-  body.append('profile_ids[]', params.channelId);
-  body.append('text', params.caption);
-  body.append('scheduled_at', params.scheduledAt);
-  // prvý slide ako hlavné foto
-  body.append('media[photo]', `data:image/png;base64,${params.slides[0].toString('base64')}`);
-  // všetkých 5 slidov ako carousel
-  params.slides.forEach((b, i) => {
-    body.append(`media[photo[${i}]]`, `data:image/png;base64,${b.toString('base64')}`);
-  });
+  // dueAt aj imageUrl/text bezpečne vložené ako GraphQL string literály.
+  const query = `mutation {
+    createPost(input: {
+      text: ${JSON.stringify(params.text)},
+      channelId: ${JSON.stringify(params.channelId)},
+      schedulingType: automatic,
+      mode: customScheduled,
+      dueAt: ${JSON.stringify(params.dueAt)},
+      imageUrl: ${JSON.stringify(params.imageUrl)}
+    }) {
+      __typename
+      ... on PostActionSuccess { post { id dueAt assets { id } } }
+      ... on MutationError { message }
+    }
+  }`;
 
-  const res = await fetch('https://api.bufferapp.com/1/updates/create.json', {
+  const res = await fetch('https://api.buffer.com', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.BUFFER_API_KEY || ''}`,
-      'content-type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: body.toString(),
+    body: JSON.stringify({ query }),
   });
+
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(`Buffer API ${res.status}: ${JSON.stringify(json)}`);
-  return json;
+  if (!res.ok) throw new Error(`Buffer HTTP ${res.status}: ${JSON.stringify(json)}`);
+  if (json?.errors) throw new Error(`Buffer GraphQL errors: ${JSON.stringify(json.errors)}`);
+
+  const result = json?.data?.createPost;
+  if (!result) throw new Error(`Buffer: neočakávaná odpoveď: ${JSON.stringify(json)}`);
+  if (result.__typename === 'MutationError' || (result.message && !result.post)) {
+    throw new Error(`Buffer MutationError: ${result.message || 'neznáma chyba'}`);
+  }
+
+  const accepted = Array.isArray(result.post?.assets) ? result.post.assets.length : 1;
+  console.log(
+    `Buffer post OK (kanál ${params.channelId}): nahraných ${params.uploadedCount} slidov na Blob, Buffer prijal ${accepted} obrázok/ov.`
+  );
+
+  return {
+    postId: result.post?.id ?? null,
+    dueAt: result.post?.dueAt ?? params.dueAt,
+    uploadedSlides: params.uploadedCount,
+    bufferAccepted: accepted,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -567,10 +621,10 @@ async function markPublished(id: string): Promise<void> {
   const res = await fetch(
     `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/mutate/${DATASET}`,
     {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.SANITY_WRITE_TOKEN || ''}`,
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ mutations: [{ patch: { id, set: { publikovaneSocial: true } } }] }),
     }
@@ -612,25 +666,35 @@ async function run() {
 
       const buffer: any = {};
       if (igChannel) {
+        // Nahraj všetkých 5 slidov na Blob (verejné URL pre Buffer).
+        const igUrls = await Promise.all(
+          igSlides.map((b, i) => uploadToBlob(b, `ig-${pik._id}-${i}.png`))
+        );
         buffer.ig = await postToBuffer({
           channelId: igChannel,
-          caption,
-          slides: igSlides,
-          scheduledAt: scheduledAt(pik.datumPublikacie, 19, 0),
+          text: caption,
+          imageUrl: igUrls[0],
+          uploadedCount: igUrls.length,
+          dueAt: scheduledAt(pik.datumPublikacie, 19, 0),
         });
       }
       if (ttChannel) {
+        const ttUrls = await Promise.all(
+          ttSlides.map((b, i) => uploadToBlob(b, `tt-${pik._id}-${i}.png`))
+        );
         buffer.tiktok = await postToBuffer({
           channelId: ttChannel,
-          caption,
-          slides: ttSlides,
-          scheduledAt: scheduledAt(pik.datumPublikacie, 18, 30),
+          text: caption,
+          imageUrl: ttUrls[0],
+          uploadedCount: ttUrls.length,
+          dueAt: scheduledAt(pik.datumPublikacie, 18, 30),
         });
       }
 
+      // Označ ako publikované AŽ po úspešnom naplánovaní do Bufferu.
       await markPublished(pik._id);
 
-      results.push({ id: pik._id, nadpis: pik.nadpis, ok: true });
+      results.push({ id: pik._id, nadpis: pik.nadpis, ok: true, buffer });
     } catch (err: any) {
       results.push({ id: pik._id, nadpis: pik.nadpis, ok: false, error: err?.message || String(err) });
     }
