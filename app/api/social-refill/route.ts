@@ -4,7 +4,7 @@ import imageUrlBuilder from '@sanity/image-url';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Cron route – generuje carousel (IG + TikTok) z najbližších nepublikovaných
 // pikošiek, naplánuje ich do Bufferu a označí ako publikované v Sanity.
@@ -27,8 +27,11 @@ const sanity = createClient({
 });
 const builder = imageUrlBuilder(sanity);
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY?.trim(),
+const genAI = new GoogleGenerativeAI((process.env.GEMINI_API_KEY || '').trim());
+const model = genAI.getGenerativeModel({
+  model: 'gemini-1.5-flash',
+  systemInstruction:
+    'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.',
 });
 
 // ---------------------------------------------------------------------------
@@ -473,7 +476,7 @@ function buildCaption(copy: Copy, pik: Pikoska): string {
 }
 
 // ---------------------------------------------------------------------------
-// Anthropic copy
+// Gemini copy
 // ---------------------------------------------------------------------------
 async function generateCopy(pik: Pikoska): Promise<Copy> {
   const obsah = obsahToText(pik.obsah).slice(0, 4000);
@@ -482,15 +485,8 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     'pribehKratky (2-3 vety príbehu), otazkaKonca (1 provokatívna otázka pre komentáre). ' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
-    messages: [{ role: 'user', content: userPrompt }],
-    system:
-      'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.',
-  });
-
-  const raw = message.content[0].type === 'text' ? message.content[0].text : '';
+  const result = await model.generateContent(userPrompt);
+  const raw = result.response.text();
   const jsonText = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
   const start = jsonText.indexOf('{');
   const end = jsonText.lastIndexOf('}');
