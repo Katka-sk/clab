@@ -29,7 +29,7 @@ const builder = imageUrlBuilder(sanity);
 
 const genAI = new GoogleGenerativeAI((process.env.GEMINI_API_KEY || '').trim());
 const model = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
+  model: 'gemini-2.0-flash',
   systemInstruction:
     'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.',
 });
