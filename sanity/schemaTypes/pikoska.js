@@ -79,5 +79,13 @@ export default {
       type: 'string',
       description: 'Provokatívna otázka — núti ľudí komentovať',
     },
+
+    {
+      name: 'publikovaneSocial',
+      title: 'Publikované na social?',
+      type: 'boolean',
+      description: 'Automaticky nastaví cron po naplánovaní do Bufferu',
+      initialValue: false,
+    },
   ],
 }
