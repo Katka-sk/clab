@@ -4,6 +4,7 @@ import imageUrlBuilder from '@sanity/image-url';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
+import Anthropic from '@anthropic-ai/sdk';
 
 // Cron route – generuje carousel (IG + TikTok) z najbližších nepublikovaných
 // pikošiek, naplánuje ich do Bufferu a označí ako publikované v Sanity.
@@ -25,6 +26,10 @@ const sanity = createClient({
   token: process.env.SANITY_WRITE_TOKEN,
 });
 const builder = imageUrlBuilder(sanity);
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 // ---------------------------------------------------------------------------
 // Typy
@@ -477,24 +482,15 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     'pribehKratky (2-3 vety príbehu), otazkaKonca (1 provokatívna otázka pre komentáre). ' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': process.env.ANTHROPIC_API_KEY!,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      system:
-        'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.',
-      messages: [{ role: 'user', content: userPrompt }],
-    }),
+  const message = await anthropic.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    messages: [{ role: 'user', content: userPrompt }],
+    system:
+      'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.',
   });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  const raw: string = data?.content?.[0]?.text || '';
+
+  const raw = message.content[0].type === 'text' ? message.content[0].text : '';
   const jsonText = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
   const start = jsonText.indexOf('{');
   const end = jsonText.lastIndexOf('}');
