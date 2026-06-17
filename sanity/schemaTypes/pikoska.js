@@ -59,5 +59,25 @@ export default {
       title: 'Pikoška dňa?',
       type: 'boolean',
     },
+  
+    {
+      name: 'hookRiadok',
+      title: 'Hook (1 veta pre social)',
+      type: 'string',
+      description: 'Prvý riadok caption — šokuje, BEZ pointy',
+    },
+    {
+      name: 'pribehKratky',
+      title: 'Krátky príbeh (2-3 vety pre caption)',
+      type: 'text',
+      rows: 3,
+      description: 'Text pod hookom v caption',
+    },
+    {
+      name: 'otazkaKonca',
+      title: 'Otázka na konci (pre komentáre)',
+      type: 'string',
+      description: 'Provokatívna otázka — núti ľudí komentovať',
+    },
   ],
 }
