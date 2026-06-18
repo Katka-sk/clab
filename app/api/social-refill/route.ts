@@ -32,7 +32,15 @@ const genAI = new GoogleGenerativeAI((process.env.GEMINI_API_KEY || '').trim());
 const model = genAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
   systemInstruction:
-    'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.',
+    'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.\n' +
+    '\n' +
+    'PRAVIDLÁ HLASU (vždy platné, nemenné):\n' +
+    '- Nikdy neznieš ako AI. Žiadny korporátny, uhladený ani robotický tón. Píš ako reálny človek, čo rozpráva dobrú historku.\n' +
+    '- Žiadne pomlčky (—). Použi čiarku, bodku alebo vetu preformuluj.\n' +
+    '- Žiadne vatové frázy ("je dôležité poznamenať", "v dnešnej uponáhľanej dobe", "poďme sa pozrieť", "predstavte si").\n' +
+    '- Žiadne generické AI vzory (rovnako stavané vety za sebou, zoznamy troch vecí s identickou stavbou).\n' +
+    '- Krátke, úderné vety. Konkrétne detaily (mená, čísla, roky) namiesto všeobecností.\n' +
+    '- Máš osobnosť. Buď priamy. Znej ako pútavý rozprávač, nie ako jazykový model.',
 });
 
 // ---------------------------------------------------------------------------
@@ -687,6 +695,12 @@ function scheduledAt(datum: string | undefined, hh: number, mm: number): string 
   return new Date(instant).toISOString();
 }
 
+// DRAFT režim: kým testujeme, posielame do Buffera ako DRAFT (saveToDraft: true).
+// Post sa NEzverejní sám – Katarína si ho v Bufferi pozrie a publikuje ručne.
+// Na ostrý auto-publish (naplánovaný na dueAt) prepni na false.
+// Zdroj: https://developers.buffer.com/examples/create-draft-post.html
+const BUFFER_SAVE_AS_DRAFT = true;
+
 // Buffer GraphQL API (nový). Obrázky musia byť verejné URL (z Vercel Blobu).
 // CAROUSEL: posielame celé pole obrázkov cez `assets: [{ image: { url } }]`.
 // Pri MutationError alebo HTTP chybe throwne.
@@ -710,14 +724,18 @@ async function postToBuffer(params: {
       ? `metadata: { instagram: { type: post, shouldShareToFeed: true } },`
       : '';
 
-  // dueAt aj text bezpečne vložené ako GraphQL string literály.
+  // DRAFT: mode addToQueue + saveToDraft (nezverejní sa samo, len sa uloží ako koncept).
+  // OSTRÝ: customScheduled + dueAt (naplánuje a pri auto-publish nastavení sám vyjde).
+  const schedulingGql = BUFFER_SAVE_AS_DRAFT
+    ? 'schedulingType: automatic, mode: addToQueue, saveToDraft: true,'
+    : `schedulingType: automatic, mode: customScheduled, dueAt: ${JSON.stringify(params.dueAt)},`;
+
+  // text aj ostatné hodnoty bezpečne vložené ako GraphQL string literály.
   const query = `mutation {
     createPost(input: {
       text: ${JSON.stringify(params.text)},
       channelId: ${JSON.stringify(params.channelId)},
-      schedulingType: automatic,
-      mode: customScheduled,
-      dueAt: ${JSON.stringify(params.dueAt)},
+      ${schedulingGql}
       ${metadataGql}
       assets: [${assetsGql}]
     }) {
@@ -780,15 +798,24 @@ async function markPublished(id: string): Promise<void> {
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
-async function run() {
+async function run(targetSlug?: string) {
   // Hobby plán má limit 60 s na funkciu – spracujeme 1 pikošku na beh.
   // Cron beží denne, takže fronta sa postupne vyprázdni.
-  const pikosky: Pikoska[] = await sanity.fetch(
-    `*[_type == "pikoska" && datumPublikacie <= now() && publikovaneSocial != true]
-      | order(datumPublikacie asc)[0...1]{
-        _id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie
-      }`
-  );
+  // Ak je zadaný ?slug=..., zacieli sa KONKRÉTNA pikoška (aj keď je už označená)
+  //   – na ručné / kontrolované behy (napr. prvý draft). Bez slug = najstaršia v rade.
+  const pikosky: Pikoska[] = targetSlug
+    ? await sanity.fetch(
+        `*[_type == "pikoska" && slug.current == $slug][0...1]{
+          _id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie
+        }`,
+        { slug: targetSlug }
+      )
+    : await sanity.fetch(
+        `*[_type == "pikoska" && datumPublikacie <= now() && publikovaneSocial != true]
+          | order(datumPublikacie asc)[0...1]{
+            _id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie
+          }`
+      );
 
   if (!pikosky.length) {
     return { ok: true, processed: 0, message: 'Žiadne pikošky na publikovanie.' };
@@ -848,15 +875,16 @@ async function run() {
   return { ok: true, processed: results.length, results };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const out = await run();
+    const slug = new URL(req.url).searchParams.get('slug') || undefined;
+    const out = await run(slug);
     return NextResponse.json(out);
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
   }
 }
 
-export async function POST() {
-  return GET();
+export async function POST(req: Request) {
+  return GET(req);
 }

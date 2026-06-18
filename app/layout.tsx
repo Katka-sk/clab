@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Bebas_Neue, Barlow, Barlow_Condensed } from "next/font/google";
 
 const bebas = Bebas_Neue({
@@ -54,6 +55,7 @@ export default function RootLayout({
           `}
         </Script>
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
