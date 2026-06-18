@@ -69,16 +69,19 @@ function h(type: string, props: Record<string, any> | null, ...children: any[]):
 // ---------------------------------------------------------------------------
 // Fonty pre satori (Barlow, latin-ext kvôli slovenskej diakritike)
 // ---------------------------------------------------------------------------
-type FontDef = { name: string; data: ArrayBuffer; weight: 400 | 600 | 700; style: 'normal' };
+type FontDef = { name: string; data: ArrayBuffer; weight: 400 | 600 | 700 | 800; style: 'normal' };
 let fontCache: FontDef[] | null = null;
 
 async function loadFonts(): Promise<FontDef[]> {
   if (fontCache) return fontCache;
-  const base = 'https://cdn.jsdelivr.net/npm/@fontsource/barlow@5.0.13/files';
-  const targets: { url: string; weight: 400 | 600 | 700 }[] = [
-    { url: `${base}/barlow-latin-ext-400-normal.woff`, weight: 400 },
-    { url: `${base}/barlow-latin-ext-600-normal.woff`, weight: 600 },
-    { url: `${base}/barlow-latin-ext-700-normal.woff`, weight: 700 },
+  // Satori potrebuje ttf/otf (nie woff/woff2). @fontsource ttf nepublikuje,
+  // preto berieme plné TTF s latin-ext glyfmi (slovenská diakritika) z google/fonts.
+  const base = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/barlow';
+  const targets: { url: string; weight: 400 | 600 | 700 | 800 }[] = [
+    { url: `${base}/Barlow-Regular.ttf`, weight: 400 },
+    { url: `${base}/Barlow-SemiBold.ttf`, weight: 600 },
+    { url: `${base}/Barlow-Bold.ttf`, weight: 700 },
+    { url: `${base}/Barlow-ExtraBold.ttf`, weight: 800 },
   ];
   const fonts = await Promise.all(
     targets.map(async (t) => {
@@ -124,7 +127,7 @@ function isKeyword(word: string): boolean {
 // Renderuje text po slovách s flex-wrap, kľúčové/posledná-veta slová zelené.
 function wrappedWords(
   text: string,
-  opts: { fontSize: number; weight: 400 | 600 | 700; greenSet?: Set<string>; greenAll?: boolean; lineHeight?: number }
+  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenAll?: boolean; lineHeight?: number; baseColor?: string }
 ): VNode {
   const words = text.split(/\s+/).filter(Boolean);
   const children = words.map((w) => {
@@ -134,7 +137,7 @@ function wrappedWords(
       {
         style: {
           display: 'flex',
-          color: green ? GREEN : '#ffffff',
+          color: green ? GREEN : (opts.baseColor ?? '#ffffff'),
           fontWeight: opts.weight,
           fontSize: opts.fontSize,
           marginRight: Math.round(opts.fontSize * 0.28),
@@ -231,9 +234,10 @@ function logoBar(): VNode {
 // Stavba slidov
 // ---------------------------------------------------------------------------
 function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: number): VNode {
-  const sentences = splitSentences(hook);
+  // Max 2 vety celkovo – ak Gemini dá viac, orež na 2.
+  const sentences = splitSentences(hook).slice(0, 2);
   const last = sentences.length ? sentences[sentences.length - 1] : hook;
-  const rest = sentences.slice(0, -1).join(' ');
+  const rest = sentences.length > 1 ? sentences[0] : '';
   return h(
     'div',
     {
@@ -267,15 +271,15 @@ function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: num
       {
         style: {
           position: 'absolute',
-          bottom: 90,
-          left: 70,
-          right: 70,
+          bottom: Math.round(h0 * 0.09),
+          left: 60,
+          right: 60,
           display: 'flex',
           flexDirection: 'column',
         },
       },
       rest
-        ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 8 } }, wrappedWords(rest, { fontSize: 52, weight: 700 }))
+        ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 10 } }, wrappedWords(rest, { fontSize: 52, weight: 700 }))
         : h('div', { style: { display: 'none' } }),
       h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(last, { fontSize: 52, weight: 700, greenAll: true }))
     )
@@ -302,7 +306,7 @@ function slideMid(text: string, w: number, h0: number, yearPrefix?: string): VNo
       )
     );
   }
-  inner.push(wrappedWords(text, { fontSize: 42, weight: 600, lineHeight: 1.35 }));
+  inner.push(wrappedWords(text, { fontSize: 42, weight: 600, lineHeight: 1.4, baseColor: '#dddddd' }));
   return h(
     'div',
     {
@@ -362,26 +366,39 @@ function slideOutro(w: number, h0: number): VNode {
           justifyContent: 'center',
         },
       },
-      h('div', { style: { color: '#ffffff', fontSize: 40, fontWeight: 400, display: 'flex' } }, 'Každý deň jeden'),
-      h('div', { style: { color: GREEN, fontSize: 44, fontWeight: 700, display: 'flex', marginTop: 4 } }, 'zabudnutý fakt'),
-      h('div', { style: { color: '#ffffff', fontSize: 44, fontWeight: 700, display: 'flex', marginTop: 4 } }, 'z histórie.'),
-      h('div', { style: { color: GREEN, fontSize: 48, display: 'flex', marginTop: 36, marginBottom: 36 } }, '↓'),
+      h('div', { style: { color: '#ffffff', fontSize: 38, fontWeight: 400, display: 'flex' } }, 'Každý deň jeden'),
+      h('div', { style: { color: GREEN, fontSize: 38, fontWeight: 800, display: 'flex', marginTop: 4 } }, 'zabudnutý fakt'),
+      h('div', { style: { color: '#ffffff', fontSize: 38, fontWeight: 700, display: 'flex', marginTop: 4 } }, 'z histórie.'),
+      h(
+        'div',
+        {
+          style: {
+            color: GREEN,
+            fontSize: 48,
+            display: 'flex',
+            marginTop: 36,
+            marginBottom: 36,
+            textShadow: '0 0 20px rgba(200,241,53,0.8)',
+          },
+        },
+        '↓'
+      ),
       h(
         'div',
         {
           style: {
             backgroundColor: GREEN,
             color: '#000000',
-            fontSize: 34,
+            fontSize: 28,
             fontWeight: 700,
-            padding: '16px 36px',
+            padding: '12px 32px',
             borderRadius: 50,
             display: 'flex',
           },
         },
         'www.curiositylab.sk'
       ),
-      h('div', { style: { color: '#ffffff', fontSize: 32, fontWeight: 400, display: 'flex', marginTop: 24 } }, 'link v bio')
+      h('div', { style: { color: '#ffffff', fontSize: 24, fontWeight: 400, display: 'flex', marginTop: 24 } }, 'link v bio')
     )
   );
 }
