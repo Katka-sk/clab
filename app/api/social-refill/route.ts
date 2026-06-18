@@ -338,6 +338,19 @@ function slideMid(text: string, w: number, h0: number, yearPrefix?: string): VNo
   );
 }
 
+// Šípka dole – ako SVG obrázok (Barlow nemá glyf „↓"), so zeleným glow.
+const ARROW_DATA_URI = (() => {
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="64" viewBox="0 0 56 64">` +
+    `<defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%">` +
+    `<feGaussianBlur stdDeviation="4" result="b"/>` +
+    `<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>` +
+    `<g filter="url(#g)" stroke="${GREEN}" stroke-width="6" stroke-linecap="round" ` +
+    `stroke-linejoin="round" fill="none">` +
+    `<line x1="28" y1="8" x2="28" y2="48"/><polyline points="12,34 28,52 44,34"/></g></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+})();
+
 function slideOutro(w: number, h0: number): VNode {
   return h(
     'div',
@@ -369,20 +382,12 @@ function slideOutro(w: number, h0: number): VNode {
       h('div', { style: { color: '#ffffff', fontSize: 38, fontWeight: 400, display: 'flex' } }, 'Každý deň jeden'),
       h('div', { style: { color: GREEN, fontSize: 38, fontWeight: 800, display: 'flex', marginTop: 4 } }, 'zabudnutý fakt'),
       h('div', { style: { color: '#ffffff', fontSize: 38, fontWeight: 700, display: 'flex', marginTop: 4 } }, 'z histórie.'),
-      h(
-        'div',
-        {
-          style: {
-            color: GREEN,
-            fontSize: 48,
-            display: 'flex',
-            marginTop: 36,
-            marginBottom: 36,
-            textShadow: '0 0 20px rgba(200,241,53,0.8)',
-          },
-        },
-        '↓'
-      ),
+      h('img', {
+        src: ARROW_DATA_URI,
+        width: 56,
+        height: 64,
+        style: { display: 'flex', marginTop: 36, marginBottom: 36 },
+      }),
       h(
         'div',
         {
