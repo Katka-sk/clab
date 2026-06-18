@@ -51,6 +51,28 @@ roky) → tie sa v texte vykreslia zelené a tučné.
 
 ---
 
+## ✅ OBSAHOVÁ ŠTRUKTÚRA (schválená — Gemini píše PRIAMO na 5 slidov)
+
+Gemini negeneruje jeden blok textu, ale **pole na slide** (inak sa text seká nerovnomerne
+a slide 1 sa celý zazelení). Polia: `hookFakt, hookSlucka, rok, pribeh, eskalacia, pointa,
+otazkaKonca, klucoveSlova`.
+
+- **Slide 1 — HOOK:** `hookFakt` (1 veta, biela) = šokujúci fakt/paradox. `hookSlucka`
+  (1 veta, zelená) = otvorená slučka, núti swipnúť. Hook NESMIE prezradiť pointu. Žiadny rok.
+- **Slide 2 — PRÍBEH:** štítok `ROK …` (zelený) + `pribeh` (kto/čo, 1-2 vety). Konkrétne mená/miesta.
+- **Slide 3 — ESKALÁCIA:** `eskalacia` (čo ďalej, kauzálna reťaz, 1-2 vety). Neprezradiť twist.
+- **Slide 4 — POINTA/TWIST:** `pointa` (otočenie + zapamätateľná bodka s konkrétnym faktom).
+  Žiadne filozofické závery.
+- **Slide 5 — PROMO:** vždy identický (logo, „Každý deň jeden zabudnutý fakt z histórie.", šípka, pill).
+
+Pravidlá: max 2 vety/slide, čitateľné za 2-3 s, 1-4 zelené slová/slide. Veľkosť písma na 2-4 sa
+prispôsobuje dĺžke textu (dlhšie = menšie, aby malo vzduch). Plná predloha: `podklady/dizajn/Karousel/curiositylab-carousel-struktura.md`.
+
+**Workflow:** keď Katarína odsúhlasí carousel, tento dizajn + štruktúra sú štandard a aplikujú sa
+automaticky na každú pikošku (cez `?slug=` cielene, alebo cron na najstaršiu v rade).
+
+---
+
 ## ČO JE UŽ VYRIEŠENÉ (kopíruj, neobjavuj znova)
 
 - **Buffer GraphQL API:** endpoint `https://api.buffer.com`, Bearer token, mutation `createPost`

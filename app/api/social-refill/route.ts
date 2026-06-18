@@ -58,9 +58,13 @@ type Pikoska = {
 };
 
 type Copy = {
-  hookRiadok: string;
-  pribehKratky: string;
-  otazkaKonca: string;
+  hookFakt: string;     // slide 1, veta 1 — biela: šokujúci fakt (neprezradí pointu)
+  hookSlucka: string;   // slide 1, veta 2 — zelená: otvorená slučka, BEZ pointy
+  rok: string;          // slide 2 štítok "ROK ..." (napr. 1232 alebo 2560 PRED N. L.); môže byť prázdne
+  pribeh: string;       // slide 2 — kto/čo urobil (1-2 vety)
+  eskalacia: string;    // slide 3 — čo sa stalo ďalej, kauzálna reťaz (1-2 vety)
+  pointa: string;       // slide 4 — twist / zapamätateľná bodka (1-2 vety)
+  otazkaKonca: string;  // do popisu — provokatívna otázka
   klucoveSlova: string[];
 };
 
@@ -299,11 +303,11 @@ function logoBar(): VNode {
 // ---------------------------------------------------------------------------
 // Stavba slidov
 // ---------------------------------------------------------------------------
-function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: number): VNode {
-  // Max 2 vety celkovo – ak Gemini dá viac, orež na 2.
-  const sentences = splitSentences(hook).slice(0, 2);
-  const last = sentences.length ? sentences[sentences.length - 1] : hook;
-  const rest = sentences.length > 1 ? sentences[0] : '';
+function slideBackgroundHook(fakt: string, slucka: string, bgDataUri: string, w: number, h0: number): VNode {
+  // Slide 1: fakt = biely (veta 1), slučka = zelená (veta 2, bez pointy).
+  // Ak chýba jedna časť, zobrazí sa len druhá.
+  const combinedLen = `${fakt} ${slucka}`.trim().length;
+  const fs = combinedLen > 120 ? 64 : combinedLen > 85 ? 70 : 76;
   return h(
     'div',
     {
@@ -344,14 +348,16 @@ function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: num
           flexDirection: 'column',
         },
       },
-      rest
+      fakt
         ? h(
             'div',
-            { style: { display: 'flex', width: '100%', marginBottom: 8 } },
-            wrappedWords(rest, { fontSize: 76, weight: 800, lineHeight: 1.35, baseColor: '#eeeeee', disableKeyword: true })
+            { style: { display: 'flex', width: '100%', marginBottom: 14 } },
+            wrappedWords(fakt, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', disableKeyword: true })
           )
         : h('div', { style: { display: 'none' } }),
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(last, { fontSize: 76, weight: 800, lineHeight: 1.35, greenAll: true }))
+      slucka
+        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fs, weight: 800, lineHeight: 1.3, greenAll: true }))
+        : h('div', { style: { display: 'none' } })
     )
   );
 }
@@ -383,9 +389,11 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
   const lines = splitSentences(text);
   const bodyLines = lines.length ? lines : [text];
+  // Prispôsobivá veľkosť: dlhší text = menšie písmo, nech sa zmestí a má vzduch.
+  const bodyFs = text.length > 165 ? 54 : text.length > 115 ? 59 : 64;
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 64, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
     );
   }
   const children: VNode[] = [];
@@ -551,24 +559,16 @@ async function buildCarousel(
   dims: { w: number; h: number }
 ): Promise<Buffer[]> {
   const { w, h: ht } = dims;
-  const year = (pik.datumPublikacie || '').slice(0, 4) || '';
-
-  // Rozdelenie príbehu do 3 slidov (2–4)
-  const sentences = splitSentences(copy.pribehKratky);
-  const chunks: string[] = ['', '', ''];
-  sentences.forEach((s, i) => {
-    chunks[Math.min(2, Math.floor((i * 3) / Math.max(1, sentences.length)))] += (chunks[Math.min(2, Math.floor((i * 3) / Math.max(1, sentences.length)))] ? ' ' : '') + s;
-  });
-  if (!chunks[0]) chunks[0] = copy.pribehKratky;
 
   const bg = await backgroundDataUri(pik.obrazok, w, ht);
   const kw = copy.klucoveSlova;
 
+  // Každý slide má svoj zámer (podľa štruktúry): hook → príbeh → eskalácia → pointa → promo.
   const slides: VNode[] = [
-    slideBackgroundHook(copy.hookRiadok, bg, w, ht),
-    slideMid(chunks[0] || copy.pribehKratky, w, ht, kw, year, bg),
-    slideMid(chunks[1] || copy.otazkaKonca, w, ht, kw, undefined, bg),
-    slideMid(chunks[2] || copy.otazkaKonca, w, ht, kw, undefined, bg),
+    slideBackgroundHook(copy.hookFakt, copy.hookSlucka, bg, w, ht),
+    slideMid(copy.pribeh, w, ht, kw, copy.rok || undefined, bg),
+    slideMid(copy.eskalacia, w, ht, kw, undefined, bg),
+    slideMid(copy.pointa, w, ht, kw, undefined, bg),
     slideOutro(w, ht),
   ];
 
@@ -606,8 +606,10 @@ function buildHashtags(pik: Pikoska): string {
 }
 
 function buildCaption(copy: Copy, pik: Pikoska): string {
+  const hook = [copy.hookFakt, copy.hookSlucka].filter(Boolean).join(' ');
+  const pribeh = [copy.pribeh, copy.eskalacia, copy.pointa].filter(Boolean).join(' ');
   return (
-    `${copy.hookRiadok}\n\n${copy.pribehKratky}\n\n${copy.otazkaKonca}\n\n—\n` +
+    `${hook} 🔥\n\n${pribeh}\n\n${copy.otazkaKonca} 👇\n\n—\n` +
     `📍 curiositylab.sk (link v bio)\n\n${buildHashtags(pik)}`
   );
 }
@@ -618,9 +620,16 @@ function buildCaption(copy: Copy, pik: Pikoska): string {
 async function generateCopy(pik: Pikoska): Promise<Copy> {
   const obsah = obsahToText(pik.obsah).slice(0, 4000);
   const userPrompt =
-    'Na základe tejto pikošky vygeneruj JSON s poľami hookRiadok (1 šokujúca veta ktorá NESMIE prezradiť pointu), ' +
-    'pribehKratky (2-3 vety príbehu), otazkaKonca (1 provokatívna otázka pre komentáre), ' +
-    'klucoveSlova (pole 4-8 najdôležitejších slov alebo krátkych fráz z hookRiadok a pribehKratky, ktoré sa majú vizuálne zvýrazniť – mená, miesta, čísla, roky, odborné názvy; presne tak ako sú napísané v texte). ' +
+    'Vygeneruj JSON pre 5-slidový carousel podľa pevnej štruktúry. Polia:\n' +
+    '- hookFakt: 1 veta, šokujúci fakt alebo paradox (slide 1, biely text). NESMIE prezradiť pointu.\n' +
+    '- hookSlucka: 1 veta, otvorená slučka/napätie ktoré núti swipnúť ďalej (slide 1, zelený text). BEZ odpovede, BEZ pointy.\n' +
+    '- rok: krátky údaj obdobia pre slide 2 VEĽKÝMI písmenami, napr. "1232" alebo "2560 PRED N. L."; ak sa nedá určiť, daj prázdny reťazec "".\n' +
+    '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
+    '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
+    '- pointa: 1-2 vety — TWIST/pointa, otočenie perspektívy alebo zapamätateľná bodka s konkrétnym faktom (slide 4). Žiadne filozofické závery.\n' +
+    '- otazkaKonca: 1 provokatívna otázka pre komentáre (len do popisu).\n' +
+    '- klucoveSlova: pole 4-8 kľúčových slov/fráz na zvýraznenie (mená, miesta, čísla, roky, odborné názvy), PRESNE ako sú napísané v texte.\n' +
+    'PRAVIDLÁ: max 2 vety na slide, krátke úderné vety, každý slide čitateľný za 2-3 sekundy. Hook nesmie prezradiť pointu.\n' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
   const result = await model.generateContent(userPrompt);
@@ -630,8 +639,12 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
   const end = jsonText.lastIndexOf('}');
   const parsed = JSON.parse(jsonText.slice(start, end + 1));
   return {
-    hookRiadok: String(parsed.hookRiadok || '').trim(),
-    pribehKratky: String(parsed.pribehKratky || '').trim(),
+    hookFakt: String(parsed.hookFakt || '').trim(),
+    hookSlucka: String(parsed.hookSlucka || '').trim(),
+    rok: String(parsed.rok || '').trim(),
+    pribeh: String(parsed.pribeh || '').trim(),
+    eskalacia: String(parsed.eskalacia || '').trim(),
+    pointa: String(parsed.pointa || '').trim(),
     otazkaKonca: String(parsed.otazkaKonca || '').trim(),
     klucoveSlova: Array.isArray(parsed.klucoveSlova) ? parsed.klucoveSlova.map((s: any) => String(s)) : [],
   };
