@@ -377,7 +377,7 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
   const bodyLines = lines.length ? lines : [text];
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 700, lineHeight: 1.6, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 64, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
     );
   }
   return h(
