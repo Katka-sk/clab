@@ -155,20 +155,43 @@ function buildGreenSet(keywords: string[]): Set<string> {
   return set;
 }
 
-// Renderuje text po slovách s flex-wrap, kľúčové/posledná-veta slová zelené.
+// Rozseká text na tokeny – kľúčové frázy (od Gemini) ostávajú ako celok
+// (jeden token = nezalomí sa, napr. "25 miliónov" drží na jednom riadku).
+type Token = { text: string; green: boolean };
+function tokenize(text: string, phrases: string[]): Token[] {
+  const clean = (phrases || []).map((p) => p.trim()).filter(Boolean).sort((a, b) => b.length - a.length);
+  if (!clean.length) return text.split(/\s+/).filter(Boolean).map((w) => ({ text: w, green: false }));
+  const esc = clean.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const re = new RegExp('(?<![0-9A-Za-zÀ-ž])(?:' + esc.join('|') + ')[.,!?;:]*(?![0-9A-Za-zÀ-ž])', 'giu');
+  const out: Token[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) {
+    for (const w of text.slice(last, m.index).split(/\s+/)) if (w) out.push({ text: w, green: false });
+    out.push({ text: m[0], green: true });
+    last = m.index + m[0].length;
+  }
+  for (const w of text.slice(last).split(/\s+/)) if (w) out.push({ text: w, green: false });
+  return out;
+}
+
+// Renderuje text po tokenoch s flex-wrap, kľúčové slová/frázy zelené a tučné.
 function wrappedWords(
   text: string,
-  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenAll?: boolean; lineHeight?: number; baseColor?: string; disableKeyword?: boolean }
+  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenPhrases?: string[]; greenAll?: boolean; lineHeight?: number; baseColor?: string; disableKeyword?: boolean }
 ): VNode {
-  const words = text.split(/\s+/).filter(Boolean);
-  const children = words.map((w) => {
-    const n = normalizeWord(w);
-    const green = opts.greenAll || (opts.greenSet ? opts.greenSet.has(n) : false) || (!opts.disableKeyword && isKeyword(w));
+  const tokens = tokenize(text, opts.greenPhrases || []);
+  const children = tokens.map((t) => {
+    const n = normalizeWord(t.text);
+    const green = opts.greenAll || t.green || (opts.greenSet ? opts.greenSet.has(n) : false) || (!opts.disableKeyword && isKeyword(t.text));
+    const multiWord = /\s/.test(t.text);
     return h(
       'div',
       {
         style: {
           display: 'flex',
+          // viacslovná fráza sa nezalomí (drží na jednom riadku)
+          whiteSpace: multiWord ? 'nowrap' : 'normal',
           color: green ? GREEN : (opts.baseColor ?? '#ffffff'),
           // zelené kľúčové slová sú aj tučnejšie, aby vyskočili
           fontWeight: green ? 800 : opts.weight,
@@ -177,7 +200,7 @@ function wrappedWords(
           lineHeight: opts.lineHeight ?? 1.25,
         },
       },
-      w
+      t.text
     );
   });
   return h(
@@ -325,7 +348,8 @@ function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: num
   );
 }
 
-function slideMid(text: string, w: number, h0: number, greenSet?: Set<string>, yearPrefix?: string): VNode {
+function slideMid(text: string, w: number, h0: number, keywords?: string[], yearPrefix?: string): VNode {
+  const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const inner: VNode[] = [];
   if (yearPrefix) {
     inner.push(
@@ -350,7 +374,7 @@ function slideMid(text: string, w: number, h0: number, greenSet?: Set<string>, y
   const bodyLines = lines.length ? lines : [text];
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 700, lineHeight: 1.6, baseColor: '#eeeeee', greenSet }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 700, lineHeight: 1.6, baseColor: '#eeeeee', greenSet, greenPhrases: keywords }))
     );
   }
   return h(
@@ -427,14 +451,17 @@ function slideOutro(w: number, h0: number): VNode {
           gap: 54,
         },
       },
-      // "Každý deň jeden" – #eee, weight 800
-      h('div', { style: { color: '#eeeeee', fontSize: 70, fontWeight: 800, lineHeight: 1.4, display: 'flex' } }, 'Každý deň jeden'),
-      // "zabudnutý fakt" zelené + "z histórie." biele
+      // hlavná veta – 3 riadky tesne pri sebe (jeden logický celok)
       h(
         'div',
-        { style: { display: 'flex', flexDirection: 'row' } },
-        h('div', { style: { color: GREEN, fontSize: 70, fontWeight: 800, lineHeight: 1.4, display: 'flex', marginRight: 18 } }, 'zabudnutý fakt'),
-        h('div', { style: { color: '#ffffff', fontSize: 70, fontWeight: 800, lineHeight: 1.4, display: 'flex' } }, 'z histórie.')
+        { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 } },
+        h('div', { style: { color: '#eeeeee', fontSize: 70, fontWeight: 800, lineHeight: 1.3, display: 'flex' } }, 'Každý deň jeden'),
+        h(
+          'div',
+          { style: { display: 'flex', flexDirection: 'row' } },
+          h('div', { style: { color: GREEN, fontSize: 70, fontWeight: 800, lineHeight: 1.3, display: 'flex', marginRight: 18 } }, 'zabudnutý fakt'),
+          h('div', { style: { color: '#ffffff', fontSize: 70, fontWeight: 800, lineHeight: 1.3, display: 'flex' } }, 'z histórie.')
+        )
       ),
       // zelená šípka s glow (SVG, Barlow nemá glyf ↓)
       h('img', { src: ARROW_DATA_URI, width: 84, height: 96, style: { display: 'flex' } }),
@@ -501,13 +528,13 @@ async function buildCarousel(
   if (!chunks[0]) chunks[0] = copy.pribehKratky;
 
   const bg = await backgroundDataUri(pik.obrazok, w, ht);
-  const greenSet = buildGreenSet(copy.klucoveSlova);
+  const kw = copy.klucoveSlova;
 
   const slides: VNode[] = [
     slideBackgroundHook(copy.hookRiadok, bg, w, ht),
-    slideMid(chunks[0] || copy.pribehKratky, w, ht, greenSet, year),
-    slideMid(chunks[1] || copy.otazkaKonca, w, ht, greenSet),
-    slideMid(chunks[2] || copy.otazkaKonca, w, ht, greenSet),
+    slideMid(chunks[0] || copy.pribehKratky, w, ht, kw, year),
+    slideMid(chunks[1] || copy.otazkaKonca, w, ht, kw),
+    slideMid(chunks[2] || copy.otazkaKonca, w, ht, kw),
     slideOutro(w, ht),
   ];
 
