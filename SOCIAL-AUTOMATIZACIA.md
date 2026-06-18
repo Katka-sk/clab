@@ -59,7 +59,8 @@ otazkaKonca, klucoveSlova`.
 
 - **Slide 1 — HOOK:** `hookFakt` (1 veta, biela) = šokujúci fakt/paradox. `hookSlucka`
   (1 veta, zelená) = otvorená slučka, núti swipnúť. Hook NESMIE prezradiť pointu. Žiadny rok.
-- **Slide 2 — PRÍBEH:** štítok `ROK …` (zelený) + `pribeh` (kto/čo, 1-2 vety). Konkrétne mená/miesta.
+- **Slide 2 — PRÍBEH:** `pribeh` (kto/čo, 1-2 vety) + štítok `ROK …` (zelený) **LEN ak je v pikoške
+  konkrétny rok**. Ak rok nie je, NEDÁVAŤ ho nasilu (napr. pyramídy) — štítok sa vynechá. Konkrétne mená/miesta.
 - **Slide 3 — ESKALÁCIA:** `eskalacia` (čo ďalej, kauzálna reťaz, 1-2 vety). Neprezradiť twist.
 - **Slide 4 — POINTA/TWIST:** `pointa` (otočenie + zapamätateľná bodka s konkrétnym faktom).
   Žiadne filozofické závery.

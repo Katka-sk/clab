@@ -623,7 +623,7 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     'Vygeneruj JSON pre 5-slidový carousel podľa pevnej štruktúry. Polia:\n' +
     '- hookFakt: 1 veta, šokujúci fakt alebo paradox (slide 1, biely text). NESMIE prezradiť pointu.\n' +
     '- hookSlucka: 1 veta, otvorená slučka/napätie ktoré núti swipnúť ďalej (slide 1, zelený text). BEZ odpovede, BEZ pointy.\n' +
-    '- rok: krátky údaj obdobia pre slide 2 VEĽKÝMI písmenami, napr. "1232" alebo "2560 PRED N. L."; ak sa nedá určiť, daj prázdny reťazec "".\n' +
+    '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
     '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
     '- pointa: 1-2 vety — TWIST/pointa, otočenie perspektívy alebo zapamätateľná bodka s konkrétnym faktom (slide 4). Žiadne filozofické závery.\n' +
