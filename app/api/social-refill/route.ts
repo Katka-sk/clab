@@ -53,6 +53,7 @@ type Copy = {
   hookRiadok: string;
   pribehKratky: string;
   otazkaKonca: string;
+  klucoveSlova: string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -137,6 +138,23 @@ function isKeyword(word: string): boolean {
   return false;
 }
 
+// Normalizácia slova na porovnanie s kľúčovými slovami (bez interpunkcie, malé písmená).
+function normalizeWord(word: string): string {
+  return word.replace(/[^0-9A-Za-zÀ-ž]/g, '').toLowerCase();
+}
+
+// Zo zoznamu kľúčových slov/fráz (od Gemini) spraví Set jednotlivých slov na zvýraznenie.
+function buildGreenSet(keywords: string[]): Set<string> {
+  const set = new Set<string>();
+  for (const phrase of keywords) {
+    for (const w of phrase.split(/\s+/)) {
+      const n = normalizeWord(w);
+      if (n.length > 1) set.add(n);
+    }
+  }
+  return set;
+}
+
 // Renderuje text po slovách s flex-wrap, kľúčové/posledná-veta slová zelené.
 function wrappedWords(
   text: string,
@@ -144,14 +162,16 @@ function wrappedWords(
 ): VNode {
   const words = text.split(/\s+/).filter(Boolean);
   const children = words.map((w) => {
-    const green = opts.greenAll || (opts.greenSet ? opts.greenSet.has(w) : false) || (!opts.disableKeyword && isKeyword(w));
+    const n = normalizeWord(w);
+    const green = opts.greenAll || (opts.greenSet ? opts.greenSet.has(n) : false) || (!opts.disableKeyword && isKeyword(w));
     return h(
       'div',
       {
         style: {
           display: 'flex',
           color: green ? GREEN : (opts.baseColor ?? '#ffffff'),
-          fontWeight: opts.weight,
+          // zelené kľúčové slová sú aj tučnejšie, aby vyskočili
+          fontWeight: green ? 800 : opts.weight,
           fontSize: opts.fontSize,
           marginRight: Math.round(opts.fontSize * 0.28),
           lineHeight: opts.lineHeight ?? 1.25,
@@ -305,7 +325,7 @@ function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: num
   );
 }
 
-function slideMid(text: string, w: number, h0: number, yearPrefix?: string): VNode {
+function slideMid(text: string, w: number, h0: number, greenSet?: Set<string>, yearPrefix?: string): VNode {
   const inner: VNode[] = [];
   if (yearPrefix) {
     inner.push(
@@ -330,7 +350,7 @@ function slideMid(text: string, w: number, h0: number, yearPrefix?: string): VNo
   const bodyLines = lines.length ? lines : [text];
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 600, lineHeight: 1.75, baseColor: '#dddddd' }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 700, lineHeight: 1.6, baseColor: '#eeeeee', greenSet }))
     );
   }
   return h(
@@ -396,10 +416,10 @@ function slideOutro(w: number, h0: number): VNode {
       {
         style: {
           position: 'absolute',
-          top: '18%',
+          top: 0,
           left: 86,
           right: 86,
-          height: '58%',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -481,12 +501,13 @@ async function buildCarousel(
   if (!chunks[0]) chunks[0] = copy.pribehKratky;
 
   const bg = await backgroundDataUri(pik.obrazok, w, ht);
+  const greenSet = buildGreenSet(copy.klucoveSlova);
 
   const slides: VNode[] = [
     slideBackgroundHook(copy.hookRiadok, bg, w, ht),
-    slideMid(chunks[0] || copy.pribehKratky, w, ht, year),
-    slideMid(chunks[1] || copy.otazkaKonca, w, ht),
-    slideMid(chunks[2] || copy.otazkaKonca, w, ht),
+    slideMid(chunks[0] || copy.pribehKratky, w, ht, greenSet, year),
+    slideMid(chunks[1] || copy.otazkaKonca, w, ht, greenSet),
+    slideMid(chunks[2] || copy.otazkaKonca, w, ht, greenSet),
     slideOutro(w, ht),
   ];
 
@@ -537,7 +558,8 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
   const obsah = obsahToText(pik.obsah).slice(0, 4000);
   const userPrompt =
     'Na základe tejto pikošky vygeneruj JSON s poľami hookRiadok (1 šokujúca veta ktorá NESMIE prezradiť pointu), ' +
-    'pribehKratky (2-3 vety príbehu), otazkaKonca (1 provokatívna otázka pre komentáre). ' +
+    'pribehKratky (2-3 vety príbehu), otazkaKonca (1 provokatívna otázka pre komentáre), ' +
+    'klucoveSlova (pole 4-8 najdôležitejších slov alebo krátkych fráz z hookRiadok a pribehKratky, ktoré sa majú vizuálne zvýrazniť – mená, miesta, čísla, roky, odborné názvy; presne tak ako sú napísané v texte). ' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
   const result = await model.generateContent(userPrompt);
@@ -550,6 +572,7 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     hookRiadok: String(parsed.hookRiadok || '').trim(),
     pribehKratky: String(parsed.pribehKratky || '').trim(),
     otazkaKonca: String(parsed.otazkaKonca || '').trim(),
+    klucoveSlova: Array.isArray(parsed.klucoveSlova) ? parsed.klucoveSlova.map((s: any) => String(s)) : [],
   };
 }
 
