@@ -76,19 +76,22 @@ async function loadFonts(): Promise<FontDef[]> {
   if (fontCache) return fontCache;
   // Satori potrebuje ttf/otf (nie woff/woff2). @fontsource ttf nepublikuje,
   // preto berieme plné TTF s latin-ext glyfmi (slovenská diakritika) z google/fonts.
+  // Barlow = hook/príbeh, Barlow Condensed = logo, ROK, pill, link v bio.
   const base = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/barlow';
-  const targets: { url: string; weight: 400 | 600 | 700 | 800 }[] = [
-    { url: `${base}/Barlow-Regular.ttf`, weight: 400 },
-    { url: `${base}/Barlow-SemiBold.ttf`, weight: 600 },
-    { url: `${base}/Barlow-Bold.ttf`, weight: 700 },
-    { url: `${base}/Barlow-ExtraBold.ttf`, weight: 800 },
+  const baseCond = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/barlowcondensed';
+  const targets: { name: string; url: string; weight: 400 | 600 | 700 | 800 }[] = [
+    { name: 'Barlow', url: `${base}/Barlow-Regular.ttf`, weight: 400 },
+    { name: 'Barlow', url: `${base}/Barlow-SemiBold.ttf`, weight: 600 },
+    { name: 'Barlow', url: `${base}/Barlow-Bold.ttf`, weight: 700 },
+    { name: 'Barlow', url: `${base}/Barlow-ExtraBold.ttf`, weight: 800 },
+    { name: 'Barlow Condensed', url: `${baseCond}/BarlowCondensed-Bold.ttf`, weight: 700 },
   ];
   const fonts = await Promise.all(
     targets.map(async (t) => {
       const res = await fetch(t.url);
       if (!res.ok) throw new Error(`Font fetch failed: ${t.url} (${res.status})`);
       const data = await res.arrayBuffer();
-      return { name: 'Barlow', data, weight: t.weight, style: 'normal' as const };
+      return { name: t.name, data, weight: t.weight, style: 'normal' as const };
     })
   );
   fontCache = fonts;
@@ -107,12 +110,22 @@ function obsahToText(obsah?: any[]): string {
 }
 
 function splitSentences(text: string): string[] {
-  return text
+  const raw = text
     .replace(/\s+/g, ' ')
     .trim()
     .split(/(?<=[.!?])\s+/)
     .map((s) => s.trim())
     .filter(Boolean);
+  // Zlúč späť falošné hranice po skratkách – rímske číslice (Gregor IX.) a iniciály (J. F.).
+  const out: string[] = [];
+  for (const s of raw) {
+    if (out.length && /(?:^|\s)([IVXLCDM]{1,4}|[A-ZÁ-Ž])\.$/.test(out[out.length - 1])) {
+      out[out.length - 1] += ' ' + s;
+    } else {
+      out.push(s);
+    }
+  }
+  return out;
 }
 
 // Zelené kľúčové slová – heuristika: čísla/roky a slová celé veľkými písmenami.
@@ -127,11 +140,11 @@ function isKeyword(word: string): boolean {
 // Renderuje text po slovách s flex-wrap, kľúčové/posledná-veta slová zelené.
 function wrappedWords(
   text: string,
-  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenAll?: boolean; lineHeight?: number; baseColor?: string }
+  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenAll?: boolean; lineHeight?: number; baseColor?: string; disableKeyword?: boolean }
 ): VNode {
   const words = text.split(/\s+/).filter(Boolean);
   const children = words.map((w) => {
-    const green = opts.greenAll || (opts.greenSet ? opts.greenSet.has(w) : false) || isKeyword(w);
+    const green = opts.greenAll || (opts.greenSet ? opts.greenSet.has(w) : false) || (!opts.disableKeyword && isKeyword(w));
     return h(
       'div',
       {
@@ -172,27 +185,28 @@ function logo(): VNode {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 14,
+        gap: 27,
       },
     },
     h(
       'div',
       {
         style: {
-          width: 36,
-          height: 36,
-          borderRadius: 10,
+          width: 97,
+          height: 97,
+          borderRadius: 27,
           backgroundColor: GREEN,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         },
       },
+      // dutý (outlined) diamant – iba čierny rámik, stred priehľadný
       h('div', {
         style: {
-          width: 16,
-          height: 16,
-          backgroundColor: '#000000',
+          width: 32,
+          height: 32,
+          border: '8px solid #0a0a0a',
           transform: 'rotate(45deg)',
         },
       })
@@ -201,10 +215,11 @@ function logo(): VNode {
       'div',
       {
         style: {
-          color: GREEN,
-          fontSize: 22,
+          color: '#ffffff',
+          fontFamily: 'Barlow Condensed',
+          fontSize: 49,
           fontWeight: 700,
-          letterSpacing: 4,
+          letterSpacing: 16,
           display: 'flex',
         },
       },
@@ -219,7 +234,7 @@ function logoBar(): VNode {
     {
       style: {
         position: 'absolute',
-        top: 60,
+        top: '9%',
         left: 0,
         width: '100%',
         display: 'flex',
@@ -261,27 +276,31 @@ function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: num
         width: '100%',
         height: '100%',
         backgroundImage:
-          'linear-gradient(180deg, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.0) 30%, rgba(10,10,10,0.8) 65%, rgba(10,10,10,1) 100%)',
+          'linear-gradient(180deg, rgba(10,10,10,0.35) 0%, rgba(10,10,10,0.05) 30%, rgba(10,10,10,0.7) 58%, rgba(10,10,10,0.99) 100%)',
       },
     }),
     logoBar(),
-    // hook dole
+    // hook dole (bezpečná zóna)
     h(
       'div',
       {
         style: {
           position: 'absolute',
-          bottom: Math.round(h0 * 0.09),
-          left: 60,
-          right: 60,
+          bottom: '26%',
+          left: 86,
+          right: 86,
           display: 'flex',
           flexDirection: 'column',
         },
       },
       rest
-        ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 10 } }, wrappedWords(rest, { fontSize: 52, weight: 700 }))
+        ? h(
+            'div',
+            { style: { display: 'flex', width: '100%', marginBottom: 8 } },
+            wrappedWords(rest, { fontSize: 76, weight: 800, lineHeight: 1.35, baseColor: '#eeeeee', disableKeyword: true })
+          )
         : h('div', { style: { display: 'none' } }),
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(last, { fontSize: 52, weight: 700, greenAll: true }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(last, { fontSize: 76, weight: 800, lineHeight: 1.35, greenAll: true }))
     )
   );
 }
@@ -294,11 +313,11 @@ function slideMid(text: string, w: number, h0: number, yearPrefix?: string): VNo
         'div',
         {
           style: {
+            fontFamily: 'Barlow Condensed',
             color: GREEN,
-            fontSize: 28,
+            fontSize: 49,
             fontWeight: 700,
-            letterSpacing: 6,
-            marginBottom: 28,
+            letterSpacing: 16,
             display: 'flex',
           },
         },
@@ -306,7 +325,14 @@ function slideMid(text: string, w: number, h0: number, yearPrefix?: string): VNo
       )
     );
   }
-  inner.push(wrappedWords(text, { fontSize: 42, weight: 600, lineHeight: 1.4, baseColor: '#dddddd' }));
+  // Každá veta = vlastný riadok (.body), kľúčové slová zelené.
+  const lines = splitSentences(text);
+  const bodyLines = lines.length ? lines : [text];
+  for (const ln of bodyLines) {
+    inner.push(
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 600, lineHeight: 1.75, baseColor: '#dddddd' }))
+    );
+  }
   return h(
     'div',
     {
@@ -324,13 +350,14 @@ function slideMid(text: string, w: number, h0: number, yearPrefix?: string): VNo
       {
         style: {
           position: 'absolute',
-          top: 0,
-          left: 70,
-          right: 70,
-          height: '100%',
+          top: '18%',
+          left: 86,
+          right: 86,
+          height: '58%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
+          gap: 54,
         },
       },
       ...inner
@@ -369,41 +396,46 @@ function slideOutro(w: number, h0: number): VNode {
       {
         style: {
           position: 'absolute',
-          top: 0,
-          left: 70,
-          right: 70,
-          height: '100%',
+          top: '18%',
+          left: 86,
+          right: 86,
+          height: '58%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
+          gap: 54,
         },
       },
-      h('div', { style: { color: '#ffffff', fontSize: 38, fontWeight: 400, display: 'flex' } }, 'Každý deň jeden'),
-      h('div', { style: { color: GREEN, fontSize: 38, fontWeight: 800, display: 'flex', marginTop: 4 } }, 'zabudnutý fakt'),
-      h('div', { style: { color: '#ffffff', fontSize: 38, fontWeight: 700, display: 'flex', marginTop: 4 } }, 'z histórie.'),
-      h('img', {
-        src: ARROW_DATA_URI,
-        width: 56,
-        height: 64,
-        style: { display: 'flex', marginTop: 36, marginBottom: 36 },
-      }),
+      // "Každý deň jeden" – #eee, weight 800
+      h('div', { style: { color: '#eeeeee', fontSize: 70, fontWeight: 800, lineHeight: 1.4, display: 'flex' } }, 'Každý deň jeden'),
+      // "zabudnutý fakt" zelené + "z histórie." biele
+      h(
+        'div',
+        { style: { display: 'flex', flexDirection: 'row' } },
+        h('div', { style: { color: GREEN, fontSize: 70, fontWeight: 800, lineHeight: 1.4, display: 'flex', marginRight: 18 } }, 'zabudnutý fakt'),
+        h('div', { style: { color: '#ffffff', fontSize: 70, fontWeight: 800, lineHeight: 1.4, display: 'flex' } }, 'z histórie.')
+      ),
+      // zelená šípka s glow (SVG, Barlow nemá glyf ↓)
+      h('img', { src: ARROW_DATA_URI, width: 84, height: 96, style: { display: 'flex' } }),
+      // zelený pill
       h(
         'div',
         {
           style: {
             backgroundColor: GREEN,
             color: '#000000',
-            fontSize: 28,
+            fontFamily: 'Barlow Condensed',
+            fontSize: 54,
             fontWeight: 700,
-            padding: '12px 32px',
+            padding: '32px 86px',
             borderRadius: 50,
             display: 'flex',
           },
         },
         'www.curiositylab.sk'
       ),
-      h('div', { style: { color: '#ffffff', fontSize: 24, fontWeight: 400, display: 'flex', marginTop: 24 } }, 'link v bio')
+      h('div', { style: { color: '#ffffff', fontFamily: 'Barlow Condensed', fontSize: 54, fontWeight: 700, display: 'flex' } }, 'link v bio')
     )
   );
 }
