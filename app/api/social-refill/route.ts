@@ -348,7 +348,7 @@ function slideBackgroundHook(hook: string, bgDataUri: string, w: number, h0: num
   );
 }
 
-function slideMid(text: string, w: number, h0: number, keywords?: string[], yearPrefix?: string): VNode {
+function slideMid(text: string, w: number, h0: number, keywords?: string[], yearPrefix?: string, bgDataUri?: string): VNode {
   const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const inner: VNode[] = [];
   if (yearPrefix) {
@@ -380,18 +380,25 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
       h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 64, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
     );
   }
-  return h(
-    'div',
-    {
-      style: {
-        width: w,
-        height: h0,
-        backgroundColor: BG,
-        display: 'flex',
-        position: 'relative',
-      },
-    },
-    logoBar(),
+  const children: VNode[] = [];
+  // Jemná fotka na pozadí (rovnaká ako na slide 1) + silné stmavenie kvôli čitateľnosti.
+  if (bgDataUri) {
+    children.push(
+      h('div', {
+        style: {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          backgroundImage: 'linear-gradient(180deg, rgba(10,10,10,0.86) 0%, rgba(10,10,10,0.92) 100%)',
+        },
+      })
+    );
+  }
+  children.push(logoBar());
+  children.push(
     h(
       'div',
       {
@@ -409,6 +416,22 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
       },
       ...inner
     )
+  );
+  return h(
+    'div',
+    {
+      style: {
+        width: w,
+        height: h0,
+        backgroundColor: BG,
+        display: 'flex',
+        position: 'relative',
+        backgroundImage: bgDataUri ? `url(${bgDataUri})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      },
+    },
+    ...children
   );
 }
 
@@ -535,9 +558,9 @@ async function buildCarousel(
 
   const slides: VNode[] = [
     slideBackgroundHook(copy.hookRiadok, bg, w, ht),
-    slideMid(chunks[0] || copy.pribehKratky, w, ht, kw, year),
-    slideMid(chunks[1] || copy.otazkaKonca, w, ht, kw),
-    slideMid(chunks[2] || copy.otazkaKonca, w, ht, kw),
+    slideMid(chunks[0] || copy.pribehKratky, w, ht, kw, year, bg),
+    slideMid(chunks[1] || copy.otazkaKonca, w, ht, kw, undefined, bg),
+    slideMid(chunks[2] || copy.otazkaKonca, w, ht, kw, undefined, bg),
     slideOutro(w, ht),
   ];
 
