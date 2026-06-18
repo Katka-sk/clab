@@ -370,11 +370,14 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
     );
   }
   // Každá veta = vlastný riadok (.body), kľúčové slová zelené.
+  // Nezalomiteľné (jeden token) sú LEN frázy s číslom (napr. "25 miliónov mŕtvych").
+  // Slovné frázy (mená/miesta) sa zalomia prirodzene po slovách, ale ostanú zelené.
+  const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
   const lines = splitSentences(text);
   const bodyLines = lines.length ? lines : [text];
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 700, lineHeight: 1.6, baseColor: '#eeeeee', greenSet, greenPhrases: keywords }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: 59, weight: 700, lineHeight: 1.6, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
     );
   }
   return h(
@@ -440,10 +443,10 @@ function slideOutro(w: number, h0: number): VNode {
       {
         style: {
           position: 'absolute',
-          top: 0,
+          top: '12%',
           left: 86,
           right: 86,
-          height: '100%',
+          height: '88%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
