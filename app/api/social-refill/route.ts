@@ -237,7 +237,7 @@ function wrappedWords(
   };
   // Slovenská typografia: krátke predložky/spojky (a, na, za, v, do…) sa NESMÚ lámať
   // samé na koniec riadka — zlepia sa s nasledujúcim slovom do nezalomiteľnej skupiny.
-  const PREP = new Set(['a', 'i', 'k', 'o', 's', 'u', 'v', 'z', 'do', 'na', 'za', 'zo', 'so', 'vo', 'ku', 'po', 'od', 'pri', 'pre', 'nad', 'pod', 'bez']);
+  const PREP = new Set(['a', 'aj', 'i', 'k', 'o', 's', 'u', 'v', 'z', 'do', 'na', 'za', 'zo', 'so', 'vo', 'ku', 'po', 'od', 'pri', 'pre', 'nad', 'pod', 'bez']);
   const children: VNode[] = [];
   let gi = 0;
   while (gi < tokens.length) {
@@ -447,7 +447,7 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
   let fsHook = 96;
   for (const c of [96, 88, 80, 72]) { fsHook = c; if (estTextLines(fakt, c) + estTextLines(slucka, c) <= 3) break; }
   const isTT = h0 >= 1800;
-  const pad = isTT ? 130 : 86;
+  const pad = 130;
   const logoTop = isTT ? '50%' : '49%';
   const gradStop = isTT ? '68%' : '46%';
   return h(
@@ -485,16 +485,16 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
           right: pad,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: isTT ? 'center' : 'flex-start',
+          alignItems: 'center',
         },
       },
       fakt
         ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 20 } },
-            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
+            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: true }))
         : h('div', { style: { display: 'none' } }),
       slucka
         ? h('div', { style: { display: 'flex', width: '100%' } },
-            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
+            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: true }))
         : h('div', { style: { display: 'none' } })
     )
   );
@@ -909,7 +909,7 @@ function scheduledAt(datum: string | undefined, hh: number, mm: number): string 
 // Post sa NEzverejní sám – Katarína si ho v Bufferi pozrie a publikuje ručne.
 // Na ostrý auto-publish (naplánovaný na dueAt) prepni na false.
 // Zdroj: https://developers.buffer.com/examples/create-draft-post.html
-const BUFFER_SAVE_AS_DRAFT = false;
+const BUFFER_SAVE_AS_DRAFT = true;
 
 // Buffer GraphQL API (nový). Obrázky musia byť verejné URL (z Vercel Blobu).
 // CAROUSEL: posielame celé pole obrázkov cez `assets: [{ image: { url } }]`.
