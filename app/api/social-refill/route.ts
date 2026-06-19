@@ -326,9 +326,10 @@ function estTextLines(txt: string, fs: number, innerW = 908): number {
   const cpl = Math.max(6, Math.floor(innerW / (fs * 0.56)));
   return Math.max(1, Math.ceil(txt.length / cpl));
 }
-// Zmestí sa hook (fakt + slučka) do 3 riadkov pri čitateľnom fonte (>=60)?
+// Zmestí sa hook (fakt + slučka) do 3 riadkov pri VEĽKOM fonte (68)?
+// Pri 68 vyzerá hook ako hrdina; ak sa nezmestí, regenerujeme kratší.
 function hookFitsThreeLines(fakt: string, slucka: string): boolean {
-  return estTextLines(fakt, 60) + estTextLines(slucka, 60) <= 3;
+  return estTextLines(fakt, 68) + estTextLines(slucka, 68) <= 3;
 }
 
 function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | undefined, bgDataUri: string, w: number, h0: number): VNode {
@@ -337,8 +338,9 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
   const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
   // Auto-fit: vyber najväčší font tak, aby hook (fakt + slučka) mal SPOLU max 3 riadky.
+  // Spodná hranica 64 — nikdy nie menšie (hook musí zostať veľký/čitateľný ako hrdina).
   let fs = 76;
-  for (const cand of [76, 68, 60, 54]) {
+  for (const cand of [76, 72, 68, 64]) {
     fs = cand;
     if (estTextLines(fakt, cand) + estTextLines(slucka, cand) <= 3) break;
   }
@@ -428,7 +430,7 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
   const bodyFs = text.length > 230 ? 56 : 64;
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
     );
   }
   const children: VNode[] = [];
@@ -682,16 +684,16 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     '✅ PRAVDIVOSŤ (NEPREHLIADNUTEĽNÉ): Vychádzaj VÝLUČNE z obsahu tejto pikošky (názov, perex, obsah nižšie). NEVYMÝŠĽAJ a NEPRIDÁVAJ fakty, čísla, mená, dátumy, miesta ani detaily, ktoré v zdroji NIE SÚ. Ak niečo nie je v zdroji, nepíš to. Žiadne odhady, žiadne "pravdepodobne", žiadne prikrášľovanie. Každé tvrdenie musí byť podložené zdrojom. Hook smie byť pútavý, ale NESMIE klamať.\n' +
     '\n' +
     'Polia:\n' +
-    '- hookFakt: 1 ÚDERNÁ úplná veta, MAXIMÁLNE 6 slov (so slovesom) — odvážne, takmer neuveriteľné tvrdenie, ktoré ZAUJME, ale NEvysvetlí mechanizmus ani neprezradí pointu/twist.\n' +
-    '- hookSlucka: 1 úplná veta, MAXIMÁLNE 8 slov (so slovesom) — vyhrotí napätie a SĽÚBI prekvapivý zvrat, ale NIKDY ho neprezradí.\n' +
-    '  ⚠️ DĹŽKA HOOKU JE TVRDÉ PRAVIDLO: slide 1 má MÁLO MIESTA — hookFakt + hookSlucka SPOLU max ~14 slov / 3 riadky. Pridlhý hook = stena textu = ZLE. Drž ho čo NAJKRATŠÍ.\n' +
+    '- hookFakt: 1 ÚDERNÁ úplná veta, VEĽMI KRÁTKA — ideálne 3-4 slová, max 5 (so slovesom). Musí sa zmestiť na JEDEN riadok. Odvážne, takmer neuveriteľné tvrdenie, ktoré ZAUJME, ale neprezradí pointu/twist. (napr. "Pyramídy stáli na pive.")\n' +
+    '- hookSlucka: 1 úplná veta, MAXIMÁLNE 7 slov (so slovesom) — vyhrotí napätie a SĽÚBI prekvapivý zvrat, ale NIKDY ho neprezradí. (napr. "A jeden meškajúci sud spustil dejiny.")\n' +
+    '  ⚠️ DĹŽKA HOOKU JE TVRDÉ PRAVIDLO: slide 1 má MÁLO MIESTA, font je veľký — hookFakt + hookSlucka SPOLU max ~11 slov / 3 riadky. Pridlhý hook = malé písmo alebo stena textu = ZLE. Drž ho čo NAJKRATŠÍ a najúdernejší.\n' +
     '  TVRDÉ PRAVIDLO: konkrétny twist/payoff z poľa "pointa" (napr. "prvý štrajk v dejinách") patrí VÝLUČNE na slide 4. NESMIE sa objaviť v hookFakt ani hookSlucka — tam naň iba napínaš. Ak by sa twist dostal do hooku, slide 4 stratí pointu.\n' +
     '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
     '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
     '- pointa: 1-2 vety — PAYOFF, ktorý ZODPOVIE/uzavrie napätie z hooku. Úderná, prekvapivá, zapamätateľná, s konkrétnym faktom alebo číslom. Toto je vyvrcholenie — musí "kliknúť". Žiadne opisné dokončenie, žiadne filozofické závery.\n' +
     '- otazkaKonca: 1 provokatívna otázka pre komentáre (len do popisu).\n' +
-    '- klucoveSlova: pole 4-8 kľúčových slov/fráz na zvýraznenie (mená, miesta, čísla, roky, odborné názvy), PRESNE ako sú napísané v texte. ROZLOŽ ich tak, aby v KAŽDOM poli (hookFakt, hookSlucka, pribeh, eskalacia, pointa) bolo aspoň 1 zvýraznené slovo — žiadna veta nesmie ostať bez zvýraznenia.\n' +
+    '- klucoveSlova: pole 4-8 KRÁTKYCH úderných slov (1-2 slová) na zvýraznenie: mená, miesta, čísla, roky, prekvapivé slovesá, silné podstatné mená. PRESNE ako sú napísané v texte. NIE dlhé generické frázy (napr. NIE "vitamíny skupiny B", radšej "tekuté jedlo"). ROZLOŽ ich tak, aby v KAŽDEJ vete (hookFakt, hookSlucka, pribeh, eskalacia, pointa) bolo aspoň 1 zvýraznené slovo.\n' +
     'ČISTÝ TEXT: NEPOUŽÍVAJ markdown ani hviezdičky (** *), podčiarkovníky ani spätné apostrofy v ŽIADNOM textovom poli. Píš obyčajný čistý text. Zvýraznenie sa rieši VÝLUČNE cez pole klucoveSlova, NIE v texte.\n' +
     'PRAVIDLÁ: max 2 vety na slide, krátke a úderné, ALE VŽDY GRAMATICKY ÚPLNÉ A SPRÁVNE — každá veta má podmet a SLOVESO.\n' +
     'ŽIADNE telegrafické útržky bez slovesa (ZLE: "Každý deň 4-5 litrov piva." → DOBRE: "Každý deň dostali 4-5 litrov piva.").\n' +
