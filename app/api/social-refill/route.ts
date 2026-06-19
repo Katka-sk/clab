@@ -485,16 +485,16 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
           right: pad,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: isTT ? 'center' : 'flex-start',
         },
       },
       fakt
         ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 20 } },
-            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: true }))
+            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
         : h('div', { style: { display: 'none' } }),
       slucka
         ? h('div', { style: { display: 'flex', width: '100%' } },
-            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: true }))
+            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
         : h('div', { style: { display: 'none' } })
     )
   );
