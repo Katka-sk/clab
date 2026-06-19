@@ -485,16 +485,16 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
           right: pad,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: isTT ? 'center' : 'flex-start',
+          alignItems: 'center',
         },
       },
       fakt
         ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 20 } },
-            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
+            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: true }))
         : h('div', { style: { display: 'none' } }),
       slucka
         ? h('div', { style: { display: 'flex', width: '100%' } },
-            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
+            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: true }))
         : h('div', { style: { display: 'none' } })
     )
   );
@@ -532,7 +532,7 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
   const bodyFs = text.length > 230 ? 56 : 64;
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: h0 >= 1800 }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: true}))
     );
   }
   const children: VNode[] = [];
