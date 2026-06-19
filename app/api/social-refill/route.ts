@@ -934,7 +934,7 @@ function scheduledAt(datum: string | undefined, hh: number, mm: number): string 
 // Post sa NEzverejní sám – Katarína si ho v Bufferi pozrie a publikuje ručne.
 // Na ostrý auto-publish (naplánovaný na dueAt) prepni na false.
 // Zdroj: https://developers.buffer.com/examples/create-draft-post.html
-const BUFFER_SAVE_AS_DRAFT = true;
+const BUFFER_SAVE_AS_DRAFT = false;
 
 // Buffer GraphQL API (nový). Obrázky musia byť verejné URL (z Vercel Blobu).
 // CAROUSEL: posielame celé pole obrázkov cez `assets: [{ image: { url } }]`.

@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lokálny náhľad carouselu (nie do commitu)
+.cache/
+.preview-*.png
+preview-*.mjs
+preview-slide1.mjs
