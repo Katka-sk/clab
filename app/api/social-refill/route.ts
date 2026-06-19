@@ -4,7 +4,7 @@ import imageUrlBuilder from '@sanity/image-url';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Anthropic from '@anthropic-ai/sdk';
 import { put } from '@vercel/blob';
 
 // Cron route – generuje carousel (IG + TikTok) z najbližších nepublikovaných
@@ -28,21 +28,21 @@ const sanity = createClient({
 });
 const builder = imageUrlBuilder(sanity);
 
-const genAI = new GoogleGenerativeAI((process.env.GEMINI_API_KEY || '').trim());
-const model = genAI.getGenerativeModel({
-  model: 'gemini-2.5-flash',
-  systemInstruction:
-    'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.\n' +
-    '\n' +
-    'PRAVIDLÁ HLASU (vždy platné, nemenné):\n' +
-    '- Nikdy neznieš ako AI. Žiadny korporátny, uhladený ani robotický tón. Píš ako reálny človek, čo rozpráva dobrú historku.\n' +
-    '- Žiadne pomlčky (—). Použi čiarku, bodku alebo vetu preformuluj.\n' +
-    '- Žiadne vatové frázy ("je dôležité poznamenať", "v dnešnej uponáhľanej dobe", "poďme sa pozrieť", "predstavte si").\n' +
-    '- Žiadne generické AI vzory (rovnako stavané vety za sebou, zoznamy troch vecí s identickou stavbou).\n' +
-    '- Krátke, úderné vety. Konkrétne detaily (mená, čísla, roky) namiesto všeobecností.\n' +
-    '- Každá veta je gramaticky ÚPLNÁ a správna (má sloveso). Žiadne telegrafické útržky ani visiace prístavky.\n' +
-    '- Máš osobnosť. Buď priamy. Znej ako pútavý rozprávač, nie ako jazykový model.',
-});
+// Claude Opus 4.8 píše copy (silnejší ako Gemini Flash na hooky, slovenčinu a pravidlá).
+// SDK sám opakuje pri 429/529/5xx (maxRetries).
+const anthropic = new Anthropic({ apiKey: (process.env.ANTHROPIC_API_KEY || '').trim(), maxRetries: 4 });
+const COPY_MODEL = 'claude-opus-4-8';
+const SYSTEM_PROMPT =
+  'Si copywriter pre historický edukačný TikTok a Instagram účet Curiosity Lab. Píš po slovensky. Buď stručný a dramatický.\n' +
+  '\n' +
+  'PRAVIDLÁ HLASU (vždy platné, nemenné):\n' +
+  '- Nikdy neznieš ako AI. Žiadny korporátny, uhladený ani robotický tón. Píš ako reálny človek, čo rozpráva dobrú historku.\n' +
+  '- Žiadne pomlčky (—). Použi čiarku, bodku alebo vetu preformuluj.\n' +
+  '- Žiadne vatové frázy ("je dôležité poznamenať", "v dnešnej uponáhľanej dobe", "poďme sa pozrieť", "predstavte si").\n' +
+  '- Žiadne generické AI vzory (rovnako stavané vety za sebou, zoznamy troch vecí s identickou stavbou).\n' +
+  '- Krátke, úderné vety. Konkrétne detaily (mená, čísla, roky) namiesto všeobecností.\n' +
+  '- Každá veta je gramaticky ÚPLNÁ a správna (má sloveso). Žiadne telegrafické útržky ani visiace prístavky.\n' +
+  '- Máš osobnosť. Buď priamy. Znej ako pútavý rozprávač, nie ako jazykový model.';
 
 // ---------------------------------------------------------------------------
 // Typy
@@ -643,24 +643,19 @@ function buildCaption(copy: Copy, pik: Pikoska): string {
 }
 
 // ---------------------------------------------------------------------------
-// Gemini copy
+// Claude copy
 // ---------------------------------------------------------------------------
-// Gemini občas hodí 503 (vysoký dopyt) – skús 3× s narastajúcou pauzou,
-// aby ranný cron nespadol kvôli dočasnému výpadku.
-async function generateWithRetry(prompt: string, tries = 3): Promise<any> {
-  let lastErr: any;
-  for (let i = 0; i < tries; i++) {
-    try {
-      return await model.generateContent(prompt);
-    } catch (e: any) {
-      lastErr = e;
-      const msg = String(e?.message || e);
-      const retriable = /\b(503|429|500)\b|overload|high demand|unavailable|rate/i.test(msg);
-      if (!retriable || i === tries - 1) throw e;
-      await new Promise((r) => setTimeout(r, 1800 * (i + 1)));
-    }
-  }
-  throw lastErr;
+// Zavolá Claude Opus s naším system promptom a vráti text odpovede.
+// SDK sám opakuje pri 429/529/5xx (maxRetries na klientovi).
+async function generateWithRetry(prompt: string): Promise<string> {
+  const msg = await anthropic.messages.create({
+    model: COPY_MODEL,
+    max_tokens: 1024,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  const first = msg.content.find((b) => b.type === 'text');
+  return first && first.type === 'text' ? first.text : '';
 }
 
 async function generateCopy(pik: Pikoska): Promise<Copy> {
@@ -696,11 +691,10 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     'Limity dĺžky (počet slov/riadkov) sú ORIENTAČNÉ: ak to logika a zmysel vety vyžaduje, môže byť výnimočne o 1-2 slová dlhšia — nikdy nie výrazne, a nikdy nie na úkor zmyslu. Radšej zmysluplná úplná veta než useknutá kvôli počtu slov. Hook nesmie prezradiť pointu.\n' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
-  // Gemini občas vráti neúplný/prázdny JSON. Skús až 3×, kým nemáme všetky kľúčové polia.
+  // Model občas vráti neúplný/prázdny JSON. Skús až 3×, kým nemáme všetky kľúčové polia.
   let lastCopy: Copy | null = null;
   for (let attempt = 0; attempt < 3; attempt++) {
-    const result = await generateWithRetry(userPrompt);
-    const raw = result.response.text();
+    const raw = await generateWithRetry(userPrompt);
     const jsonText = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
     const start = jsonText.indexOf('{');
     const end = jsonText.lastIndexOf('}');
