@@ -190,12 +190,26 @@ function tokenize(text: string, phrases: string[]): Token[] {
 // Renderuje text po tokenoch s flex-wrap, kľúčové slová/frázy zelené a tučné.
 function wrappedWords(
   text: string,
-  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenPhrases?: string[]; greenAll?: boolean; lineHeight?: number; baseColor?: string; disableKeyword?: boolean }
+  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenPhrases?: string[]; greenAll?: boolean; lineHeight?: number; baseColor?: string; disableKeyword?: boolean; ensureGreen?: boolean }
 ): VNode {
   const tokens = tokenize(text, opts.greenPhrases || []);
-  const children = tokens.map((t) => {
+  const greens = tokens.map((t) => {
     const n = normalizeWord(t.text);
-    const green = opts.greenAll || t.green || (opts.greenSet ? opts.greenSet.has(n) : false) || (!opts.disableKeyword && isKeyword(t.text));
+    return opts.greenAll || t.green || (opts.greenSet ? opts.greenSet.has(n) : false) || (!opts.disableKeyword && isKeyword(t.text));
+  });
+  // Záruka aspoň 1 zeleného slova v tomto bloku (napr. prvá veta hooku nesmie ostať bez zvýraznenia).
+  if (opts.ensureGreen && !greens.some(Boolean)) {
+    const STOP = new Set(['a','aj','ako','ale','bez','bol','bola','boli','bolo','do','ich','je','keď','ktorá','ktoré','ktorí','na','nad','nie','možno','nikdy','o','od','po','pod','pre','pri','sa','si','so','tak','to','tou','už','v','vo','za','zo','že']);
+    let bestIdx = -1; let bestLen = 0;
+    tokens.forEach((t, i) => {
+      if (/\s/.test(t.text)) return;
+      const n = normalizeWord(t.text);
+      if (n.length > bestLen && n.length > 3 && !STOP.has(n)) { bestLen = n.length; bestIdx = i; }
+    });
+    if (bestIdx >= 0) greens[bestIdx] = true;
+  }
+  const children = tokens.map((t, i) => {
+    const green = greens[i];
     const multiWord = /\s/.test(t.text);
     return h(
       'div',
@@ -354,11 +368,11 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
         ? h(
             'div',
             { style: { display: 'flex', width: '100%', marginBottom: 14 } },
-            wrappedWords(fakt, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases })
+            wrappedWords(fakt, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true })
           )
         : h('div', { style: { display: 'none' } }),
       slucka
-        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases }))
+        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
         : h('div', { style: { display: 'none' } })
     )
   );
@@ -624,8 +638,8 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
   const obsah = obsahToText(pik.obsah).slice(0, 4000);
   const userPrompt =
     'Vygeneruj JSON pre 5-slidový carousel podľa pevnej štruktúry. Polia:\n' +
-    '- hookFakt: 1 veta, šokujúci fakt alebo paradox (slide 1, biely text). NESMIE prezradiť pointu.\n' +
-    '- hookSlucka: 1 veta, otvorená slučka/napätie ktoré núti swipnúť ďalej (slide 1, zelený text). BEZ odpovede, BEZ pointy.\n' +
+    '- hookFakt: 1 KRÁTKA veta (max 8 slov), šokujúci fakt alebo paradox (slide 1). NESMIE prezradiť pointu.\n' +
+    '- hookSlucka: 1 KRÁTKA veta (max 7 slov), otvorená slučka/napätie ktoré núti swipnúť ďalej (slide 1). BEZ odpovede, BEZ pointy. Spolu s hookFakt max ~3 riadky.\n' +
     '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
     '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
@@ -814,7 +828,7 @@ async function markPublished(id: string): Promise<void> {
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
-async function run(targetSlug?: string) {
+async function run(targetSlug?: string, preview?: boolean) {
   // Hobby plán má limit 60 s na funkciu – spracujeme 1 pikošku na beh.
   // Cron beží denne, takže fronta sa postupne vyprázdni.
   // Ak je zadaný ?slug=..., zacieli sa KONKRÉTNA pikoška (aj keď je už označená)
@@ -835,6 +849,17 @@ async function run(targetSlug?: string) {
 
   if (!pikosky.length) {
     return { ok: true, processed: 0, message: 'Žiadne pikošky na publikovanie.' };
+  }
+
+  // PREVIEW: len vygeneruj text (Copy) a vráť ho – nič sa nevykresľuje ani neposiela.
+  // Na rýchlu kontrolu obsahu (hook, pointa...) bez spamovania Buffera.
+  if (preview) {
+    const out: any[] = [];
+    for (const pik of pikosky) {
+      const copy = await generateCopy(pik);
+      out.push({ nadpis: pik.nadpis, slug: pik.slug?.current, copy });
+    }
+    return { ok: true, preview: true, items: out };
   }
 
   const fonts = await loadFonts();
@@ -893,8 +918,10 @@ async function run(targetSlug?: string) {
 
 export async function GET(req: Request) {
   try {
-    const slug = new URL(req.url).searchParams.get('slug') || undefined;
-    const out = await run(slug);
+    const params = new URL(req.url).searchParams;
+    const slug = params.get('slug') || undefined;
+    const preview = params.get('preview') === '1';
+    const out = await run(slug, preview);
     return NextResponse.json(out);
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
