@@ -666,9 +666,20 @@ async function generateWithRetry(prompt: string, tries = 3): Promise<any> {
 async function generateCopy(pik: Pikoska): Promise<Copy> {
   const obsah = obsahToText(pik.obsah).slice(0, 4000);
   const userPrompt =
-    'Vygeneruj JSON pre 5-slidový carousel podľa pevnej štruktúry. Polia:\n' +
-    '- hookFakt: 1 krátka ÚPLNÁ veta (max 6 slov, so slovesom), šokujúci fakt alebo paradox (slide 1). NESMIE prezradiť pointu.\n' +
-    '- hookSlucka: 1 krátka ÚPLNÁ veta (max 6 slov, so slovesom), otvorená slučka/napätie ktoré núti swipnúť ďalej (slide 1). BEZ odpovede, BEZ pointy. Spolu s hookFakt max ~3 riadky.\n' +
+    'Vygeneruj JSON pre 5-slidový carousel podľa pevnej štruktúry.\n' +
+    '\n' +
+    '⚡ NAJDÔLEŽITEJŠÍ JE HOOK (slide 1). Rozhoduje, či to vôbec niekto pozrie. Musí byť EXTRÉMNE silný — zastaviť scroll do 1 sekundy. Na hook daj najviac úsilia.\n' +
+    'Remeslo hooku — vytvor INFORMAČNÚ MEDZERU (curiosity gap): povedz dosť, aby to šokovalo, ale zataj to hlavné, aby divák MUSEL swipnúť. Techniky: paradox, zakázané/tajné, šokujúce číslo, nečakaná príčina-následok (s utajeným následkom).\n' +
+    'HOOK NESMIE: prezradiť pointu/twist, byť plochá otázka ("Prečo...?"), byť opisný či nudný, znieť ako učebnica.\n' +
+    'PRÍKLADY SILNÝCH hookov (napodobni štýl, NIE obsah):\n' +
+    '  • fakt="Pápež raz nariadil vyhubiť všetky mačky." slučka="Netušil, akú katastrofu tým spustí."\n' +
+    '  • fakt="Najkratšia vojna v dejinách trvala 38 minút." slučka="A skončila skôr, než si nepriateľ stihol dať kávu."\n' +
+    '  • fakt="Jeden muž prežil dve atómové bomby." slučka="A to, čo urobil potom, je ešte neuveriteľnejšie."\n' +
+    'SLABÉ hooky (NIKDY NEROB): "Pyramídy stavali vďaka pivu." (prezradí pointu), "Prečo pili pivo?" (plochá otázka), "Denná mzda bola tekutá a výživná." (nudný opis).\n' +
+    '\n' +
+    'Polia:\n' +
+    '- hookFakt: 1 krátka ÚPLNÁ veta (so slovesom) — odvážne, takmer neuveriteľné tvrdenie, ktoré ZAUJME a vzbudí úžas, ale NEvysvetlí mechanizmus ani neprezradí pointu/twist.\n' +
+    '- hookSlucka: 1 krátka ÚPLNÁ veta (so slovesom) — vyhrotí napätie a sľúbi prekvapivý zvrat (smerom k pointe), bez toho aby ho prezradila. Spolu s hookFakt max ~3 riadky.\n' +
     '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
     '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
