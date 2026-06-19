@@ -643,10 +643,11 @@ function buildHashtags(pik: Pikoska): string {
 }
 
 function buildCaption(copy: Copy, pik: Pikoska): string {
+  // Krátky caption: príbeh je v slidoch, popis nech ho NEduplikuje.
+  // Hook (zastaví scroll) + výzva swipnúť + otázka (komentáre) + link + hashtagy.
   const hook = [copy.hookFakt, copy.hookSlucka].filter(Boolean).join(' ');
-  const pribeh = [copy.pribeh, copy.eskalacia, copy.pointa].filter(Boolean).join(' ');
   return (
-    `${hook} 🔥\n\n${pribeh}\n\n${copy.otazkaKonca} 👇\n\n—\n` +
+    `${hook} 🔥\n\nCelý príbeh swipni v carouseli 👉\n\n${copy.otazkaKonca} 👇\n\n—\n` +
     `📍 curiositylab.sk (link v bio)\n\n${buildHashtags(pik)}`
   );
 }
