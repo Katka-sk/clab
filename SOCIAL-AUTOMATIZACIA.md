@@ -75,33 +75,36 @@ automaticky na každú pikošku (cez `?slug=` cielene, alebo cron na najstaršiu
 
 ---
 
-## ✍️ COPYWRITING — PRAVIDLÁ OBSAHU (naučené, sú v Gemini prompte)
+## ✍️ COPYWRITING — PRAVIDLÁ OBSAHU (sú v Claude prompte, route.ts)
 
 - **HOOK = priorita č. 1.** Rozhoduje, či to vôbec niekto pozrie. Curiosity gap:
-  zaujať a ZATAJIŤ to hlavné, nech divák musí swipnúť. Techniky: paradox, zakázané/tajné,
-  šokujúce číslo, nečakaná príčina-následok s utajeným následkom.
+  zaujať a ZATAJIŤ to hlavné. Techniky: paradox, zakázané/tajné, šokujúce číslo, nečakaná príčina-následok.
   - Hook NESMIE: prezradiť pointu/twist, byť plochá otázka („Prečo…?"), nudný opis.
-  - **Twist/payoff patrí VÝLUČNE na slide 4** — nikdy nie v hooku (inak slide 4 stratí pointu).
-  - Príklady silných: „Pápež raz nariadil vyhubiť všetky mačky." + „Netušil, akú katastrofu spustí."
-- **GRAMATIKA:** vždy úplné vety so slovesom. Žiadne telegrafické útržky („Každý deň 4-5 litrov piva")
-  ani visiace prístavky („štrajkovali — prvý štrajk"). Radšej úplná veta než useknutá.
-- **PRAVDIVOSŤ:** čerpať VÝLUČNE zo zdroja (pikoška: názov, perex, obsah). NEVYMÝŠĽAŤ fakty,
-  čísla, mená, dátumy, miesta. Hook smie byť pútavý, ale NESMIE klamať. Kontrola = uzemnenie + tvoj draft.
-- **DĹŽKA:** limity sú orientačné — výnimočne o 1-2 slová viac ak to logika pýta, nikdy nie výrazne.
-- **HLAS:** ľudský, žiadne AI klišé, žiadne pomlčky, krátke úderné vety (inšpirované soul.md z kurzu).
+  - **Twist/payoff patrí VÝLUČNE na slide 4** — nikdy nie v hooku.
+  - **DĹŽKA HOOKU = TVRDÉ PRAVIDLO:** hookFakt ≤5 slov (1 riadok), hookSlucka ≤7 slov, SPOLU max 3 riadky.
+    Kód to vynucuje (validácia odmietne dlhý hook a regeneruje). Príklad: „Pyramídy stáli na pive." + „A jeden meškajúci sud spustil dejiny."
+- **GRAMATIKA:** vždy úplné vety so slovesom. Žiadne telegrafické útržky ani visiace prístavky.
+  Slovenská interpunkcia (napr. pred „alebo" pri rovnocenných možnostiach sa čiarka NEPÍŠE).
+- **PRAVDIVOSŤ:** čerpať VÝLUČNE zo zdroja (pikoška). NEVYMÝŠĽAŤ fakty, čísla, mená, dátumy. Hook smie zaujať, ale NESMIE klamať.
+- **DĹŽKA tela (slidy 2-4):** orientačná, radšej úplná veta. ALE hook je TVRDÝ (krátky).
+- **KĽÚČOVÉ SLOVÁ:** krátke úderné (1-2 slová) — mená, miesta, čísla, silné slovesá. NIE dlhé generické frázy.
+- **HLAS:** ľudský, žiadne AI klišé, žiadne pomlčky, krátke úderné vety (soul.md z kurzu).
+- **CAPTION = krátky:** príbeh je v slidoch, popis ho NEduplikuje. Štruktúra: hook 🔥 + otázka 👇 +
+  „📖 Celú pikošku si prečítaš na curiositylab.sk — link v bio" + hashtagy. Cieľ = traffic na web.
 
 ## 🛠️ TECHNICKÉ FUNKCIE (route.ts)
 
-- **DRAFT flag** `BUFFER_SAVE_AS_DRAFT` (true = draft, nič nejde von samo; false = ostrý auto-publish).
+- **Copy model:** Claude Opus 4.8 (`claude-opus-4-8`), `ANTHROPIC_API_KEY` vo Verceli. ~2 centy/post.
+- **DRAFT flag** `BUFFER_SAVE_AS_DRAFT` — TERAZ `false` = OSTRÝ (auto-publish). `true` = draft (na testovanie/review).
 - **Cielenie pikošky:** `?slug=...` (konkrétna, aj keď je už označená). Bez slug = najstaršia v rade (cron).
-- **PREVIEW:** `?preview=1` — vráti LEN text (Copy) bez kreslenia a bez Buffera. Na rýchlu kontrolu
-  obsahu (hook, payoff) bez spamovania Buffera. Toto je hlavný iteračný nástroj.
-- **RETRY:** Anthropic SDK sám opakuje pri 429/529/5xx (`maxRetries`); navyše validačný cyklus 3× pri prázdnych poliach.
-- **Slide 1:** zelené len kľúčové slová + záruka aspoň 1 zeleného slova v každej vete (ensureGreen)
-  + auto-fit fontu (76→68→60) na max 3 riadky.
-- **Slidy 2-4:** jednotný font, jemná fotka v pozadí (tmavý prekryv 0.78–0.88).
-- **Rok:** len ak je v pikoške konkrétny (nenútiť, napr. pyramídy = bez roku).
-- **Cron:** denne 07:00 (`vercel.json`) → spracuje najstaršiu v rade. V draft režime = bezpečné.
+- **PREVIEW:** `?preview=1` — vráti LEN text (Copy) bez kreslenia a bez Buffera. Hlavný iteračný nástroj.
+- **RETRY + validácia:** SDK opakuje pri 429/529/5xx; navyše cyklus až 4× kým nie sú všetky polia A hook ≤3 riadky.
+- **Slide 1:** zelené len kľúčové slová + ensureGreen (záruka 1 zeleného slova/veta) + auto-fit fontu (76→72→68→64, min 64).
+- **Slidy 2-4:** ensureGreen aj tu, jednotný font, jemná fotka v pozadí (prekryv 0.78–0.88).
+- **Rok:** len ak je v pikoške konkrétny (nenútiť).
+- **Časy (nepárne, mimo okrúhleho náporu):** TikTok 18:33, Instagram 19:07.
+- **Cron:** denne 07:00 (`vercel.json`) → najstaršia v rade, 1/deň. V OSTROM režime auto-publikuje.
+  Buffer Free = 10/kanál; 1/deň sa zverejní hneď, rad sa nehromadí. Pri plnom rade cron len chybne (samoopravné).
 
 ## ČO JE UŽ VYRIEŠENÉ (kopíruj, neobjavuj znova)
 
@@ -119,11 +122,10 @@ automaticky na každú pikošku (cez `?slug=` cielene, alebo cron na najstaršiu
 - **Hlas značky (soul rules) v `SYSTEM_PROMPT`** — aby texty nezneli ako AI:
   žiadne pomlčky, žiadne vatové frázy, žiadne generické AI vzory; krátke úderné vety,
   konkrétne detaily (mená/čísla/roky), osobnosť rozprávača. (Inšpirované „soul.md" z kurzu.)
-- Draft vs ostrý: riadi flag `BUFFER_SAVE_AS_DRAFT` v route.ts.
-  - `true` (default) = DRAFT (`mode: addToQueue, saveToDraft: true`) → nezverejní sa samo,
-    treba ručne publikovať v Bufferi. Pred publikovaním vždy vizuálna kontrola.
-  - `false` = OSTRÝ (`mode: customScheduled, dueAt`) → naplánuje a pri auto-publish sám vyjde.
-  - Pozor: pôvodný kód mal default OSTRÝ — overiť tento flag PRED každým živým behom.
+- Draft vs ostrý: riadi flag `BUFFER_SAVE_AS_DRAFT` v route.ts. **TERAZ je `false` = OSTRÝ (auto-publish).**
+  - `false` = OSTRÝ (`mode: customScheduled, dueAt`) → naplánuje a Buffer sám zverejní (TikTok 18:33, IG 19:07).
+  - `true` = DRAFT (`mode: addToQueue, saveToDraft: true`) → nezverejní sa samo, na testovanie/review.
+  - Pri novom projekte začni na `true` (testuj), prepni na `false` až keď si spokojná s dizajnom aj textami.
 
 ---
 
