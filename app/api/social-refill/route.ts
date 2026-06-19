@@ -634,6 +634,24 @@ function buildCaption(copy: Copy, pik: Pikoska): string {
 // ---------------------------------------------------------------------------
 // Gemini copy
 // ---------------------------------------------------------------------------
+// Gemini občas hodí 503 (vysoký dopyt) – skús 3× s narastajúcou pauzou,
+// aby ranný cron nespadol kvôli dočasnému výpadku.
+async function generateWithRetry(prompt: string, tries = 3): Promise<any> {
+  let lastErr: any;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (e: any) {
+      lastErr = e;
+      const msg = String(e?.message || e);
+      const retriable = /\b(503|429|500)\b|overload|high demand|unavailable|rate/i.test(msg);
+      if (!retriable || i === tries - 1) throw e;
+      await new Promise((r) => setTimeout(r, 1800 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+
 async function generateCopy(pik: Pikoska): Promise<Copy> {
   const obsah = obsahToText(pik.obsah).slice(0, 4000);
   const userPrompt =
@@ -649,7 +667,7 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     'PRAVIDLÁ: max 2 KRÁTKE vety na slide (spolu max ~16 slov na slide), úderné vety, každý slide čitateľný za 2-3 sekundy. Hook nesmie prezradiť pointu.\n' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
-  const result = await model.generateContent(userPrompt);
+  const result = await generateWithRetry(userPrompt);
   const raw = result.response.text();
   const jsonText = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
   const start = jsonText.indexOf('{');
