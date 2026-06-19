@@ -689,6 +689,7 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     '- pointa: 1-2 vety — PAYOFF, ktorý ZODPOVIE/uzavrie napätie z hooku. Úderná, prekvapivá, zapamätateľná, s konkrétnym faktom alebo číslom. Toto je vyvrcholenie — musí "kliknúť". Žiadne opisné dokončenie, žiadne filozofické závery.\n' +
     '- otazkaKonca: 1 provokatívna otázka pre komentáre (len do popisu).\n' +
     '- klucoveSlova: pole 4-8 kľúčových slov/fráz na zvýraznenie (mená, miesta, čísla, roky, odborné názvy), PRESNE ako sú napísané v texte. ROZLOŽ ich tak, aby v KAŽDOM poli (hookFakt, hookSlucka, pribeh, eskalacia, pointa) bolo aspoň 1 zvýraznené slovo — žiadna veta nesmie ostať bez zvýraznenia.\n' +
+    'ČISTÝ TEXT: NEPOUŽÍVAJ markdown ani hviezdičky (** *), podčiarkovníky ani spätné apostrofy v ŽIADNOM textovom poli. Píš obyčajný čistý text. Zvýraznenie sa rieši VÝLUČNE cez pole klucoveSlova, NIE v texte.\n' +
     'PRAVIDLÁ: max 2 vety na slide, krátke a úderné, ALE VŽDY GRAMATICKY ÚPLNÉ A SPRÁVNE — každá veta má podmet a SLOVESO.\n' +
     'ŽIADNE telegrafické útržky bez slovesa (ZLE: "Každý deň 4-5 litrov piva." → DOBRE: "Každý deň dostali 4-5 litrov piva.").\n' +
     'ŽIADNE visiace prístavky (ZLE: "robotníci štrajkovali — prvý zaznamenaný štrajk." → DOBRE: "robotníci štrajkovali, išlo o prvý zaznamenaný štrajk v histórii.").\n' +
@@ -709,15 +710,17 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     } catch {
       continue; // pokazený JSON -> skús znova
     }
+    // Vyčisti markdown – Gemini občas obalí slová hviezdičkami (**slovo**), satori by ich vykreslil ako znaky.
+    const clean = (s: any) => String(s || '').replace(/[*_`]+/g, '').replace(/\s+/g, ' ').trim();
     const copy: Copy = {
-      hookFakt: String(parsed.hookFakt || '').trim(),
-      hookSlucka: String(parsed.hookSlucka || '').trim(),
-      rok: String(parsed.rok || '').trim(),
-      pribeh: String(parsed.pribeh || '').trim(),
-      eskalacia: String(parsed.eskalacia || '').trim(),
-      pointa: String(parsed.pointa || '').trim(),
-      otazkaKonca: String(parsed.otazkaKonca || '').trim(),
-      klucoveSlova: Array.isArray(parsed.klucoveSlova) ? parsed.klucoveSlova.map((s: any) => String(s)) : [],
+      hookFakt: clean(parsed.hookFakt),
+      hookSlucka: clean(parsed.hookSlucka),
+      rok: clean(parsed.rok),
+      pribeh: clean(parsed.pribeh),
+      eskalacia: clean(parsed.eskalacia),
+      pointa: clean(parsed.pointa),
+      otazkaKonca: clean(parsed.otazkaKonca),
+      klucoveSlova: Array.isArray(parsed.klucoveSlova) ? parsed.klucoveSlova.map(clean).filter(Boolean) : [],
     };
     lastCopy = copy;
     // Validácia: kľúčové polia (hook + telo) nesmú byť prázdne.
