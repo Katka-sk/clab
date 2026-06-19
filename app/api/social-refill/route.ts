@@ -200,7 +200,9 @@ function wrappedWords(
   });
   // Záruka aspoň 1 zeleného slova v tomto bloku (napr. prvá veta hooku nesmie ostať bez zvýraznenia).
   if (opts.ensureGreen && !greens.some(Boolean)) {
-    const STOP = new Set(['a','aj','ako','ale','bez','bol','bola','boli','bolo','do','ich','je','keď','ktorá','ktoré','ktorí','na','nad','nie','možno','nikdy','o','od','po','pod','pre','pri','sa','si','so','tak','to','tou','už','v','vo','za','zo','že']);
+    const STOP = new Set(['a','aj','ako','ale','bez','bol','bola','boli','bolo','do','ich','je','keď','ktorá','ktoré','ktorí','na','nad','nie','možno','nikdy','o','od','po','pod','pre','pri','sa','si','so','tak','to','tou','už','v','vo','za','zo','že',
+      // bežné slovesá – nech ensureGreen radšej vyberie podstatné meno než sloveso
+      'urobili','urobil','spravili','vypili','vypil','postavili','postavil','dostali','dostal','dostávali','nedali','mali','majú','stalo','stali','začali','prišli','povedal','spôsobil','spôsobili','dovtedy','niečo','všetko']);
     let bestIdx = -1; let bestLen = 0;
     tokens.forEach((t, i) => {
       if (/\s/.test(t.text)) return;
@@ -318,22 +320,27 @@ function logoBar(): VNode {
 // ---------------------------------------------------------------------------
 // Stavba slidov
 // ---------------------------------------------------------------------------
+// Odhad počtu riadkov textu pri danej veľkosti písma (zóna široká 908 px = 1080 - 2*86).
+function estTextLines(txt: string, fs: number, innerW = 908): number {
+  if (!txt) return 0;
+  const cpl = Math.max(6, Math.floor(innerW / (fs * 0.56)));
+  return Math.max(1, Math.ceil(txt.length / cpl));
+}
+// Zmestí sa hook (fakt + slučka) do 3 riadkov pri čitateľnom fonte (>=60)?
+function hookFitsThreeLines(fakt: string, slucka: string): boolean {
+  return estTextLines(fakt, 60) + estTextLines(slucka, 60) <= 3;
+}
+
 function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | undefined, bgDataUri: string, w: number, h0: number): VNode {
   // Slide 1: obe vety biele, zelené sú LEN kľúčové slová (ako na ostatných slidoch).
   // Ak chýba jedna časť, zobrazí sa len druhá.
   const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
   // Auto-fit: vyber najväčší font tak, aby hook (fakt + slučka) mal SPOLU max 3 riadky.
-  const innerW = w - 86 * 2; // šírka textovej zóny (1080 -> 908)
-  const estLines = (txt: string, fs: number) => {
-    if (!txt) return 0;
-    const cpl = Math.max(6, Math.floor(innerW / (fs * 0.56))); // ~znakov na riadok
-    return Math.max(1, Math.ceil(txt.length / cpl));
-  };
   let fs = 76;
-  for (const cand of [76, 68, 60]) {
+  for (const cand of [76, 68, 60, 54]) {
     fs = cand;
-    if (estLines(fakt, cand) + estLines(slucka, cand) <= 3) break;
+    if (estTextLines(fakt, cand) + estTextLines(slucka, cand) <= 3) break;
   }
   return h(
     'div',
@@ -675,8 +682,9 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     '✅ PRAVDIVOSŤ (NEPREHLIADNUTEĽNÉ): Vychádzaj VÝLUČNE z obsahu tejto pikošky (názov, perex, obsah nižšie). NEVYMÝŠĽAJ a NEPRIDÁVAJ fakty, čísla, mená, dátumy, miesta ani detaily, ktoré v zdroji NIE SÚ. Ak niečo nie je v zdroji, nepíš to. Žiadne odhady, žiadne "pravdepodobne", žiadne prikrášľovanie. Každé tvrdenie musí byť podložené zdrojom. Hook smie byť pútavý, ale NESMIE klamať.\n' +
     '\n' +
     'Polia:\n' +
-    '- hookFakt: 1 krátka ÚPLNÁ veta (so slovesom) — odvážne, takmer neuveriteľné tvrdenie, ktoré ZAUJME a vzbudí úžas, ale NEvysvetlí mechanizmus ani neprezradí pointu/twist.\n' +
-    '- hookSlucka: 1 krátka ÚPLNÁ veta (so slovesom) — vyhrotí napätie a SĽÚBI prekvapivý zvrat, ale NIKDY ho neprezradí. Spolu s hookFakt max ~3 riadky.\n' +
+    '- hookFakt: 1 ÚDERNÁ úplná veta, MAXIMÁLNE 6 slov (so slovesom) — odvážne, takmer neuveriteľné tvrdenie, ktoré ZAUJME, ale NEvysvetlí mechanizmus ani neprezradí pointu/twist.\n' +
+    '- hookSlucka: 1 úplná veta, MAXIMÁLNE 8 slov (so slovesom) — vyhrotí napätie a SĽÚBI prekvapivý zvrat, ale NIKDY ho neprezradí.\n' +
+    '  ⚠️ DĹŽKA HOOKU JE TVRDÉ PRAVIDLO: slide 1 má MÁLO MIESTA — hookFakt + hookSlucka SPOLU max ~14 slov / 3 riadky. Pridlhý hook = stena textu = ZLE. Drž ho čo NAJKRATŠÍ.\n' +
     '  TVRDÉ PRAVIDLO: konkrétny twist/payoff z poľa "pointa" (napr. "prvý štrajk v dejinách") patrí VÝLUČNE na slide 4. NESMIE sa objaviť v hookFakt ani hookSlucka — tam naň iba napínaš. Ak by sa twist dostal do hooku, slide 4 stratí pointu.\n' +
     '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
@@ -688,12 +696,13 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     'PRAVIDLÁ: max 2 vety na slide, krátke a úderné, ALE VŽDY GRAMATICKY ÚPLNÉ A SPRÁVNE — každá veta má podmet a SLOVESO.\n' +
     'ŽIADNE telegrafické útržky bez slovesa (ZLE: "Každý deň 4-5 litrov piva." → DOBRE: "Každý deň dostali 4-5 litrov piva.").\n' +
     'ŽIADNE visiace prístavky (ZLE: "robotníci štrajkovali — prvý zaznamenaný štrajk." → DOBRE: "robotníci štrajkovali, išlo o prvý zaznamenaný štrajk v histórii.").\n' +
-    'Limity dĺžky (počet slov/riadkov) sú ORIENTAČNÉ: ak to logika a zmysel vety vyžaduje, môže byť výnimočne o 1-2 slová dlhšia — nikdy nie výrazne, a nikdy nie na úkor zmyslu. Radšej zmysluplná úplná veta než useknutá kvôli počtu slov. Hook nesmie prezradiť pointu.\n' +
+    'Limity dĺžky na slidoch 2-4 sú ORIENTAČNÉ (radšej úplná veta než useknutá). ALE limit HOOKU (slide 1) je TVRDÝ — drž ho krátky, max 3 riadky. Hook nesmie prezradiť pointu.\n' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
-  // Model občas vráti neúplný/prázdny JSON. Skús až 3×, kým nemáme všetky kľúčové polia.
-  let lastCopy: Copy | null = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // Model občas vráti neúplný JSON alebo PRIDLHÝ hook. Skús až 4×; vezmi prvý,
+  // ktorý má všetky polia A hook sa zmestí do 3 riadkov. Fallback = najkratší hook.
+  let best: Copy | null = null;
+  for (let attempt = 0; attempt < 4; attempt++) {
     const raw = await generateWithRetry(userPrompt);
     const jsonText = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
     const start = jsonText.indexOf('{');
@@ -704,7 +713,7 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     } catch {
       continue; // pokazený JSON -> skús znova
     }
-    // Vyčisti markdown – Gemini občas obalí slová hviezdičkami (**slovo**), satori by ich vykreslil ako znaky.
+    // Vyčisti markdown – model občas obalí slová hviezdičkami (**slovo**), satori by ich vykreslil ako znaky.
     const clean = (s: any) => String(s || '').replace(/[*_`]+/g, '').replace(/\s+/g, ' ').trim();
     const copy: Copy = {
       hookFakt: clean(parsed.hookFakt),
@@ -716,13 +725,16 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
       otazkaKonca: clean(parsed.otazkaKonca),
       klucoveSlova: Array.isArray(parsed.klucoveSlova) ? parsed.klucoveSlova.map(clean).filter(Boolean) : [],
     };
-    lastCopy = copy;
-    // Validácia: kľúčové polia (hook + telo) nesmú byť prázdne.
-    if (copy.hookFakt && copy.hookSlucka && copy.pribeh && copy.eskalacia && copy.pointa) {
-      return copy;
-    }
+    const full = copy.hookFakt && copy.hookSlucka && copy.pribeh && copy.eskalacia && copy.pointa;
+    if (!full) continue;
+    // Fallback = úplná verzia s najkratším hookom.
+    const hookLen = (c: Copy) => (c.hookFakt + ' ' + c.hookSlucka).length;
+    if (!best || hookLen(copy) < hookLen(best)) best = copy;
+    // Ideál: hook sa zmestí do 3 riadkov pri čitateľnom fonte.
+    if (hookFitsThreeLines(copy.hookFakt, copy.hookSlucka)) return copy;
   }
-  throw new Error('Gemini nevrátil kompletný obsah ani po 3 pokusoch (prázdne polia).');
+  if (best) return best; // žiadny ideálny hook za 4 pokusy → vezmi najkratší (auto-fit ho ešte zmenší)
+  throw new Error('Model nevrátil kompletný obsah ani po 4 pokusoch.');
 }
 
 // ---------------------------------------------------------------------------
