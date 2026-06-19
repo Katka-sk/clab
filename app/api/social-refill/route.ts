@@ -444,11 +444,11 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
   const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
   // Oba hook texty rovnaký font. Auto-fit: spolu max 3 riadky.
-  let fsHook = 88;
-  for (const c of [88, 80, 72, 66]) { fsHook = c; if (estTextLines(fakt, c) + estTextLines(slucka, c) <= 3) break; }
+  let fsHook = 96;
+  for (const c of [96, 88, 80, 72]) { fsHook = c; if (estTextLines(fakt, c) + estTextLines(slucka, c) <= 3) break; }
   const isTT = h0 >= 1800;
   const pad = isTT ? 130 : 86;
-  const logoTop = isTT ? '55%' : '52%';
+  const logoTop = isTT ? '50%' : '49%';
   const gradStop = isTT ? '68%' : '46%';
   return h(
     'div',
@@ -480,21 +480,21 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
     h('div', {
         style: {
           position: 'absolute',
-          bottom: isTT ? '18%' : '10%',
+          bottom: isTT ? '26%' : '14%',
           left: pad,
           right: pad,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
+          alignItems: isTT ? 'center' : 'flex-start',
         },
       },
       fakt
-        ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 40 } },
-            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
+        ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 20 } },
+            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
         : h('div', { style: { display: 'none' } }),
       slucka
         ? h('div', { style: { display: 'flex', width: '100%' } },
-            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
+            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: isTT }))
         : h('div', { style: { display: 'none' } })
     )
   );
