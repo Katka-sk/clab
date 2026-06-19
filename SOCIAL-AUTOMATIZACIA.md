@@ -14,40 +14,60 @@ preklopí do **farieb, fontov a loga daného brandu**. Dizajn neobjavovať znova
 
 ---
 
-## ✅ SCHVÁLENÝ DIZAJN CAROUSELU (Curiosity Lab, 18.6.2026)
+## ✅ SCHVÁLENÝ DIZAJN CAROUSELU (Curiosity Lab, 19.6.2026)
 
 **Formáty (defaultne oba naraz):**
 - Instagram: **1080 × 1350** (4:5)
 - TikTok: **1080 × 1920** (9:16)
-- Rovnaký dizajn, len iná výška.
+- Dizajn sa líši pozíciami a zarovnaním podľa formátu (viď nižšie).
 
 **Farby:**
 - Pozadie: `#0a0a0a` (čierna)
 - Zvýraznenie (zelená): `#c8f135`
 - Text biely `#ffffff`, jemne tlmený `#eeeeee`
 
-**Fonty (satori potrebuje TTF, nie woff!):**
-- `Barlow` (Regular/SemiBold/Bold/ExtraBold) — hook, príbeh
-- `Barlow Condensed Bold` — logo, „ROK", pill, „link v bio"
+**Fonty (satori potrebuje TTF, nie woff!) — TYP SA NEMENÍ, len veľkosť a padding:**
+- `Barlow ExtraBold 800` — hook (slide 1), zelené kľúčové slová (weight 800)
+- `Barlow Bold 700` — telo (slidy 2–4)
+- `Barlow Condensed Bold 700` — logo (CURIOSITY LAB), „ROK", pill, „link v bio"
 - Zdroj: `cdn.jsdelivr.net/gh/google/fonts@main/ofl/barlow` a `.../barlowcondensed`
 - ⚠️ Font MUSÍ mať latin-ext pokrytie (á č ď ž ľ…) inak diakritika = ???
 
-**Logo:** zelený zaoblený štvorec + dnu prázdny (hollow) kosoštvorec, vedľa biely
-text „CURIOSITY LAB" v Barlow Condensed, letter-spacing 16. Hore, top 9 %.
+**Logo — `logoMark()` (kosoštvorec):**
+- Veľký kosoštvorec (border zelený, rotácia 45°, glow) + malý kosoštvorec vnútri + CURIOSITY / LAB
+- `LOGO_SCALE = 0.72` — globálna škála, nemeniť
+- Slide 1: `emblemLabeled()` = logoMark + full-width gradientové čiary po stranách (Pruský štýl)
+- Slidy 2–5: `logoMark()` bez čiar, vycentrovaný nad textom
 
-**5 slidov:**
-1. **Hook** — fotka pikošky na pozadí + tmavý gradient zdola, text dole (bottom 26 %),
-   fontSize 76, weight 800, posledná veta celá zelená.
-2.–4. **Príbeh** — jemná fotka na pozadí (tmavý prekryv 86–92 %), text fontSize 64,
-   weight 700, lineHeight 1.55. Kľúčové slová zo `klucoveSlova` zelené.
-   Slide 2 má hore zelený štítok „ROK XXXX". Číselné frázy (napr. „25 miliónov")
-   ostávajú na jednom riadku (nowrap), slovné frázy sa lámu prirodzene.
-3. **Outro** (slide 5) — vždy rovnaký, vycentrovaný: „Každý deň jeden / zabudnutý
-   fakt z histórie." (zelená+biela) + zelená šípka dole (SVG, Barlow nemá glyf ↓) +
-   zelená pill `www.curiositylab.sk` + biele „link v bio".
+**SLIDE 1 — HOOK (schválený 19.6.2026):**
+- Fotka pikošky na pozadí, tmavý gradient: `linear-gradient(180deg, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.0) 15%, rgba(10,10,10,0.5) 36%, rgba(10,10,10,0.95) 46%[IG]/68%[TT], rgba(10,10,10,1.0) 70%)`
+- `emblemLabeled()` pozícia: IG `top: 49%`, TikTok `top: 50%`
+- Ľavý/pravý okraj: IG `86px`, TikTok `130px`
+- Font: auto-fit štartuje na **96**, kroky [96, 88, 80, 72], kým `hookFakt + hookSlucka ≤ 3 riadky`
+- Obe vety rovnaký font (nie väčší + menší)
+- Text pozícia: IG `bottom: 14%`, TikTok `bottom: 26%`
+- Zarovnanie: IG **ľavo** (`flex-start`), TikTok **stred** (`center`)
+- Medzera medzi vetami: `marginBottom: 20px`
+- Slovenské predložky (na, za, v, do…) sa lepia k ďalšiemu slovu — nesmú ostať samé na konci riadka
 
-**Zvýrazňovanie:** Gemini vracia pole `klucoveSlova` (4–8 fráz: mená, miesta, čísla,
-roky) → tie sa v texte vykreslia zelené a tučné.
+**SLIDY 2–4 — PRÍBEH/ESKALÁCIA/POINTA:**
+- Jemná fotka na pozadí, prekryv: `linear-gradient(rgba(10,10,10,0.82) 0%, rgba(10,10,10,0.9) 100%)`
+- `logoMark()` vycentrovaný nad textom, `marginBottom: 4px`
+- Font tela: **64px** (56px ak text > 230 znakov), weight 700, lineHeight 1.55
+- Obsah v stĺpci: `top: 18%, height: 58%`, `gap: 44px` medzi vetami
+- Zarovnanie textu: **ľavo** (IG aj TikTok)
+- Ľavý/pravý okraj: IG `86px`, TikTok `130px`
+- Slide 2: zelený štítok `ROK XXXX` LEN ak je konkrétny rok (nenútiť)
+
+**SLIDE 5 — OUTRO:**
+- Čierne pozadie (bez fotky)
+- `logoMark()` nad textom (v stĺpci, nie fixovaný hore/dole)
+- Text: „Chceš viac **zabudnutých** faktov?" (zabudnutých = zelené)
+- Zelená šípka dole (SVG), zelená pill `www.curiositylab.sk`, biele „link v bio"
+- Všetko vycentrované, `gap: 54px`
+
+**Zvýrazňovanie:** Claude Opus vracia pole `klucoveSlova` (4–8 fráz) → zelené + weight 800.
+`ensureGreen` = záruka aspoň 1 zeleného slova na každú vetu (aj keď žiadne kľúčové slovo nesedí).
 
 ---
 
@@ -91,6 +111,30 @@ automaticky na každú pikošku (cez `?slug=` cielene, alebo cron na najstaršiu
 - **HLAS:** ľudský, žiadne AI klišé, žiadne pomlčky, krátke úderné vety (soul.md z kurzu).
 - **CAPTION = krátky:** príbeh je v slidoch, popis ho NEduplikuje. Štruktúra: hook 🔥 + otázka 👇 +
   „📖 Celú pikošku si prečítaš na curiositylab.sk — link v bio" + hashtagy. Cieľ = traffic na web.
+
+## 🖼️ LOKÁLNY NÁHĽAD (PNG bez deployu) — POVINNÝ KROK PRED PUSHOM
+
+Pri každej vizuálnej zmene carouselu sa NEPUSHUJE naslepo. Najprv sa **všetky slidy**
+vyrenderujú **lokálne do PNG** a ukážu Kataríne **priamo v chate** (nie na Desktope!).
+Až po jej OK ide push. Katarína nemá čakať na deploy kvôli tomu, ako niečo vyzerá.
+
+**Postup náhľadu:**
+1. `cd clab && node preview-all.mjs` → 5× IG PNG do `.preview-*.png`
+2. Pre TikTok: inline node script (1080×1920) → `.preview-tt-*.png`
+3. Claude číta PNG cez `Read` tool a zobrazí ich v chate — **HNEĎ**, bez čakania
+4. Katarína schváli → push → deploy
+
+**PRAVIDLÁ náhľadu (záväzné):**
+- Obrazky sa zobrazujú VŽDY V CHATE, nikdy nie „pozri na Desktope"
+- Najprv ukázať slide ktorý sa menil, až potom (ak OK) všetkých 5
+- **REÁLNA fotka + REÁLNY schválený text — POVINNÉ.** Nikdy placeholder!
+  - Fotka: zo Sanity (`cdn.sanity.io/images/74b6xpqc/...`), sharp cover 1080×výška
+  - Text: hardcoded z posledného schváleného copy (hookFakt, hookSlucka, pribeh, eskalacia, pointa, klucoveSlova)
+- **CACHE = SAMOZREJMOSŤ.** Fonty (3× Barlow TTF) + fotka sa stiahnu RAZ do `clab/.cache/`.
+  Re-render ~3 s, načítanie z cache ~2 ms. Nikdy nesťahovať znova.
+- Logika preview MUSÍ zrkadliť `route.ts` 1:1 (logo, fonty, paddingy, predložky).
+- `clab/.cache/`, `clab/.preview-*.png`, `preview-*.mjs` → `.gitignore` (nie do commitu)
+- ⚠️ satori NEpodporuje `transform: translateY(%)`. Pozície = px alebo `top/bottom %` na absolútnom prvku.
 
 ## 🛠️ TECHNICKÉ FUNKCIE (route.ts)
 
