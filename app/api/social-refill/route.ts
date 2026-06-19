@@ -695,22 +695,37 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     'Limity dĺžky (počet slov/riadkov) sú ORIENTAČNÉ: ak to logika a zmysel vety vyžaduje, môže byť výnimočne o 1-2 slová dlhšia — nikdy nie výrazne, a nikdy nie na úkor zmyslu. Radšej zmysluplná úplná veta než useknutá kvôli počtu slov. Hook nesmie prezradiť pointu.\n' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
-  const result = await generateWithRetry(userPrompt);
-  const raw = result.response.text();
-  const jsonText = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
-  const start = jsonText.indexOf('{');
-  const end = jsonText.lastIndexOf('}');
-  const parsed = JSON.parse(jsonText.slice(start, end + 1));
-  return {
-    hookFakt: String(parsed.hookFakt || '').trim(),
-    hookSlucka: String(parsed.hookSlucka || '').trim(),
-    rok: String(parsed.rok || '').trim(),
-    pribeh: String(parsed.pribeh || '').trim(),
-    eskalacia: String(parsed.eskalacia || '').trim(),
-    pointa: String(parsed.pointa || '').trim(),
-    otazkaKonca: String(parsed.otazkaKonca || '').trim(),
-    klucoveSlova: Array.isArray(parsed.klucoveSlova) ? parsed.klucoveSlova.map((s: any) => String(s)) : [],
-  };
+  // Gemini občas vráti neúplný/prázdny JSON. Skús až 3×, kým nemáme všetky kľúčové polia.
+  let lastCopy: Copy | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const result = await generateWithRetry(userPrompt);
+    const raw = result.response.text();
+    const jsonText = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+    const start = jsonText.indexOf('{');
+    const end = jsonText.lastIndexOf('}');
+    let parsed: any;
+    try {
+      parsed = JSON.parse(jsonText.slice(start, end + 1));
+    } catch {
+      continue; // pokazený JSON -> skús znova
+    }
+    const copy: Copy = {
+      hookFakt: String(parsed.hookFakt || '').trim(),
+      hookSlucka: String(parsed.hookSlucka || '').trim(),
+      rok: String(parsed.rok || '').trim(),
+      pribeh: String(parsed.pribeh || '').trim(),
+      eskalacia: String(parsed.eskalacia || '').trim(),
+      pointa: String(parsed.pointa || '').trim(),
+      otazkaKonca: String(parsed.otazkaKonca || '').trim(),
+      klucoveSlova: Array.isArray(parsed.klucoveSlova) ? parsed.klucoveSlova.map((s: any) => String(s)) : [],
+    };
+    lastCopy = copy;
+    // Validácia: kľúčové polia (hook + telo) nesmú byť prázdne.
+    if (copy.hookFakt && copy.hookSlucka && copy.pribeh && copy.eskalacia && copy.pointa) {
+      return copy;
+    }
+  }
+  throw new Error('Gemini nevrátil kompletný obsah ani po 3 pokusoch (prázdne polia).');
 }
 
 // ---------------------------------------------------------------------------
