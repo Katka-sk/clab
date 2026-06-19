@@ -75,6 +75,34 @@ automaticky na každú pikošku (cez `?slug=` cielene, alebo cron na najstaršiu
 
 ---
 
+## ✍️ COPYWRITING — PRAVIDLÁ OBSAHU (naučené, sú v Gemini prompte)
+
+- **HOOK = priorita č. 1.** Rozhoduje, či to vôbec niekto pozrie. Curiosity gap:
+  zaujať a ZATAJIŤ to hlavné, nech divák musí swipnúť. Techniky: paradox, zakázané/tajné,
+  šokujúce číslo, nečakaná príčina-následok s utajeným následkom.
+  - Hook NESMIE: prezradiť pointu/twist, byť plochá otázka („Prečo…?"), nudný opis.
+  - **Twist/payoff patrí VÝLUČNE na slide 4** — nikdy nie v hooku (inak slide 4 stratí pointu).
+  - Príklady silných: „Pápež raz nariadil vyhubiť všetky mačky." + „Netušil, akú katastrofu spustí."
+- **GRAMATIKA:** vždy úplné vety so slovesom. Žiadne telegrafické útržky („Každý deň 4-5 litrov piva")
+  ani visiace prístavky („štrajkovali — prvý štrajk"). Radšej úplná veta než useknutá.
+- **PRAVDIVOSŤ:** čerpať VÝLUČNE zo zdroja (pikoška: názov, perex, obsah). NEVYMÝŠĽAŤ fakty,
+  čísla, mená, dátumy, miesta. Hook smie byť pútavý, ale NESMIE klamať. Kontrola = uzemnenie + tvoj draft.
+- **DĹŽKA:** limity sú orientačné — výnimočne o 1-2 slová viac ak to logika pýta, nikdy nie výrazne.
+- **HLAS:** ľudský, žiadne AI klišé, žiadne pomlčky, krátke úderné vety (inšpirované soul.md z kurzu).
+
+## 🛠️ TECHNICKÉ FUNKCIE (route.ts)
+
+- **DRAFT flag** `BUFFER_SAVE_AS_DRAFT` (true = draft, nič nejde von samo; false = ostrý auto-publish).
+- **Cielenie pikošky:** `?slug=...` (konkrétna, aj keď je už označená). Bez slug = najstaršia v rade (cron).
+- **PREVIEW:** `?preview=1` — vráti LEN text (Copy) bez kreslenia a bez Buffera. Na rýchlu kontrolu
+  obsahu (hook, payoff) bez spamovania Buffera. Toto je hlavný iteračný nástroj.
+- **RETRY:** Gemini 3× s pauzou pri 503/429 (aby ranný cron nespadol pri výpadku).
+- **Slide 1:** zelené len kľúčové slová + záruka aspoň 1 zeleného slova v každej vete (ensureGreen)
+  + auto-fit fontu (76→68→60) na max 3 riadky.
+- **Slidy 2-4:** jednotný font, jemná fotka v pozadí (tmavý prekryv 0.78–0.88).
+- **Rok:** len ak je v pikoške konkrétny (nenútiť, napr. pyramídy = bez roku).
+- **Cron:** denne 07:00 (`vercel.json`) → spracuje najstaršiu v rade. V draft režime = bezpečné.
+
 ## ČO JE UŽ VYRIEŠENÉ (kopíruj, neobjavuj znova)
 
 - **Buffer GraphQL API:** endpoint `https://api.buffer.com`, Bearer token, mutation `createPost`
