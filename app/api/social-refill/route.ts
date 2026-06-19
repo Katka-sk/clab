@@ -677,6 +677,8 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     '  • fakt="Jeden muž prežil dve atómové bomby." slučka="A to, čo urobil potom, je ešte neuveriteľnejšie."\n' +
     'SLABÉ hooky (NIKDY NEROB): "Pyramídy stavali vďaka pivu." (prezradí pointu), "Prečo pili pivo?" (plochá otázka), "Denná mzda bola tekutá a výživná." (nudný opis).\n' +
     '\n' +
+    '✅ PRAVDIVOSŤ (NEPREHLIADNUTEĽNÉ): Vychádzaj VÝLUČNE z obsahu tejto pikošky (názov, perex, obsah nižšie). NEVYMÝŠĽAJ a NEPRIDÁVAJ fakty, čísla, mená, dátumy, miesta ani detaily, ktoré v zdroji NIE SÚ. Ak niečo nie je v zdroji, nepíš to. Žiadne odhady, žiadne "pravdepodobne", žiadne prikrášľovanie. Každé tvrdenie musí byť podložené zdrojom. Hook smie byť pútavý, ale NESMIE klamať.\n' +
+    '\n' +
     'Polia:\n' +
     '- hookFakt: 1 krátka ÚPLNÁ veta (so slovesom) — odvážne, takmer neuveriteľné tvrdenie, ktoré ZAUJME a vzbudí úžas, ale NEvysvetlí mechanizmus ani neprezradí pointu/twist.\n' +
     '- hookSlucka: 1 krátka ÚPLNÁ veta (so slovesom) — vyhrotí napätie a SĽÚBI prekvapivý zvrat, ale NIKDY ho neprezradí. Spolu s hookFakt max ~3 riadky.\n' +
