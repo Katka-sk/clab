@@ -679,7 +679,8 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     '\n' +
     'Polia:\n' +
     '- hookFakt: 1 krátka ÚPLNÁ veta (so slovesom) — odvážne, takmer neuveriteľné tvrdenie, ktoré ZAUJME a vzbudí úžas, ale NEvysvetlí mechanizmus ani neprezradí pointu/twist.\n' +
-    '- hookSlucka: 1 krátka ÚPLNÁ veta (so slovesom) — vyhrotí napätie a sľúbi prekvapivý zvrat (smerom k pointe), bez toho aby ho prezradila. Spolu s hookFakt max ~3 riadky.\n' +
+    '- hookSlucka: 1 krátka ÚPLNÁ veta (so slovesom) — vyhrotí napätie a SĽÚBI prekvapivý zvrat, ale NIKDY ho neprezradí. Spolu s hookFakt max ~3 riadky.\n' +
+    '  TVRDÉ PRAVIDLO: konkrétny twist/payoff z poľa "pointa" (napr. "prvý štrajk v dejinách") patrí VÝLUČNE na slide 4. NESMIE sa objaviť v hookFakt ani hookSlucka — tam naň iba napínaš. Ak by sa twist dostal do hooku, slide 4 stratí pointu.\n' +
     '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
     '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
