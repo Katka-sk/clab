@@ -57,7 +57,7 @@
 ## Stack tohto projektu (Curiosity Lab)
 - Next.js 16.2.7 (App Router) + React 19 + TypeScript
 - CMS: Sanity 5 (next-sanity, @sanity/client, @sanity/image-url)
-- Obsah AI: Gemini (@google/generative-ai, model gemini-2.5-flash)
+- Obsah AI: Claude Opus 4.8 (@anthropic-ai/sdk, model claude-opus-4-8) — píše copy. Kľúč ANTHROPIC_API_KEY vo Verceli.
 - Carousel: satori + @resvg/resvg-js + sharp; hosting obrázkov: @vercel/blob
 - Plánovanie: Buffer GraphQL API (IG + TikTok)
 - Hosting: Vercel (auto-deploy z GitHubu), cron cez vercel.json

@@ -96,7 +96,7 @@ automaticky na každú pikošku (cez `?slug=` cielene, alebo cron na najstaršiu
 - **Cielenie pikošky:** `?slug=...` (konkrétna, aj keď je už označená). Bez slug = najstaršia v rade (cron).
 - **PREVIEW:** `?preview=1` — vráti LEN text (Copy) bez kreslenia a bez Buffera. Na rýchlu kontrolu
   obsahu (hook, payoff) bez spamovania Buffera. Toto je hlavný iteračný nástroj.
-- **RETRY:** Gemini 3× s pauzou pri 503/429 (aby ranný cron nespadol pri výpadku).
+- **RETRY:** Anthropic SDK sám opakuje pri 429/529/5xx (`maxRetries`); navyše validačný cyklus 3× pri prázdnych poliach.
 - **Slide 1:** zelené len kľúčové slová + záruka aspoň 1 zeleného slova v každej vete (ensureGreen)
   + auto-fit fontu (76→68→60) na max 3 riadky.
 - **Slidy 2-4:** jednotný font, jemná fotka v pozadí (tmavý prekryv 0.78–0.88).
@@ -113,8 +113,10 @@ automaticky na každú pikošku (cez `?slug=` cielene, alebo cron na najstaršiu
 - Obrázky musia byť na verejnej URL → **Vercel Blob** (`BLOB_READ_WRITE_TOKEN`,
   pri Connect to Project ZAŠKRTNÚŤ „Add read-write token env var")
 - Idempotencia: GROQ filter `publikovaneSocial != true`, spracovanie 1 položky/beh
-- Gemini model: **gemini-2.5-flash** (NIE 2.0-flash, mŕtvy)
-- **Hlas značky (soul rules) v `systemInstruction`** — aby texty nezneli ako AI:
+- Copy model: **Claude Opus 4.8** (`@anthropic-ai/sdk`, `claude-opus-4-8`) — prepnuté z Gemini 19.6.2026
+  kvôli konzistentnejšej kvalite (hooky, slovenčina, dodržiavanie pravidiel, žiadny markdown/prázdne).
+  Kľúč `ANTHROPIC_API_KEY` vo Verceli. SDK sám opakuje pri 429/529/5xx (`maxRetries`). Náklad ~2 centy/post.
+- **Hlas značky (soul rules) v `SYSTEM_PROMPT`** — aby texty nezneli ako AI:
   žiadne pomlčky, žiadne vatové frázy, žiadne generické AI vzory; krátke úderné vety,
   konkrétne detaily (mená/čísla/roky), osobnosť rozprávača. (Inšpirované „soul.md" z kurzu.)
 - Draft vs ostrý: riadi flag `BUFFER_SAVE_AS_DRAFT` v route.ts.
