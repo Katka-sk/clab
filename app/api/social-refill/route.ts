@@ -192,7 +192,7 @@ function tokenize(text: string, phrases: string[]): Token[] {
 // Renderuje text po tokenoch s flex-wrap, kľúčové slová/frázy zelené a tučné.
 function wrappedWords(
   text: string,
-  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenPhrases?: string[]; greenAll?: boolean; lineHeight?: number; baseColor?: string; disableKeyword?: boolean; ensureGreen?: boolean }
+  opts: { fontSize: number; weight: 400 | 600 | 700 | 800; greenSet?: Set<string>; greenPhrases?: string[]; greenAll?: boolean; lineHeight?: number; baseColor?: string; disableKeyword?: boolean; ensureGreen?: boolean; center?: boolean }
 ): VNode {
   const tokens = tokenize(text, opts.greenPhrases || []);
   const greens = tokens.map((t) => {
@@ -260,6 +260,7 @@ function wrappedWords(
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'flex-start',
+        justifyContent: opts.center ? 'center' : 'flex-start',
         width: '100%',
       },
     },
@@ -442,12 +443,13 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
   // Ak chýba jedna časť, zobrazí sa len druhá.
   const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
-  // Veľkosť (font sa NEMENÍ = Barlow, len veľkosť): fakt = hrdina (väčší), slučka o stupeň
-  // menšia. Auto-fit: každá veta max 2 riadky; ak je dlhšia, zmenší sa (poistka proti pretečeniu).
-  let fsFakt = 104;
-  for (const c of [104, 96, 88, 80]) { fsFakt = c; if (estTextLines(fakt, c) <= 2) break; }
-  let fsSlucka = 88;
-  for (const c of [88, 80, 72, 66]) { fsSlucka = c; if (estTextLines(slucka, c) <= 2) break; }
+  // Oba hook texty rovnaký font. Auto-fit: spolu max 3 riadky.
+  let fsHook = 88;
+  for (const c of [88, 80, 72, 66]) { fsHook = c; if (estTextLines(fakt, c) + estTextLines(slucka, c) <= 3) break; }
+  const isTT = h0 >= 1800;
+  const pad = isTT ? 130 : 86;
+  const logoTop = isTT ? '55%' : '52%';
+  const gradStop = isTT ? '68%' : '46%';
   return h(
     'div',
     {
@@ -462,7 +464,7 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
         backgroundPosition: 'center',
       },
     },
-    // gradient overlay — spodná polovica plynulo čierna
+    // gradient — číri navrchu (vidno foto), začína tmavnúť pri logu
     h('div', {
       style: {
         position: 'absolute',
@@ -471,43 +473,28 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
         width: '100%',
         height: '100%',
         backgroundImage:
-          'linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.0) 10%, rgba(10,10,10,0.5) 26%, rgba(10,10,10,0.95) 42%, rgba(10,10,10,1.0) 60%)',
+          `linear-gradient(180deg, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.0) 15%, rgba(10,10,10,0.5) 36%, rgba(10,10,10,0.95) ${gradStop}, rgba(10,10,10,1.0) 70%)`,
       },
     }),
-    // emblém na horizonte — deliaca čiara cez celú šírku + kosoštvorec v strede
+    h('div', { style: { position: 'absolute', top: logoTop, left: pad, right: pad, display: 'flex' } }, emblemLabeled()),
     h('div', {
-      style: {
-        position: 'absolute',
-        top: '40%',
-        left: 86,
-        right: 86,
-        display: 'flex',
-      },
-    },
-      emblemLabeled()
-    ),
-    // hook dole — väčší padding + medzera medzi vetami
-    h(
-      'div',
-      {
         style: {
           position: 'absolute',
-          bottom: '8%',
-          left: 86,
-          right: 86,
+          bottom: isTT ? '18%' : '10%',
+          left: pad,
+          right: pad,
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'flex-start',
         },
       },
       fakt
-        ? h(
-            'div',
-            { style: { display: 'flex', width: '100%', marginBottom: 56 } },
-            wrappedWords(fakt, { fontSize: fsFakt, weight: 800, lineHeight: 1.22, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true })
-          )
+        ? h('div', { style: { display: 'flex', width: '100%', marginBottom: 40 } },
+            wrappedWords(fakt, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
         : h('div', { style: { display: 'none' } }),
       slucka
-        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fsSlucka, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
+        ? h('div', { style: { display: 'flex', width: '100%' } },
+            wrappedWords(slucka, { fontSize: fsHook, weight: 800, lineHeight: 1.25, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
         : h('div', { style: { display: 'none' } })
     )
   );
@@ -545,7 +532,7 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
   const bodyFs = text.length > 230 ? 56 : 64;
   for (const ln of bodyLines) {
     inner.push(
-      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
+      h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases, ensureGreen: true, center: h0 >= 1800 }))
     );
   }
   const children: VNode[] = [];
@@ -633,28 +620,15 @@ function slideOutro(w: number, h0: number): VNode {
         position: 'relative',
       },
     },
-    // logo znak (bez čiarok), nižšie — rovnaké ako na slidoch 2-4
-    h('div', {
-      style: {
-        position: 'absolute',
-        top: '17%',
-        left: 0,
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-      },
-    },
-      logoMark()
-    ),
     h(
       'div',
       {
         style: {
           position: 'absolute',
-          top: '12%',
+          top: 0,
           left: 86,
           right: 86,
-          height: '88%',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -662,6 +636,7 @@ function slideOutro(w: number, h0: number): VNode {
           gap: 54,
         },
       },
+      logoMark(),
       // hlavná veta – 2 riadky tesne pri sebe (jeden logický celok)
       h(
         'div',
@@ -934,7 +909,7 @@ function scheduledAt(datum: string | undefined, hh: number, mm: number): string 
 // Post sa NEzverejní sám – Katarína si ho v Bufferi pozrie a publikuje ručne.
 // Na ostrý auto-publish (naplánovaný na dueAt) prepni na false.
 // Zdroj: https://developers.buffer.com/examples/create-draft-post.html
-const BUFFER_SAVE_AS_DRAFT = false;
+const BUFFER_SAVE_AS_DRAFT = true;
 
 // Buffer GraphQL API (nový). Obrázky musia byť verejné URL (z Vercel Blobu).
 // CAROUSEL: posielame celé pole obrázkov cez `assets: [{ image: { url } }]`.
