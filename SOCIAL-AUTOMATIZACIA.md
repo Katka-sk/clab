@@ -57,8 +57,9 @@ Gemini negeneruje jeden blok textu, ale **pole na slide** (inak sa text seká ne
 a slide 1 sa celý zazelení). Polia: `hookFakt, hookSlucka, rok, pribeh, eskalacia, pointa,
 otazkaKonca, klucoveSlova`.
 
-- **Slide 1 — HOOK:** `hookFakt` (1 veta, biela) = šokujúci fakt/paradox. `hookSlucka`
-  (1 veta, zelená) = otvorená slučka, núti swipnúť. Hook NESMIE prezradiť pointu. Žiadny rok.
+- **Slide 1 — HOOK:** `hookFakt` (1 veta) = šokujúci fakt/paradox. `hookSlucka` (1 veta) =
+  otvorená slučka, núti swipnúť. Obe vety biele, **zelené sú LEN kľúčové slová** (nie celá veta).
+  Hook NESMIE prezradiť pointu. Žiadny rok.
 - **Slide 2 — PRÍBEH:** `pribeh` (kto/čo, 1-2 vety) + štítok `ROK …` (zelený) **LEN ak je v pikoške
   konkrétny rok**. Ak rok nie je, NEDÁVAŤ ho nasilu (napr. pyramídy) — štítok sa vynechá. Konkrétne mená/miesta.
 - **Slide 3 — ESKALÁCIA:** `eskalacia` (čo ďalej, kauzálna reťaz, 1-2 vety). Neprezradiť twist.

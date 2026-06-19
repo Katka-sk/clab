@@ -303,9 +303,11 @@ function logoBar(): VNode {
 // ---------------------------------------------------------------------------
 // Stavba slidov
 // ---------------------------------------------------------------------------
-function slideBackgroundHook(fakt: string, slucka: string, bgDataUri: string, w: number, h0: number): VNode {
-  // Slide 1: fakt = biely (veta 1), slučka = zelená (veta 2, bez pointy).
+function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | undefined, bgDataUri: string, w: number, h0: number): VNode {
+  // Slide 1: obe vety biele, zelené sú LEN kľúčové slová (ako na ostatných slidoch).
   // Ak chýba jedna časť, zobrazí sa len druhá.
+  const greenSet = keywords ? buildGreenSet(keywords) : undefined;
+  const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
   const combinedLen = `${fakt} ${slucka}`.trim().length;
   const fs = combinedLen > 120 ? 64 : combinedLen > 85 ? 70 : 76;
   return h(
@@ -352,11 +354,11 @@ function slideBackgroundHook(fakt: string, slucka: string, bgDataUri: string, w:
         ? h(
             'div',
             { style: { display: 'flex', width: '100%', marginBottom: 14 } },
-            wrappedWords(fakt, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', disableKeyword: true })
+            wrappedWords(fakt, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases })
           )
         : h('div', { style: { display: 'none' } }),
       slucka
-        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fs, weight: 800, lineHeight: 1.3, greenAll: true }))
+        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases }))
         : h('div', { style: { display: 'none' } })
     )
   );
@@ -389,8 +391,9 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
   const lines = splitSentences(text);
   const bodyLines = lines.length ? lines : [text];
-  // Prispôsobivá veľkosť: dlhší text = menšie písmo, nech sa zmestí a má vzduch.
-  const bodyFs = text.length > 165 ? 54 : text.length > 115 ? 59 : 64;
+  // Jednotná veľkosť na slidoch 2-4 (rovnaký font). Zmenší sa LEN pri extrémne dlhom
+  // texte ako poistka proti pretečeniu (vtedy je text aj tak príliš dlhý).
+  const bodyFs = text.length > 230 ? 56 : 64;
   for (const ln of bodyLines) {
     inner.push(
       h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(ln, { fontSize: bodyFs, weight: 700, lineHeight: 1.55, baseColor: '#eeeeee', greenSet, greenPhrases: numericPhrases }))
@@ -408,7 +411,7 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
           width: '100%',
           height: '100%',
           display: 'flex',
-          backgroundImage: 'linear-gradient(180deg, rgba(10,10,10,0.86) 0%, rgba(10,10,10,0.92) 100%)',
+          backgroundImage: 'linear-gradient(180deg, rgba(10,10,10,0.78) 0%, rgba(10,10,10,0.88) 100%)',
         },
       })
     );
@@ -565,7 +568,7 @@ async function buildCarousel(
 
   // Každý slide má svoj zámer (podľa štruktúry): hook → príbeh → eskalácia → pointa → promo.
   const slides: VNode[] = [
-    slideBackgroundHook(copy.hookFakt, copy.hookSlucka, bg, w, ht),
+    slideBackgroundHook(copy.hookFakt, copy.hookSlucka, kw, bg, w, ht),
     slideMid(copy.pribeh, w, ht, kw, copy.rok || undefined, bg),
     slideMid(copy.eskalacia, w, ht, kw, undefined, bg),
     slideMid(copy.pointa, w, ht, kw, undefined, bg),
@@ -626,10 +629,10 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
     '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
     '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
-    '- pointa: 1-2 vety — TWIST/pointa, otočenie perspektívy alebo zapamätateľná bodka s konkrétnym faktom (slide 4). Žiadne filozofické závery.\n' +
+    '- pointa: 1-2 vety — PAYOFF, ktorý ZODPOVIE/uzavrie napätie z hooku. Úderná, prekvapivá, zapamätateľná, s konkrétnym faktom alebo číslom. Toto je vyvrcholenie — musí "kliknúť". Žiadne opisné dokončenie, žiadne filozofické závery.\n' +
     '- otazkaKonca: 1 provokatívna otázka pre komentáre (len do popisu).\n' +
-    '- klucoveSlova: pole 4-8 kľúčových slov/fráz na zvýraznenie (mená, miesta, čísla, roky, odborné názvy), PRESNE ako sú napísané v texte.\n' +
-    'PRAVIDLÁ: max 2 vety na slide, krátke úderné vety, každý slide čitateľný za 2-3 sekundy. Hook nesmie prezradiť pointu.\n' +
+    '- klucoveSlova: pole 4-8 kľúčových slov/fráz na zvýraznenie (mená, miesta, čísla, roky, odborné názvy), PRESNE ako sú napísané v texte. ROZLOŽ ich tak, aby v KAŽDOM poli (hookFakt, hookSlucka, pribeh, eskalacia, pointa) bolo aspoň 1 zvýraznené slovo — žiadna veta nesmie ostať bez zvýraznenia.\n' +
+    'PRAVIDLÁ: max 2 KRÁTKE vety na slide (spolu max ~16 slov na slide), úderné vety, každý slide čitateľný za 2-3 sekundy. Hook nesmie prezradiť pointu.\n' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
   const result = await model.generateContent(userPrompt);
