@@ -648,8 +648,8 @@ function buildCaption(copy: Copy, pik: Pikoska): string {
   // Hook (zastaví scroll) + výzva swipnúť + otázka (komentáre) + link + hashtagy.
   const hook = [copy.hookFakt, copy.hookSlucka].filter(Boolean).join(' ');
   return (
-    `${hook} 🔥\n\nCelý príbeh swipni v carouseli 👉\n\n${copy.otazkaKonca} 👇\n\n—\n` +
-    `📍 curiositylab.sk (link v bio)\n\n${buildHashtags(pik)}`
+    `${hook} 🔥\n\n${copy.otazkaKonca} 👇\n\n` +
+    `📖 Celú pikošku si prečítaš na curiositylab.sk — link v bio\n\n${buildHashtags(pik)}`
   );
 }
 
