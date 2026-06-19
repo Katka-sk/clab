@@ -212,7 +212,9 @@ function wrappedWords(
     });
     if (bestIdx >= 0) greens[bestIdx] = true;
   }
-  const children = tokens.map((t, i) => {
+  const mr = Math.round(opts.fontSize * 0.28);
+  const rt = (i: number): VNode => {
+    const t = tokens[i];
     const green = greens[i];
     const multiWord = /\s/.test(t.text);
     return h(
@@ -226,13 +228,31 @@ function wrappedWords(
           // zelené kľúčové slová sú aj tučnejšie, aby vyskočili
           fontWeight: green ? 800 : opts.weight,
           fontSize: opts.fontSize,
-          marginRight: Math.round(opts.fontSize * 0.28),
+          marginRight: mr,
           lineHeight: opts.lineHeight ?? 1.25,
         },
       },
       t.text
     );
-  });
+  };
+  // Slovenská typografia: krátke predložky/spojky (a, na, za, v, do…) sa NESMÚ lámať
+  // samé na koniec riadka — zlepia sa s nasledujúcim slovom do nezalomiteľnej skupiny.
+  const PREP = new Set(['a', 'i', 'k', 'o', 's', 'u', 'v', 'z', 'do', 'na', 'za', 'zo', 'so', 'vo', 'ku', 'po', 'od', 'pri', 'pre', 'nad', 'pod', 'bez']);
+  const children: VNode[] = [];
+  let gi = 0;
+  while (gi < tokens.length) {
+    const t = tokens[gi];
+    const isPrep = !/\s/.test(t.text) && PREP.has(normalizeWord(t.text));
+    if (isPrep && gi + 1 < tokens.length) {
+      children.push(
+        h('div', { style: { display: 'flex', flexWrap: 'nowrap', alignItems: 'flex-start' } }, rt(gi), rt(gi + 1))
+      );
+      gi += 2;
+    } else {
+      children.push(rt(gi));
+      gi += 1;
+    }
+  }
   return h(
     'div',
     {
@@ -307,7 +327,7 @@ function logoBar(): VNode {
     {
       style: {
         position: 'absolute',
-        top: '9%',
+        top: '5%',
         left: 0,
         width: '100%',
         display: 'flex',
@@ -315,6 +335,90 @@ function logoBar(): VNode {
       },
     },
     logo()
+  );
+}
+
+// Emblém: prázdny kosoštvorec + zelené čiarky do strán (———◇———).
+// Jednotný značkový znak na všetkých slidoch (slide 1 v strede, 2-4 hore).
+// scale = pomer (1 = základ); čiarky sa von plynulo strácajú do priehľadna.
+function emblem(scale = 1): VNode {
+  const d = Math.round(34 * scale);
+  const bw = Math.max(4, Math.round(6 * scale));
+  const lineW = Math.round(170 * scale);
+  const lineH = Math.max(2, Math.round(3 * scale));
+  const gap = Math.round(26 * scale);
+  return h(
+    'div',
+    { style: { display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+    h('div', {
+      style: {
+        width: lineW,
+        height: lineH,
+        marginRight: gap,
+        display: 'flex',
+        backgroundImage: `linear-gradient(90deg, rgba(200,241,53,0) 0%, ${GREEN} 100%)`,
+      },
+    }),
+    h('div', {
+      style: {
+        width: d,
+        height: d,
+        border: `${bw}px solid ${GREEN}`,
+        transform: 'rotate(45deg)',
+        display: 'flex',
+      },
+    }),
+    h('div', {
+      style: {
+        width: lineW,
+        height: lineH,
+        marginLeft: gap,
+        display: 'flex',
+        backgroundImage: `linear-gradient(90deg, ${GREEN} 0%, rgba(200,241,53,0) 100%)`,
+      },
+    })
+  );
+}
+
+// Jednotná veľkosť loga (menšie). 1 = pôvodné; 0.72 = aktuálne menšie všade.
+const LOGO_SCALE = 0.72;
+
+// Logo: kosoštvorec s CURIOSITY LAB vnútri (BEZ čiarok). Jednotný znak na slidoch 2-4
+// (nad textom) a na outre (nižšie). So zeleným glow + malým kosoštvorcom navrchu.
+function logoMark(scale: number = LOGO_SCALE): VNode {
+  const S = Math.round(132 * scale);          // strana štvorca (po rotácii = kosoštvorec)
+  const box = Math.round(S * 1.4142);         // bounding box po rotácii 45°
+  const off = Math.round((box - S) / 2);
+  const bw = Math.max(2, Math.round(3 * scale));
+  const dia = Math.round(16 * scale);
+  const fs = Math.round(24 * scale);
+  const ls = Math.max(2, Math.round(5 * scale));
+  const mb = Math.round(12 * scale);
+  const glow = Math.round(26 * scale);
+  return h(
+    'div',
+    { style: { position: 'relative', width: box, height: box, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+    h('div', { style: { position: 'absolute', top: off, left: off, width: S, height: S, border: `${bw}px solid ${GREEN}`, transform: 'rotate(45deg)', display: 'flex', boxShadow: `0 0 ${glow}px rgba(200,241,53,0.55)` } }),
+    h(
+      'div',
+      { style: { display: 'flex', flexDirection: 'column', alignItems: 'center' } },
+      h('div', { style: { width: dia, height: dia, border: `${bw}px solid ${GREEN}`, transform: 'rotate(45deg)', display: 'flex', marginBottom: mb } }),
+      h('div', { style: { color: '#ffffff', fontFamily: 'Barlow Condensed', fontSize: fs, fontWeight: 700, letterSpacing: ls, lineHeight: 1.1, display: 'flex' } }, 'CURIOSITY'),
+      h('div', { style: { color: '#ffffff', fontFamily: 'Barlow Condensed', fontSize: fs, fontWeight: 700, letterSpacing: ls, lineHeight: 1.1, display: 'flex' } }, 'LAB')
+    )
+  );
+}
+
+// Logo s deliacou čiarou cez celú šírku (———◇———) — LEN na slide 1 (na horizonte fotky).
+// Čiary idú od kraja po kraj (flexGrow) a strácajú sa do priehľadna pri logu/krajoch.
+function emblemLabeled(scale: number = LOGO_SCALE): VNode {
+  const gap = 20, lineH = 2;
+  return h(
+    'div',
+    { style: { display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center' } },
+    h('div', { style: { flexGrow: 1, height: lineH, marginRight: gap, display: 'flex', backgroundImage: `linear-gradient(90deg, rgba(200,241,53,0) 0%, ${GREEN} 100%)` } }),
+    logoMark(scale),
+    h('div', { style: { flexGrow: 1, height: lineH, marginLeft: gap, display: 'flex', backgroundImage: `linear-gradient(90deg, ${GREEN} 0%, rgba(200,241,53,0) 100%)` } })
   );
 }
 
@@ -338,13 +442,12 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
   // Ak chýba jedna časť, zobrazí sa len druhá.
   const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
-  // Auto-fit: vyber najväčší font tak, aby hook (fakt + slučka) mal SPOLU max 3 riadky.
-  // Spodná hranica 64 — nikdy nie menšie (hook musí zostať veľký/čitateľný ako hrdina).
-  let fs = 76;
-  for (const cand of [76, 72, 68, 64]) {
-    fs = cand;
-    if (estTextLines(fakt, cand) + estTextLines(slucka, cand) <= 3) break;
-  }
+  // Veľkosť (font sa NEMENÍ = Barlow, len veľkosť): fakt = hrdina (väčší), slučka o stupeň
+  // menšia. Auto-fit: každá veta max 2 riadky; ak je dlhšia, zmenší sa (poistka proti pretečeniu).
+  let fsFakt = 104;
+  for (const c of [104, 96, 88, 80]) { fsFakt = c; if (estTextLines(fakt, c) <= 2) break; }
+  let fsSlucka = 88;
+  for (const c of [88, 80, 72, 66]) { fsSlucka = c; if (estTextLines(slucka, c) <= 2) break; }
   return h(
     'div',
     {
@@ -359,7 +462,7 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
         backgroundPosition: 'center',
       },
     },
-    // gradient overlay
+    // gradient overlay — spodná polovica plynulo čierna
     h('div', {
       style: {
         position: 'absolute',
@@ -368,17 +471,28 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
         width: '100%',
         height: '100%',
         backgroundImage:
-          'linear-gradient(180deg, rgba(10,10,10,0.35) 0%, rgba(10,10,10,0.05) 30%, rgba(10,10,10,0.7) 58%, rgba(10,10,10,0.99) 100%)',
+          'linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.0) 10%, rgba(10,10,10,0.5) 26%, rgba(10,10,10,0.95) 42%, rgba(10,10,10,1.0) 60%)',
       },
     }),
-    logoBar(),
-    // hook dole (bezpečná zóna)
+    // emblém na horizonte — deliaca čiara cez celú šírku + kosoštvorec v strede
+    h('div', {
+      style: {
+        position: 'absolute',
+        top: '40%',
+        left: 86,
+        right: 86,
+        display: 'flex',
+      },
+    },
+      emblemLabeled()
+    ),
+    // hook dole — väčší padding + medzera medzi vetami
     h(
       'div',
       {
         style: {
           position: 'absolute',
-          bottom: '26%',
+          bottom: '8%',
           left: 86,
           right: 86,
           display: 'flex',
@@ -388,12 +502,12 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
       fakt
         ? h(
             'div',
-            { style: { display: 'flex', width: '100%', marginBottom: 14 } },
-            wrappedWords(fakt, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true })
+            { style: { display: 'flex', width: '100%', marginBottom: 56 } },
+            wrappedWords(fakt, { fontSize: fsFakt, weight: 800, lineHeight: 1.22, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true })
           )
         : h('div', { style: { display: 'none' } }),
       slucka
-        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fs, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
+        ? h('div', { style: { display: 'flex', width: '100%' } }, wrappedWords(slucka, { fontSize: fsSlucka, weight: 800, lineHeight: 1.3, baseColor: '#ffffff', greenSet, greenPhrases: numericPhrases, ensureGreen: true }))
         : h('div', { style: { display: 'none' } })
     )
   );
@@ -451,7 +565,12 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
       })
     );
   }
-  children.push(logoBar());
+  // logo znak NAD textom (rovnaké ako outro, bez čiarok; nie úplne hore — inak by ho orezalo UI appky)
+  inner.unshift(
+    h('div', { style: { width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 4 } },
+      logoMark()
+    )
+  );
   children.push(
     h(
       'div',
@@ -465,7 +584,7 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          gap: 54,
+          gap: 44,
         },
       },
       ...inner
@@ -514,7 +633,19 @@ function slideOutro(w: number, h0: number): VNode {
         position: 'relative',
       },
     },
-    logoBar(),
+    // logo znak (bez čiarok), nižšie — rovnaké ako na slidoch 2-4
+    h('div', {
+      style: {
+        position: 'absolute',
+        top: '17%',
+        left: 0,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+      },
+    },
+      logoMark()
+    ),
     h(
       'div',
       {
@@ -531,16 +662,16 @@ function slideOutro(w: number, h0: number): VNode {
           gap: 54,
         },
       },
-      // hlavná veta – 3 riadky tesne pri sebe (jeden logický celok)
+      // hlavná veta – 2 riadky tesne pri sebe (jeden logický celok)
       h(
         'div',
         { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 } },
-        h('div', { style: { color: '#eeeeee', fontSize: 70, fontWeight: 800, lineHeight: 1.3, display: 'flex' } }, 'Každý deň jeden'),
+        h('div', { style: { color: '#ffffff', fontSize: 78, fontWeight: 800, lineHeight: 1.25, display: 'flex' } }, 'Chceš viac'),
         h(
           'div',
           { style: { display: 'flex', flexDirection: 'row' } },
-          h('div', { style: { color: GREEN, fontSize: 70, fontWeight: 800, lineHeight: 1.3, display: 'flex', marginRight: 18 } }, 'zabudnutý fakt'),
-          h('div', { style: { color: '#ffffff', fontSize: 70, fontWeight: 800, lineHeight: 1.3, display: 'flex' } }, 'z histórie.')
+          h('div', { style: { color: GREEN, fontSize: 78, fontWeight: 800, lineHeight: 1.25, display: 'flex', marginRight: 20 } }, 'zabudnutých'),
+          h('div', { style: { color: '#ffffff', fontSize: 78, fontWeight: 800, lineHeight: 1.25, display: 'flex' } }, 'faktov?')
         )
       ),
       // zelená šípka s glow (SVG, Barlow nemá glyf ↓)
@@ -803,7 +934,7 @@ function scheduledAt(datum: string | undefined, hh: number, mm: number): string 
 // Post sa NEzverejní sám – Katarína si ho v Bufferi pozrie a publikuje ručne.
 // Na ostrý auto-publish (naplánovaný na dueAt) prepni na false.
 // Zdroj: https://developers.buffer.com/examples/create-draft-post.html
-const BUFFER_SAVE_AS_DRAFT = false;
+const BUFFER_SAVE_AS_DRAFT = true;
 
 // Buffer GraphQL API (nový). Obrázky musia byť verejné URL (z Vercel Blobu).
 // CAROUSEL: posielame celé pole obrázkov cez `assets: [{ image: { url } }]`.
