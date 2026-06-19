@@ -40,6 +40,7 @@ const model = genAI.getGenerativeModel({
     '- Žiadne vatové frázy ("je dôležité poznamenať", "v dnešnej uponáhľanej dobe", "poďme sa pozrieť", "predstavte si").\n' +
     '- Žiadne generické AI vzory (rovnako stavané vety za sebou, zoznamy troch vecí s identickou stavbou).\n' +
     '- Krátke, úderné vety. Konkrétne detaily (mená, čísla, roky) namiesto všeobecností.\n' +
+    '- Každá veta je gramaticky ÚPLNÁ a správna (má sloveso). Žiadne telegrafické útržky ani visiace prístavky.\n' +
     '- Máš osobnosť. Buď priamy. Znej ako pútavý rozprávač, nie ako jazykový model.',
 });
 
@@ -322,8 +323,18 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
   // Ak chýba jedna časť, zobrazí sa len druhá.
   const greenSet = keywords ? buildGreenSet(keywords) : undefined;
   const numericPhrases = (keywords || []).filter((p) => /\d/.test(p));
-  const combinedLen = `${fakt} ${slucka}`.trim().length;
-  const fs = combinedLen > 120 ? 64 : combinedLen > 85 ? 70 : 76;
+  // Auto-fit: vyber najväčší font tak, aby hook (fakt + slučka) mal SPOLU max 3 riadky.
+  const innerW = w - 86 * 2; // šírka textovej zóny (1080 -> 908)
+  const estLines = (txt: string, fs: number) => {
+    if (!txt) return 0;
+    const cpl = Math.max(6, Math.floor(innerW / (fs * 0.56))); // ~znakov na riadok
+    return Math.max(1, Math.ceil(txt.length / cpl));
+  };
+  let fs = 76;
+  for (const cand of [76, 68, 60]) {
+    fs = cand;
+    if (estLines(fakt, cand) + estLines(slucka, cand) <= 3) break;
+  }
   return h(
     'div',
     {
@@ -656,15 +667,17 @@ async function generateCopy(pik: Pikoska): Promise<Copy> {
   const obsah = obsahToText(pik.obsah).slice(0, 4000);
   const userPrompt =
     'Vygeneruj JSON pre 5-slidový carousel podľa pevnej štruktúry. Polia:\n' +
-    '- hookFakt: 1 KRÁTKA veta (max 8 slov), šokujúci fakt alebo paradox (slide 1). NESMIE prezradiť pointu.\n' +
-    '- hookSlucka: 1 KRÁTKA veta (max 7 slov), otvorená slučka/napätie ktoré núti swipnúť ďalej (slide 1). BEZ odpovede, BEZ pointy. Spolu s hookFakt max ~3 riadky.\n' +
+    '- hookFakt: 1 krátka ÚPLNÁ veta (max 6 slov, so slovesom), šokujúci fakt alebo paradox (slide 1). NESMIE prezradiť pointu.\n' +
+    '- hookSlucka: 1 krátka ÚPLNÁ veta (max 6 slov, so slovesom), otvorená slučka/napätie ktoré núti swipnúť ďalej (slide 1). BEZ odpovede, BEZ pointy. Spolu s hookFakt max ~3 riadky.\n' +
     '- rok: VYPLŇ LEN ak je v pikoške uvedený KONKRÉTNY rok (napr. "1232"). Ak rok nie je jasne uvedený, daj prázdny reťazec "" — NEVYMÝŠĽAJ a NEODHADUJ (napr. starovek bez presného roku nech ostane prázdny). Štítok sa vtedy nezobrazí.\n' +
     '- pribeh: 1-2 vety — kto a čo urobil, začiatok príbehu (slide 2).\n' +
     '- eskalacia: 1-2 vety — čo sa stalo ďalej, kauzálna reťaz (slide 3). NEPREZRADIŤ twist.\n' +
     '- pointa: 1-2 vety — PAYOFF, ktorý ZODPOVIE/uzavrie napätie z hooku. Úderná, prekvapivá, zapamätateľná, s konkrétnym faktom alebo číslom. Toto je vyvrcholenie — musí "kliknúť". Žiadne opisné dokončenie, žiadne filozofické závery.\n' +
     '- otazkaKonca: 1 provokatívna otázka pre komentáre (len do popisu).\n' +
     '- klucoveSlova: pole 4-8 kľúčových slov/fráz na zvýraznenie (mená, miesta, čísla, roky, odborné názvy), PRESNE ako sú napísané v texte. ROZLOŽ ich tak, aby v KAŽDOM poli (hookFakt, hookSlucka, pribeh, eskalacia, pointa) bolo aspoň 1 zvýraznené slovo — žiadna veta nesmie ostať bez zvýraznenia.\n' +
-    'PRAVIDLÁ: max 2 KRÁTKE vety na slide (spolu max ~16 slov na slide), úderné vety, každý slide čitateľný za 2-3 sekundy. Hook nesmie prezradiť pointu.\n' +
+    'PRAVIDLÁ: max 2 vety na slide, krátke a úderné, ALE VŽDY GRAMATICKY ÚPLNÉ A SPRÁVNE — každá veta má podmet a SLOVESO.\n' +
+    'ŽIADNE telegrafické útržky bez slovesa (ZLE: "Každý deň 4-5 litrov piva." → DOBRE: "Každý deň dostali 4-5 litrov piva.").\n' +
+    'ŽIADNE visiace prístavky (ZLE: "robotníci štrajkovali — prvý zaznamenaný štrajk." → DOBRE: "robotníci štrajkovali, išlo o prvý zaznamenaný štrajk v histórii."). Radšej úplná veta než useknutá. Hook nesmie prezradiť pointu.\n' +
     `Pikoška: názov=${pik.nadpis}, perex=${pik.perex}, obsah=${obsah}. Odpovedz LEN JSON, nič iné.`;
 
   const result = await generateWithRetry(userPrompt);
