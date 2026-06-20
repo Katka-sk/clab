@@ -937,10 +937,13 @@ async function postToBuffer(params: {
       ? `metadata: { instagram: { type: post, shouldShareToFeed: true } },`
       : '';
 
-  // DRAFT: mode addToQueue + saveToDraft (nezverejní sa samo, len sa uloží ako koncept).
-  // OSTRÝ: customScheduled + dueAt (naplánuje a pri auto-publish nastavení sám vyjde).
+  // TikTok = remind (notifikácia, Katarína publikuje ručne s hudbou).
+  // IG = draft (saveToDraft: true, Katarína schvaľuje a publikuje).
+  // OSTRÝ režim (BUFFER_SAVE_AS_DRAFT=false): customScheduled + dueAt.
   const schedulingGql = BUFFER_SAVE_AS_DRAFT
-    ? 'schedulingType: automatic, mode: addToQueue, saveToDraft: true,'
+    ? params.platform === 'tiktok'
+      ? 'schedulingType: remind, mode: customScheduled, dueAt: ' + JSON.stringify(params.dueAt) + ','
+      : 'schedulingType: automatic, mode: addToQueue, saveToDraft: true,'
     : `schedulingType: automatic, mode: customScheduled, dueAt: ${JSON.stringify(params.dueAt)},`;
 
   // text aj ostatné hodnoty bezpečne vložené ako GraphQL string literály.
@@ -1018,7 +1021,7 @@ async function run(targetSlug?: string, preview?: boolean) {
   //   – na ručné / kontrolované behy (napr. prvý draft). Bez slug = najstaršia v rade.
   const pikosky: Pikoska[] = targetSlug
     ? await sanity.fetch(
-        `*[_type == "pikoska" && slug.current == $slug][0...1]{
+        `*[_type == "pikoska" && slug.current == $slug && publikovaneSocial != true][0...1]{
           _id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie
         }`,
         { slug: targetSlug }
