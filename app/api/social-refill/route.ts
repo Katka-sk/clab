@@ -1064,8 +1064,8 @@ async function run(targetSlug?: string, preview?: boolean, igTime?: string, forc
       const ttChannel = process.env.BUFFER_CHANNEL_TIKTOK || '';
 
       const buffer: any = {};
+      let ttUrls: string[] = [];
       if (igChannel) {
-        // Nahraj všetkých 5 slidov na Blob (verejné URL pre Buffer).
         const igUrls = await Promise.all(
           igSlides.map((b, i) => uploadToBlob(b, `ig-${pik._id}-${i}.png`))
         );
@@ -1073,27 +1073,26 @@ async function run(targetSlug?: string, preview?: boolean, igTime?: string, forc
           channelId: igChannel,
           text: caption,
           imageUrls: igUrls,
-          dueAt: igTime ? scheduledAt(pik.datumPublikacie, parseInt(igTime.split(':')[0]), parseInt(igTime.split(':')[1])) : scheduledAt(pik.datumPublikacie, 19, 7), // Instagram 19:07 (mimo okrúhleho náporu)
+          dueAt: igTime ? scheduledAt(pik.datumPublikacie, parseInt(igTime.split(':')[0]), parseInt(igTime.split(':')[1])) : scheduledAt(pik.datumPublikacie, 19, 7),
           platform: 'instagram',
         });
       }
       if (ttChannel) {
-        const ttUrls = await Promise.all(
+        ttUrls = await Promise.all(
           ttSlides.map((b, i) => uploadToBlob(b, `tt-${pik._id}-${i}.png`))
         );
         buffer.tiktok = await postToBuffer({
           channelId: ttChannel,
           text: caption,
           imageUrls: ttUrls,
-          dueAt: scheduledAt(pik.datumPublikacie, 18, 33), // TikTok 18:33 (mimo okrúhleho náporu)
+          dueAt: scheduledAt(pik.datumPublikacie, 18, 33),
           platform: 'tiktok',
         });
       }
 
-      // Označ ako publikované AŽ po úspešnom naplánovaní do Bufferu.
       await markPublished(pik._id);
 
-      results.push({ id: pik._id, nadpis: pik.nadpis, ok: true, buffer });
+      results.push({ id: pik._id, nadpis: pik.nadpis, ok: true, buffer, tiktokSlides: ttUrls });
     } catch (err: any) {
       results.push({ id: pik._id, nadpis: pik.nadpis, ok: false, error: err?.message || String(err) });
     }
