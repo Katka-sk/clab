@@ -1024,7 +1024,7 @@ async function run(targetSlug?: string, preview?: boolean) {
         { slug: targetSlug }
       )
     : await sanity.fetch(
-        `*[_type == "pikoska" && datumPublikacie <= now() && publikovaneSocial != true]
+        `*[_type == "pikoska" && datumPublikacie >= now() - 60*60*24 && datumPublikacie <= now() + 60*60*24 && publikovaneSocial != true]
           | order(datumPublikacie asc)[0...1]{
             _id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie
           }`
