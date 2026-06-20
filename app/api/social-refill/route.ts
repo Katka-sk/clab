@@ -1014,7 +1014,7 @@ async function markPublished(id: string): Promise<void> {
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
-async function run(targetSlug?: string, preview?: boolean) {
+async function run(targetSlug?: string, preview?: boolean, igTime?: string) {
   // Hobby plán má limit 60 s na funkciu – spracujeme 1 pikošku na beh.
   // Cron beží denne, takže fronta sa postupne vyprázdni.
   // Ak je zadaný ?slug=..., zacieli sa KONKRÉTNA pikoška (aj keď je už označená)
@@ -1073,7 +1073,7 @@ async function run(targetSlug?: string, preview?: boolean) {
           channelId: igChannel,
           text: caption,
           imageUrls: igUrls,
-          dueAt: scheduledAt(pik.datumPublikacie, 19, 7), // Instagram 19:07 (mimo okrúhleho náporu)
+          dueAt: igTime ? scheduledAt(pik.datumPublikacie, parseInt(igTime.split(':')[0]), parseInt(igTime.split(':')[1])) : scheduledAt(pik.datumPublikacie, 19, 7), // Instagram 19:07 (mimo okrúhleho náporu)
           platform: 'instagram',
         });
       }
@@ -1107,7 +1107,8 @@ export async function GET(req: Request) {
     const params = new URL(req.url).searchParams;
     const slug = params.get('slug') || undefined;
     const preview = params.get('preview') === '1';
-    const out = await run(slug, preview);
+    const igTime = params.get('igTime') || undefined;
+    const out = await run(slug, preview, igTime);
     return NextResponse.json(out);
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
