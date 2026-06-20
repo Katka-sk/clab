@@ -941,9 +941,7 @@ async function postToBuffer(params: {
   // IG = draft (saveToDraft: true, Katarína schvaľuje a publikuje).
   // OSTRÝ režim (BUFFER_SAVE_AS_DRAFT=false): customScheduled + dueAt.
   const schedulingGql = BUFFER_SAVE_AS_DRAFT
-    ? params.platform === 'tiktok'
-      ? 'schedulingType: remind, mode: customScheduled, dueAt: ' + JSON.stringify(params.dueAt) + ','
-      : 'schedulingType: automatic, mode: addToQueue, saveToDraft: true,'
+    ? 'schedulingType: automatic, mode: addToQueue, saveToDraft: true,'
     : `schedulingType: automatic, mode: customScheduled, dueAt: ${JSON.stringify(params.dueAt)},`;
 
   // text aj ostatné hodnoty bezpečne vložené ako GraphQL string literály.
