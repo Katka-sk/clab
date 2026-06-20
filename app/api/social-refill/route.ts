@@ -1012,16 +1012,16 @@ async function markPublished(id: string): Promise<void> {
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
-async function run(targetSlug?: string, preview?: boolean, igTime?: string) {
+async function run(targetSlug?: string, preview?: boolean, igTime?: string, force?: boolean) {
   // Hobby plán má limit 60 s na funkciu – spracujeme 1 pikošku na beh.
   // Cron beží denne, takže fronta sa postupne vyprázdni.
   // Ak je zadaný ?slug=..., zacieli sa KONKRÉTNA pikoška (aj keď je už označená)
   //   – na ručné / kontrolované behy (napr. prvý draft). Bez slug = najstaršia v rade.
   const pikosky: Pikoska[] = targetSlug
     ? await sanity.fetch(
-        `*[_type == "pikoska" && slug.current == $slug && publikovaneSocial != true][0...1]{
-          _id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie
-        }`,
+        force
+          ? `*[_type == "pikoska" && slug.current == $slug][0...1]{_id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie}`
+          : `*[_type == "pikoska" && slug.current == $slug && publikovaneSocial != true][0...1]{_id, nadpis, slug, kategoria, perex, obsah, obrazok, datumPublikacie}`,
         { slug: targetSlug }
       )
     : await sanity.fetch(
@@ -1106,7 +1106,8 @@ export async function GET(req: Request) {
     const slug = params.get('slug') || undefined;
     const preview = params.get('preview') === '1';
     const igTime = params.get('igTime') || undefined;
-    const out = await run(slug, preview, igTime);
+    const force = params.get('force') === '1';
+    const out = await run(slug, preview, igTime, force);
     return NextResponse.json(out);
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
