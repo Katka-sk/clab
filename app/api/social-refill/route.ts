@@ -996,7 +996,10 @@ async function postToBuffer(params: {
 // ---------------------------------------------------------------------------
 // Sanity označenie publikované
 // ---------------------------------------------------------------------------
-async function markPublished(id: string): Promise<void> {
+async function markPublished(id: string, ttUrls?: string[], caption?: string): Promise<void> {
+  const set: any = { publikovaneSocial: true };
+  if (ttUrls?.length) set.tiktokSlides = ttUrls;
+  if (caption) set.socialCaption = caption;
   const res = await fetch(
     `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/mutate/${DATASET}`,
     {
@@ -1005,7 +1008,7 @@ async function markPublished(id: string): Promise<void> {
         Authorization: `Bearer ${process.env.SANITY_WRITE_TOKEN || ''}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ mutations: [{ patch: { id, set: { publikovaneSocial: true } } }] }),
+      body: JSON.stringify({ mutations: [{ patch: { id, set } }] }),
     }
   );
   if (!res.ok) throw new Error(`Sanity mutate ${res.status}: ${await res.text()}`);
@@ -1090,7 +1093,7 @@ async function run(targetSlug?: string, preview?: boolean, igTime?: string, forc
         });
       }
 
-      await markPublished(pik._id);
+      await markPublished(pik._id, ttUrls, caption);
 
       results.push({ id: pik._id, nadpis: pik.nadpis, ok: true, buffer, tiktokSlides: ttUrls });
     } catch (err: any) {
