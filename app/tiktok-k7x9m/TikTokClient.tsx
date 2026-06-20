@@ -30,7 +30,7 @@ export default function TikTokClient({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(objUrl);
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 900));
     }
     setDownloading(false);
   }
