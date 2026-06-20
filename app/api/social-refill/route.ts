@@ -42,6 +42,7 @@ const SYSTEM_PROMPT =
   '- Žiadne generické AI vzory (rovnako stavané vety za sebou, zoznamy troch vecí s identickou stavbou).\n' +
   '- Krátke, úderné vety. Konkrétne detaily (mená, čísla, roky) namiesto všeobecností.\n' +
   '- Každá veta je gramaticky ÚPLNÁ a správna (má sloveso). Žiadne telegrafické útržky ani visiace prístavky.\n' +
+  '- ZVRATNÉ SLOVESÁ: nikdy nevynechaj "sa" ani "si" (napr. "pila sa káva", NIE "pila káva"; "umývali si ruky", NIE "umývali ruky"). Toto je najčastejšia slovenská chyba — kontroluj každú vetu.\n' +
   '- Dodržuj slovenskú interpunkciu. POZOR: pred spojkou "alebo" pri rovnocenných možnostiach (A alebo B) sa čiarka NEPÍŠE — správne "pomsta alebo monštrum", NIE "pomsta, alebo monštrum".\n' +
   '- Máš osobnosť. Buď priamy. Znej ako pútavý rozprávač, nie ako jazykový model.';
 
@@ -515,6 +516,8 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
             fontWeight: 700,
             letterSpacing: 16,
             display: 'flex',
+            width: '100%',
+            justifyContent: 'center',
           },
         },
         `ROK ${yearPrefix}`
