@@ -19,14 +19,18 @@ export default function TikTokClient({
   async function downloadAll() {
     setDownloading(true);
     for (let i = 0; i < slides.length; i++) {
+      const proxyUrl = `/api/tiktok-download?url=${encodeURIComponent(slides[i])}`;
+      const res = await fetch(proxyUrl);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = slides[i];
+      a.href = objUrl;
       a.download = `tiktok-slide-${i + 1}.png`;
-      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      await new Promise((r) => setTimeout(r, 400));
+      URL.revokeObjectURL(objUrl);
+      await new Promise((r) => setTimeout(r, 500));
     }
     setDownloading(false);
   }
