@@ -1060,6 +1060,21 @@ async function run(targetSlug?: string, preview?: boolean, igTime?: string, forc
     return { ok: true, preview: true, items: out };
   }
 
+  // DEST=mark: LEN označí pikošku ako publikovanú v Sanity (bez generovania).
+  // Volá sa po úspešnom naplánovaní v OneUp (write token žije len vo Verceli).
+  if (dest === 'mark') {
+    const out: any[] = [];
+    for (const pik of pikosky) {
+      try {
+        await markPublished(pik._id);
+        out.push({ id: pik._id, slug: pik.slug?.current, marked: true });
+      } catch (err: any) {
+        out.push({ id: pik._id, slug: pik.slug?.current, marked: false, error: err?.message || String(err) });
+      }
+    }
+    return { ok: true, dest: 'mark', items: out };
+  }
+
   // DEST=urls: vygeneruj TikTok karusel, nahraj na Vercel Blob a VRÁŤ verejné URL.
   // Neposiela do Buffera ani neoznačuje publikované – slúži na naplánovanie cez OneUp (MCP).
   // Označenie publikované rieši volajúci (Claude) až po úspešnom naplánovaní v OneUp.
