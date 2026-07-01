@@ -59,8 +59,9 @@
 - CMS: Sanity 5 (next-sanity, @sanity/client, @sanity/image-url)
 - Obsah AI: Claude Opus 4.8 (@anthropic-ai/sdk, model claude-opus-4-8) — píše copy. Kľúč ANTHROPIC_API_KEY vo Verceli.
 - Carousel: satori + @resvg/resvg-js + sharp; hosting obrázkov: @vercel/blob
-- Plánovanie: Buffer GraphQL API (IG + TikTok)
-- Hosting: Vercel (auto-deploy z GitHubu), cron cez vercel.json
+- Plánovanie: **OneUp (TikTok) cez MCP** — mesačná dávka. (Buffer nahradený 1.7.2026, viď SOCIAL-AUTOMATIZACIA.md.)
+  Motor má režimy `?dest=urls` (vráti Blob URL) a `?dest=mark` (označí v Sanity). Denný Buffer cron VYPNUTÝ.
+- Hosting: Vercel (auto-deploy z GitHubu). Rýchlosť: ISR `revalidate=300` v page.tsx (nie cron).
 - Štýly: inline + <style> (žiadny Tailwind). styled-components je len závislosť
   Sanity studia (/studio) — do verejných stránok ho NEŤAHAJ (runtime JS navyše).
 - Node 20 (viď .nvmrc).

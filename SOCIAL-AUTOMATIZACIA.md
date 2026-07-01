@@ -2,7 +2,65 @@
 
 > Toto je hotový recept. Pri novom social projekte (napr. Háčik) sa NEzačína od nuly —
 > skopíruje sa toto riešenie a menia sa len projektovo-špecifické veci (dole).
-> Tok: **Sanity → Gemini → satori carousel → Vercel Blob → Buffer (IG + TikTok)**
+> Tok (AKTUÁLNY): **Sanity → Claude Opus → satori carousel → Vercel Blob → OneUp (TikTok, s hudbou)**
+> Tok (STARÝ, nahradený): ~~… → Buffer (IG + TikTok)~~ — Buffer mal limit 10/kanál, nahradený OneUpom.
+
+---
+
+## 🟢 POSTING CEZ ONEUP (AKTUÁLNY MODEL, od 1.7.2026)
+
+Buffer (limit 10/kanál) nahradený **OneUp** — bez limitu, s TikTok hudbou pri karuseloch, riadené cez **OneUp MCP** priamo z Claude Code.
+
+**Dva nové režimy v `route.ts` (motor ostáva, len sa odklonil od Buffera):**
+- **`?slug=X&dest=urls`** → vygeneruje TikTok karusel (1080×1920), nahrá na Vercel Blob, **VRÁTI verejné URL + caption**. Neposiela nikam, neoznačuje. (60 s Vercel limit = 1 pikoška/volanie → volaj po slug.)
+- **`?slug=X&dest=mark`** → LEN označí pikošku `publikovaneSocial=true` v Sanity (write token žije vo Verceli). Volá sa AŽ po úspešnom naplánovaní v OneUp.
+
+**Mesačný dávkový workflow (overený, spoľahlivý):**
+1. Zisti nepublikované: `count(*[_type=="pikoska" && publikovaneSocial != true])`
+2. Pre každý slug zavolaj `?slug=X&dest=urls` → zbierka URL + caption (dá sa dávkovo cez bash slučku).
+3. Cez **OneUp MCP `schedule-image-post-tool`** naplánuj každý post: `category_id`, `social_network_id` (TikTok účet), `scheduled_date_time` (1/deň o 18:33), `content` (caption), `image_url` (5 URL spojených cez `~~`), `tiktok` (hudba).
+4. Po úspechu označ všetky cez `?slug=X&dest=mark`.
+
+**Hudba (len pri OBRÁZKOVÝCH karuseloch — TikTok pri videách API hudbu NEpovolí):**
+- `get-tiktok-trending-sound-tool` (country_code, date_range=30DAY, genre napr. CLASSICAL, social_account_id) → vráti ~100 zvukov.
+- Výsledok je OBROVSKÝ (200k+ znakov) → uloží sa do súboru, čítaj cez `jq`. Vytiahni `trending_song_clip.song_clip_id`, `preview_url`, `thumbnail_url`, `commercial_music_name`, `artist`.
+- POZOR: `music_sound_id` MUSÍ byť REÁLNE `song_clip_id` (nie placeholder ako "1" — inak sa post potichu nepridá / nezobrazí).
+- Vybrať 3–10 zvukov a **rotovať** ich dokola cez posty (index `i % pocet`).
+- Niektoré zvuky nemajú `song_clip_id` (null) → preskočiť.
+
+**OneUp MCP prepojenie:**
+- Plán **Basic $15/mes** stačí — API & MCP access je v KAŽDOM pláne. 5 social účtov, 300 scheduled/mes.
+- API kľúč z **oneupapp.io/api-access**. MCP URL: `https://feed.oneupapp.io/mcp/oneup?apiKey=KLUC` v `.mcp.json`.
+- V `.claude/settings.local.json`: `"enableAllProjectMcpServers": true`, `"enabledMcpjsonServers": ["oneup"]` + `"defaultMode": "bypassPermissions"` (nech sa nepýta na allow).
+- Kľúč NIKDY do chatu (ani screenshot — číta sa vizuálne!). Ulož do `.txt`, načítaj cez bash bez vypísania, súbor zmaž.
+- `list-categories-tool` → category_id. `list-social-accounts-tool` → social_account_id (TikTok).
+
+**Denný Buffer cron VYPNUTÝ** — posting je teraz mesačná dávka cez OneUp. Rýchlosť webu NErieši cron, ale ISR `export const revalidate = 300` v `app/page.tsx` (nezávislé od social).
+
+**AI-generated label:** `schedule-image-post-tool` nemá API parameter na tento label → zapnúť raz v OneUp appke/nastaveniach účtu, nie per post.
+
+**Dizajn opravy (nasadené 1.7.2026, platia pre TikTok 1080×1920):**
+- Slide 1: logo `logoTop = 42%` (bolo 50%), `gradStop = 60%` — logo hore, neprekrýva hook.
+- Slidy 2–4: text blok `top: 24%` (bolo 18%) — jemne nižšie, mimo horného UI TikToku.
+- Rímska číslica za menom (napr. „Viliam I.") sa NEzalomí na nový riadok — zlepí sa s predchádzajúcim slovom (`isRomanNumeral` v `wrappedWords`).
+
+---
+
+## 🚨 ZLATÉ PRAVIDLO — CAROUSEL NÁHĽAD (PORUŠENIE = ZAKÁZANÉ)
+
+> **`node preview-all.mjs` — VŽDY lokálne. NIKDY endpoint, NIKDY Vercel kvôli dizajnu.**
+
+Každá vizuálna zmena carouselu sa overuje VÝLUČNE takto:
+```bash
+cd /Users/katarinasiskova/Desktop/CuriosityLab/clab && node preview-all.mjs
+```
+→ 5 PNG za ~5 sekúnd. Claude ich zobrazí v chate. Katarína schváli. Až potom push.
+
+**Endpoint (`/api/social-refill`) sa NEVOLÁ na overenie dizajnu.** Slúži LEN na produkčné posielanie do Buffera.
+
+Toto pravidlo sa porusilo — preto je tu. Nebude sa opakovať.
+
+---
 
 ---
 
@@ -14,60 +72,61 @@ preklopí do **farieb, fontov a loga daného brandu**. Dizajn neobjavovať znova
 
 ---
 
-## ✅ SCHVÁLENÝ DIZAJN CAROUSELU (Curiosity Lab, 19.6.2026)
+## ✅ SCHVÁLENÝ DIZAJN CAROUSELU (Curiosity Lab, 20.6.2026)
 
 **Formáty (defaultne oba naraz):**
 - Instagram: **1080 × 1350** (4:5)
 - TikTok: **1080 × 1920** (9:16)
-- Dizajn sa líši pozíciami a zarovnaním podľa formátu (viď nižšie).
 
 **Farby:**
-- Pozadie: `#0a0a0a` (čierna)
+- Pozadie: `#0a0a0a`
 - Zvýraznenie (zelená): `#c8f135`
-- Text biely `#ffffff`, jemne tlmený `#eeeeee`
+- Text biely `#ffffff`, telo slidov 2–4: `#eeeeee`
 
-**Fonty (satori potrebuje TTF, nie woff!) — TYP SA NEMENÍ, len veľkosť a padding:**
-- `Barlow ExtraBold 800` — hook (slide 1), zelené kľúčové slová (weight 800)
+**Fonty — TYP SA NEMENÍ, len veľkosť:**
+- `Barlow ExtraBold 800` — hook (slide 1), zelené kľúčové slová
 - `Barlow Bold 700` — telo (slidy 2–4)
-- `Barlow Condensed Bold 700` — logo (CURIOSITY LAB), „ROK", pill, „link v bio"
-- Zdroj: `cdn.jsdelivr.net/gh/google/fonts@main/ofl/barlow` a `.../barlowcondensed`
-- ⚠️ Font MUSÍ mať latin-ext pokrytie (á č ď ž ľ…) inak diakritika = ???
+- `Barlow Condensed Bold 700` — logo (CURIOSITY / LAB), ROK štítok, pill, „link v bio"
+- Zdroj: `cdn.jsdelivr.net/gh/google/fonts@main/ofl/barlow` + `.../barlowcondensed`
+- ⚠️ TTF (nie woff!), musí mať latin-ext (á č ď ž ľ…)
 
-**Logo — `logoMark()` (kosoštvorec):**
-- Veľký kosoštvorec (border zelený, rotácia 45°, glow) + malý kosoštvorec vnútri + CURIOSITY / LAB
-- `LOGO_SCALE = 0.72` — globálna škála, nemeniť
-- Slide 1: `emblemLabeled()` = logoMark + full-width gradientové čiary po stranách (Pruský štýl)
-- Slidy 2–5: `logoMark()` bez čiar, vycentrovaný nad textom
+**Logo — `LOGO_SCALE = 0.72` (nemeniť):**
+- `logoMark()` = kosoštvorec (border zelený, rotácia 45°, glow) + malý kosoštvorec + CURIOSITY / LAB
+- `emblemLabeled()` = logoMark + full-width gradientové čiary po stranách — **len slide 1**
+- Slidy 2–5: `logoMark()` bez čiar, vycentrovaný nad textom, `marginBottom: 4px`
 
-**SLIDE 1 — HOOK (schválený 19.6.2026):**
-- Fotka pikošky na pozadí, tmavý gradient: `linear-gradient(180deg, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.0) 15%, rgba(10,10,10,0.5) 36%, rgba(10,10,10,0.95) 46%[IG]/68%[TT], rgba(10,10,10,1.0) 70%)`
-- `emblemLabeled()` pozícia: IG `top: 49%`, TikTok `top: 50%`
-- Ľavý/pravý okraj: IG `86px`, TikTok `130px`
-- Font: auto-fit štartuje na **96**, kroky [96, 88, 80, 72], kým `hookFakt + hookSlucka ≤ 3 riadky`
-- Obe vety rovnaký font (nie väčší + menší)
-- Text pozícia: IG `bottom: 14%`, TikTok `bottom: 26%`
-- Zarovnanie: IG **ľavo** (`flex-start`), TikTok **stred** (`center`)
+**Predložky a spojky (lepenie):**
+PREP množina: `a, aj, i, k, o, s, u, v, z, do, na, za, zo, so, vo, ku, po, od, pri, pre, nad, pod, bez`
+→ nesmú ostať samé na konci riadka, zlepia sa s nasledujúcim slovom do nezalomiteľnej skupiny.
+
+---
+
+**SLIDE 1 — HOOK:**
+- Fotka pikošky na pozadí + gradient:
+  `linear-gradient(180deg, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.0) 15%, rgba(10,10,10,0.5) 36%, rgba(10,10,10,0.95) **46%[IG] / 68%[TT]**, rgba(10,10,10,1.0) 70%)`
+- `emblemLabeled()` pozícia: IG `top: 49%`, TikTok `top: 50%` — ľavý/pravý okraj `130px` (oba formáty)
+- Font: auto-fit štartuje na **96px**, kroky `[96, 88, 80, 72]`, kým `hookFakt + hookSlucka ≤ 3 riadky celkovo`; lineHeight `1.25`
+- Text pozícia: IG `bottom: 14%`, TikTok `bottom: 26%` — ľavý/pravý okraj `130px` (oba formáty)
+- Zarovnanie: **stred** (`center`) — IG aj TikTok
 - Medzera medzi vetami: `marginBottom: 20px`
-- Slovenské predložky (na, za, v, do…) sa lepia k ďalšiemu slovu — nesmú ostať samé na konci riadka
 
-**SLIDY 2–4 — PRÍBEH/ESKALÁCIA/POINTA:**
-- Jemná fotka na pozadí, prekryv: `linear-gradient(rgba(10,10,10,0.82) 0%, rgba(10,10,10,0.9) 100%)`
+**SLIDY 2–4 — PRÍBEH / ESKALÁCIA / POINTA:**
+- Fotka na pozadí, prekryv: `linear-gradient(rgba(10,10,10,0.78) 0%, rgba(10,10,10,0.88) 100%)`
 - `logoMark()` vycentrovaný nad textom, `marginBottom: 4px`
-- Font tela: **64px** (56px ak text > 230 znakov), weight 700, lineHeight 1.55
-- Obsah v stĺpci: `top: 18%, height: 58%`, `gap: 44px` medzi vetami
-- Zarovnanie textu: **ľavo** (IG aj TikTok)
-- Ľavý/pravý okraj: IG `86px`, TikTok `130px`
-- Slide 2: zelený štítok `ROK XXXX` LEN ak je konkrétny rok (nenútiť)
+- Obsah v stĺpci: `top: 18%`, `height: 58%`, `gap: 44px` medzi vetami
+- Ľavý/pravý okraj: **86px** (IG aj TikTok)
+- Font tela: **64px** (56px ak text > 230 znakov), weight `700`, lineHeight `1.55`
+- Zarovnanie: **stred** (`center`) — IG aj TikTok
+- Slide 2: zelený štítok `ROK XXXX` **LEN ak je v pikoške konkrétny rok** — nikdy nenútiť
 
 **SLIDE 5 — OUTRO:**
-- Čierne pozadie (bez fotky)
-- `logoMark()` nad textom (v stĺpci, nie fixovaný hore/dole)
-- Text: „Chceš viac **zabudnutých** faktov?" (zabudnutých = zelené)
-- Zelená šípka dole (SVG), zelená pill `www.curiositylab.sk`, biele „link v bio"
-- Všetko vycentrované, `gap: 54px`
+- Čierne pozadie (bez fotky), ľavý/pravý okraj `86px`
+- Layout: stĺpec, všetko vycentrované, `gap: 54px`, `height: 100%`
+- Poradie zhora: `logoMark()` → „Chceš viac **zabudnutých** faktov?" (font 78px, weight 800) → zelená šípka SVG (84×96px) → zelený pill `www.curiositylab.sk` (font 54px, padding `32px 86px`, borderRadius 50) → biele „link v bio" (font 54px)
 
-**Zvýrazňovanie:** Claude Opus vracia pole `klucoveSlova` (4–8 fráz) → zelené + weight 800.
-`ensureGreen` = záruka aspoň 1 zeleného slova na každú vetu (aj keď žiadne kľúčové slovo nesedí).
+**Zvýrazňovanie:**
+- Claude Opus vracia `klucoveSlova` (4–8 fráz) → zelené + weight 800
+- `ensureGreen` = záruka aspoň 1 zeleného slova na každú vetu
 
 ---
 
@@ -139,16 +198,16 @@ Až po jej OK ide push. Katarína nemá čakať na deploy kvôli tomu, ako nieč
 ## 🛠️ TECHNICKÉ FUNKCIE (route.ts)
 
 - **Copy model:** Claude Opus 4.8 (`claude-opus-4-8`), `ANTHROPIC_API_KEY` vo Verceli. ~2 centy/post.
-- **DRAFT flag** `BUFFER_SAVE_AS_DRAFT` — TERAZ `false` = OSTRÝ (auto-publish). `true` = draft (na testovanie/review).
+- **DRAFT flag** `BUFFER_SAVE_AS_DRAFT` — **TERAZ `true` = DRAFT** (Katarína schvaľuje a publikuje ručne). Prepnúť na `false` až keď bude spokojná a chce auto-publish.
 - **Cielenie pikošky:** `?slug=...` (konkrétna, aj keď je už označená). Bez slug = najstaršia v rade (cron).
 - **PREVIEW:** `?preview=1` — vráti LEN text (Copy) bez kreslenia a bez Buffera. Hlavný iteračný nástroj.
 - **RETRY + validácia:** SDK opakuje pri 429/529/5xx; navyše cyklus až 4× kým nie sú všetky polia A hook ≤3 riadky.
-- **Slide 1:** zelené len kľúčové slová + ensureGreen (záruka 1 zeleného slova/veta) + auto-fit fontu (76→72→68→64, min 64).
+- **Slide 1:** zelené len kľúčové slová + ensureGreen (záruka 1 zeleného slova/veta) + auto-fit fontu (96→88→80→72, kým ≤3 riadky celkovo).
 - **Slidy 2-4:** ensureGreen aj tu, jednotný font, jemná fotka v pozadí (prekryv 0.78–0.88).
 - **Rok:** len ak je v pikoške konkrétny (nenútiť).
-- **Časy (nepárne, mimo okrúhleho náporu):** TikTok 18:33, Instagram 19:07.
-- **Cron:** denne 07:00 (`vercel.json`) → najstaršia v rade, 1/deň. V OSTROM režime auto-publikuje.
-  Buffer Free = 10/kanál; 1/deň sa zverejní hneď, rad sa nehromadí. Pri plnom rade cron len chybne (samoopravné).
+- **Časy (nepárne, mimo okrúhleho náporu):** TikTok 18:33 (IG 19:07 — už neriešime, len TikTok).
+- **Cron:** ⚠️ ZASTARANÉ — denný Buffer cron VYPNUTÝ. Posting je teraz mesačná dávka cez OneUp MCP
+  (viď sekcia „POSTING CEZ ONEUP" hore). Rýchlosť webu drží ISR `revalidate=300` v `page.tsx`, nie cron.
 
 ## ČO JE UŽ VYRIEŠENÉ (kopíruj, neobjavuj znova)
 
@@ -166,21 +225,23 @@ Až po jej OK ide push. Katarína nemá čakať na deploy kvôli tomu, ako nieč
 - **Hlas značky (soul rules) v `SYSTEM_PROMPT`** — aby texty nezneli ako AI:
   žiadne pomlčky, žiadne vatové frázy, žiadne generické AI vzory; krátke úderné vety,
   konkrétne detaily (mená/čísla/roky), osobnosť rozprávača. (Inšpirované „soul.md" z kurzu.)
-- Draft vs ostrý: riadi flag `BUFFER_SAVE_AS_DRAFT` v route.ts. **TERAZ je `false` = OSTRÝ (auto-publish).**
+- Draft vs ostrý: riadi flag `BUFFER_SAVE_AS_DRAFT` v route.ts. **TERAZ je `true` = DRAFT** (Katarína schvaľuje a publikuje ručne v Bufferi).
+  - `true` = DRAFT → posty prídu do Buffer fronty ako drafty, Katarína ich skontroluje a ručne zverejní.
   - `false` = OSTRÝ (`mode: customScheduled, dueAt`) → naplánuje a Buffer sám zverejní (TikTok 18:33, IG 19:07).
-  - `true` = DRAFT (`mode: addToQueue, saveToDraft: true`) → nezverejní sa samo, na testovanie/review.
-  - Pri novom projekte začni na `true` (testuj), prepni na `false` až keď si spokojná s dizajnom aj textami.
+  - Prepnúť na `false` až keď bude Katarína spokojná a chce plný auto-pilot.
 
 ---
 
 ## ČO MENIŤ PRI NOVOM PROJEKTE (per-projekt)
 
 1. Sanity project ID + dataset + write token
-2. Buffer channel ID (IG, TikTok) + nový Buffer API key
-3. Vercel env premenné + nový Blob store
-4. Gemini systémový prompt (iný tón/obsah pre daný brand)
+2. **OneUp:** pripoj nový TikTok účet v OneUp → cez MCP zisti `social_account_id` + `category_id`.
+   (API kľúč OneUp je per-účet Katky, MCP prepojenie stačí spraviť raz.)
+3. Vercel env premenné + nový Blob store (`BLOB_READ_WRITE_TOKEN`)
+4. Claude Opus systémový prompt (iný tón/obsah pre daný brand) — `SYSTEM_PROMPT` v route.ts
 5. **Carousel dizajn v satori** (farby, font, logo, layout) — zaberie najviac času
 6. Hashtag systém z poľa `kategoria` + filter citlivých slov
+7. Trending hudby: vybrať 3–10 zvukov pre daný brand (vibe) cez `get-tiktok-trending-sound`
 
 ---
 
