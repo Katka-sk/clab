@@ -449,8 +449,8 @@ function slideBackgroundHook(fakt: string, slucka: string, keywords: string[] | 
   for (const c of [96, 88, 80, 72]) { fsHook = c; if (estTextLines(fakt, c) + estTextLines(slucka, c) <= 3) break; }
   const isTT = h0 >= 1800;
   const pad = 130;
-  const logoTop = isTT ? '50%' : '49%';
-  const gradStop = isTT ? '68%' : '46%';
+  const logoTop = isTT ? '42%' : '49%';
+  const gradStop = isTT ? '60%' : '46%';
   return h(
     'div',
     {
