@@ -239,12 +239,21 @@ function wrappedWords(
   // Slovenská typografia: krátke predložky/spojky (a, na, za, v, do…) sa NESMÚ lámať
   // samé na koniec riadka — zlepia sa s nasledujúcim slovom do nezalomiteľnej skupiny.
   const PREP = new Set(['a', 'aj', 'i', 'k', 'o', 's', 'u', 'v', 'z', 'do', 'na', 'za', 'zo', 'so', 'vo', 'ku', 'po', 'od', 'pri', 'pre', 'nad', 'pod', 'bez']);
+  // Rímska číslica za menom panovníka (napr. "Viliam I.", "Ľudovít XIV.") sa nesmie
+  // odtrhnúť na nový riadok – zlepí sa s PREDCHÁDZAJÚcim slovom (menom).
+  const isRomanNumeral = (w: string) => /^[IVXLCDM]{1,4}\.?$/.test(w);
   const children: VNode[] = [];
   let gi = 0;
   while (gi < tokens.length) {
     const t = tokens[gi];
     const isPrep = !/\s/.test(t.text) && PREP.has(normalizeWord(t.text));
+    const nextIsRoman = gi + 1 < tokens.length && !/\s/.test(tokens[gi + 1].text) && isRomanNumeral(tokens[gi + 1].text);
     if (isPrep && gi + 1 < tokens.length) {
+      children.push(
+        h('div', { style: { display: 'flex', flexWrap: 'nowrap', alignItems: 'flex-start' } }, rt(gi), rt(gi + 1))
+      );
+      gi += 2;
+    } else if (nextIsRoman) {
       children.push(
         h('div', { style: { display: 'flex', flexWrap: 'nowrap', alignItems: 'flex-start' } }, rt(gi), rt(gi + 1))
       );
@@ -567,7 +576,7 @@ function slideMid(text: string, w: number, h0: number, keywords?: string[], year
       {
         style: {
           position: 'absolute',
-          top: '18%',
+          top: '24%',
           left: 86,
           right: 86,
           height: '58%',
