@@ -1017,7 +1017,7 @@ async function markPublished(id: string, ttUrls?: string[], caption?: string): P
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
-async function run(targetSlug?: string, preview?: boolean, igTime?: string, force?: boolean) {
+async function run(targetSlug?: string, preview?: boolean, igTime?: string, force?: boolean, dest?: string) {
   // Hobby plán má limit 60 s na funkciu – spracujeme 1 pikošku na beh.
   // Cron beží denne, takže fronta sa postupne vyprázdni.
   // Ak je zadaný ?slug=..., zacieli sa KONKRÉTNA pikoška (aj keď je už označená)
@@ -1049,6 +1049,28 @@ async function run(targetSlug?: string, preview?: boolean, igTime?: string, forc
       out.push({ nadpis: pik.nadpis, slug: pik.slug?.current, copy });
     }
     return { ok: true, preview: true, items: out };
+  }
+
+  // DEST=urls: vygeneruj TikTok karusel, nahraj na Vercel Blob a VRÁŤ verejné URL.
+  // Neposiela do Buffera ani neoznačuje publikované – slúži na naplánovanie cez OneUp (MCP).
+  // Označenie publikované rieši volajúci (Claude) až po úspešnom naplánovaní v OneUp.
+  if (dest === 'urls') {
+    const fontsU = await loadFonts();
+    const out: any[] = [];
+    for (const pik of pikosky) {
+      try {
+        const copy = await generateCopy(pik);
+        const ttSlides = await buildCarousel(pik, copy, fontsU, { w: 1080, h: 1920 });
+        const caption = buildCaption(copy, pik);
+        const ttUrls = await Promise.all(
+          ttSlides.map((b, i) => uploadToBlob(b, `tt-${pik._id}-${i}.png`))
+        );
+        out.push({ id: pik._id, nadpis: pik.nadpis, slug: pik.slug?.current, caption, ttUrls, ok: true });
+      } catch (err: any) {
+        out.push({ id: pik._id, nadpis: pik.nadpis, slug: pik.slug?.current, ok: false, error: err?.message || String(err) });
+      }
+    }
+    return { ok: true, dest: 'urls', items: out };
   }
 
   const fonts = await loadFonts();
@@ -1111,7 +1133,8 @@ export async function GET(req: Request) {
     const preview = params.get('preview') === '1';
     const igTime = params.get('igTime') || undefined;
     const force = params.get('force') === '1';
-    const out = await run(slug, preview, igTime, force);
+    const dest = params.get('dest') || undefined;
+    const out = await run(slug, preview, igTime, force, dest);
     return NextResponse.json(out);
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
