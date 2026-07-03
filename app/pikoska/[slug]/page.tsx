@@ -12,8 +12,11 @@ const client = createClient({
 });
 
 const builder = imageUrlBuilder(client);
+// width+height+fit('crop') necháva Sanity orezať podľa uloženého hotspotu
+// (namiesto natvrdo cez CSS object-position) — dôležité, lebo zdrojové
+// obrázky sú na výšku (kvôli TikToku) a .detail-img box je na šírku.
 function urlFor(source: any) {
-  return builder.image(source).width(1600).auto('format').url();
+  return builder.image(source).width(1600).height(590).fit('crop').auto('format').url();
 }
 function urlForThumb(source: any) {
   return builder.image(source).width(120).height(120).fit('crop').auto('format').url();
@@ -130,7 +133,7 @@ export default async function PikoskaDetail(
         .logo-text { font-family: var(--font-bebas), sans-serif; font-size: 20px; letter-spacing: 4px; color: white; }
         .detail-img-block { max-width: 1300px; margin: 0 auto; padding: 32px 80px 0; }
         .detail-img { width: 100%; height: 420px; border-radius: 16px; overflow: hidden; position: relative; background: #111; }
-        .detail-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+        .detail-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
         .detail-img-cat { position: absolute; top: 20px; right: 20px; color: #000; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; border: none; padding: 6px 14px; border-radius: 4px; background: #c8f135; }
         .detail-article { max-width: 900px; margin: 0 auto; padding: 48px 80px 0; }
         .detail-perex { font-size: 20px; color: #999; line-height: 1.8; margin-bottom: 48px; font-style: italic; border-left: 3px solid #c8f135; padding-left: 20px; }
@@ -143,7 +146,7 @@ export default async function PikoskaDetail(
         .btn-next { display: flex; align-items: center; gap: 20px; flex: 1; background: #111; border: 1px solid #1a1a1a; padding: 20px 28px; border-radius: 50px; transition: all 0.25s; text-align: left; text-decoration: none; }
         .btn-next:hover { border-color: #c8f135; box-shadow: 0 0 0 1px #c8f135, 0 4px 20px #c8f13520; background: #141414; }
         .btn-next-thumb { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: #1a1a1a; flex-shrink: 0; }
-        .btn-next-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+        .btn-next-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
         .btn-next-text { flex: 1; }
         .btn-next-label { color: #c8f135; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; letter-spacing: 2px; margin-bottom: 4px; }
         .btn-next-title { color: white; font-family: var(--font-bebas), sans-serif; font-size: 28px; line-height: 1.0; }

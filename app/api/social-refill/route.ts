@@ -1026,7 +1026,7 @@ async function markPublished(id: string, ttUrls?: string[], caption?: string): P
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
-async function run(targetSlug?: string, preview?: boolean, igTime?: string, force?: boolean, dest?: string) {
+async function run(targetSlug?: string, preview?: boolean, igTime?: string, force?: boolean, dest?: string, suppliedCopy?: Copy) {
   // Hobby plán má limit 60 s na funkciu – spracujeme 1 pikošku na beh.
   // Cron beží denne, takže fronta sa postupne vyprázdni.
   // Ak je zadaný ?slug=..., zacieli sa KONKRÉTNA pikoška (aj keď je už označená)
@@ -1083,7 +1083,11 @@ async function run(targetSlug?: string, preview?: boolean, igTime?: string, forc
     const out: any[] = [];
     for (const pik of pikosky) {
       try {
-        const copy = await generateCopy(pik);
+        // NÚDZOVÁ CESTA (došiel Anthropic API kredit, 3.7.2026): ak volajúci pošle
+        // hotový `copy` (POST telo), použi ho a NEVOLAJ generateCopy (žiadny API spend).
+        // Model (Opus 4.8) sa NEMENÍ – toto je len obchádzka pre tento výpadok, nie
+        // trvalá zmena. Bežná cesta (GET, bez copy v tele) je nezmenená.
+        const copy = suppliedCopy ?? await generateCopy(pik);
         const ttSlides = await buildCarousel(pik, copy, fontsU, { w: 1080, h: 1920 });
         const caption = buildCaption(copy, pik);
         const ttUrls = await Promise.all(
@@ -1165,6 +1169,27 @@ export async function GET(req: Request) {
   }
 }
 
+// POST: rovnaké ako GET, ale telo môže niesť { copy: {...} } – núdzová cesta bez
+// volania Anthropic API (viď komentár pri dest==='urls' vyššie). Bez tela sa
+// správa identicky ako GET.
 export async function POST(req: Request) {
-  return GET(req);
+  try {
+    const params = new URL(req.url).searchParams;
+    const slug = params.get('slug') || undefined;
+    const preview = params.get('preview') === '1';
+    const igTime = params.get('igTime') || undefined;
+    const force = params.get('force') === '1';
+    const dest = params.get('dest') || undefined;
+    let suppliedCopy: Copy | undefined;
+    try {
+      const body = await req.json();
+      if (body?.copy) suppliedCopy = body.copy as Copy;
+    } catch {
+      // žiadne/neplatné JSON telo -> správaj sa ako GET
+    }
+    const out = await run(slug, preview, igTime, force, dest, suppliedCopy);
+    return NextResponse.json(out);
+  } catch (err: any) {
+    return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
+  }
 }

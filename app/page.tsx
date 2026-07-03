@@ -10,8 +10,11 @@ const client = createClient({
 });
 
 const builder = imageUrlBuilder(client);
-function urlFor(source: any, width: number) {
-  return builder.image(source).width(width).auto('format').url();
+// width+height+fit('crop') necháva Sanity orezať podľa uloženého hotspotu
+// (namiesto natvrdo cez CSS object-position) — dôležité, lebo zdrojové
+// obrázky sú na výšku (kvôli TikToku) a tieto kontajnery sú na šírku.
+function urlFor(source: any, width: number, height: number) {
+  return builder.image(source).width(width).height(height).fit('crop').auto('format').url();
 }
 
 const CATEGORIES = ['VŠETKY', 'STAROVEK', 'STREDOVEK', 'MODERNA', 'KRÁĽOVSTVO', 'VEDA', 'MEDICÍNA', 'VOJENSTVO', 'KULTÚRA'];
@@ -107,7 +110,7 @@ export default async function Home({
         .pill.on { background: #c8f135; color: #000; border-color: #c8f135; }
         .hero { max-width: 1300px; margin: 0 auto; padding: 32px 80px; display: flex; gap: 48px; align-items: center; }
         .hero-img { width: 50%; aspect-ratio: 4/3; background: #111; border-radius: 14px; position: relative; overflow: hidden; flex-shrink: 0; cursor: pointer; display: block; }
-        .hero-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transition: transform 0.4s; }
+        .hero-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.4s; }
         .hero-img:hover img { transform: scale(1.04); }
         .hero-badge { position: absolute; top: 16px; left: 16px; background: #c8f135; color: #000; padding: 6px 14px; border-radius: 50px; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; z-index: 2; }
         .hero-con { flex: 1; display: flex; flex-direction: column; gap: 14px; }
@@ -123,7 +126,7 @@ export default async function Home({
         .card { background: #111; border: 1px solid #1a1a1a; border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color 0.25s, box-shadow 0.25s; text-decoration: none; color: inherit; display: block; }
         .card:hover { border-color: #c8f135; box-shadow: 0 0 0 1px #c8f135, 0 8px 32px #c8f13518; }
         .card-img-wrap { overflow: hidden; height: 220px; position: relative; background: #1a1a1a; }
-        .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transition: transform 0.4s; }
+        .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.4s; }
         .card:hover .card-img-wrap img { transform: scale(1.06); }
         .card-body { padding: 20px; }
         .card-cat { display: inline-block; color: #000; background: #c8f135; font-family: var(--font-barlow-condensed), sans-serif; font-size: 11px; letter-spacing: 2px; font-weight: 700; padding: 3px 10px; border-radius: 4px; margin-bottom: 10px; }
@@ -188,7 +191,7 @@ export default async function Home({
         <div className="hero">
           <Link href={`/pikoska/${heroPikoska.slug.current}`} className="hero-img">
             {heroPikoska.obrazok
-              ? <img src={urlFor(heroPikoska.obrazok, 1000)} alt={heroPikoska.nadpis} />
+              ? <img src={urlFor(heroPikoska.obrazok, 1000, 750)} alt={heroPikoska.nadpis} />
               : <div style={{ width: '100%', height: '100%', background: '#1a1a1a' }} />
             }
             <div className="hero-badge">PIKOŠKA DŇA</div>
@@ -212,7 +215,7 @@ export default async function Home({
             <Link key={p._id} href={`/pikoska/${p.slug.current}`} className="card">
               <div className="card-img-wrap">
                 {p.obrazok
-                  ? <img src={urlFor(p.obrazok, 800)} alt={p.nadpis} loading="lazy" />
+                  ? <img src={urlFor(p.obrazok, 800, 500)} alt={p.nadpis} loading="lazy" />
                   : <div style={{ width: '100%', height: '100%', background: '#1a1a1a' }} />
                 }
               </div>
