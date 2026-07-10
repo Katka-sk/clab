@@ -10,13 +10,6 @@ export type ClabVideo = {
 // potenciálu. Videá dočasne hostované v public/videos (neskôr presun na Vercel Blob).
 export const VIDEOS: ClabVideo[] = [
   {
-    id: 'bayer',
-    nadpis: '💉 Bayer heroín',
-    src: '/videos/bayer.mp4',
-    caption: 'Firma, čo vyrába Aspirín, kedysi predávala heroín. Deťom. Na kašeľ. 💉',
-    hashtags: '#historia #zaujimavosti #darkhistory #dejiny #history',
-  },
-  {
     id: 'radium',
     nadpis: '☠️ Rádiové dievčatá',
     src: '/videos/radium.mp4',
@@ -43,5 +36,12 @@ export const VIDEOS: ClabVideo[] = [
     src: '/videos/zelena.mp4',
     caption: 'Najkrajšia farba 19. storočia zabíjala. A ženy ju aj tak milovali. 👗☠️',
     hashtags: '#historia #darkhistory #zaujimavosti #dejiny #history',
+  },
+  {
+    id: 'bayer',
+    nadpis: '💉 Bayer heroín',
+    src: '/videos/bayer.mp4',
+    caption: 'Firma, čo vyrába Aspirín, kedysi predávala heroín. Deťom. Na kašeľ. 💉',
+    hashtags: '#historia #zaujimavosti #darkhistory #dejiny #history',
   },
 ];
