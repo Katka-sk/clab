@@ -15,22 +15,57 @@ export default function TikTokClient({
 }) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [stav, setStav] = useState('');
 
-  async function downloadAll() {
+  // Stiahne všetky slidy ako File[] (cez proxy — obchádza CORS).
+  async function nacitajSubory(): Promise<File[]> {
+    return Promise.all(
+      slides.map(async (url, i) => {
+        const res = await fetch(`/api/tiktok-download?url=${encodeURIComponent(url)}`);
+        const blob = await res.blob();
+        return new File([blob], `curiositylab-slide-${i + 1}.png`, {
+          type: blob.type || 'image/png',
+        });
+      })
+    );
+  }
+
+  function stiahniSubor(file: File) {
+    const objUrl = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = objUrl;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+  }
+
+  // MOBIL: systémové zdieľanie so súbormi → „Uložiť do galérie" alebo rovno do TikToku,
+  // všetky naraz. Sekvenčné a.click() mobil blokuje (stiahol len 1). DESKTOP: fallback.
+  async function ulozitVsetko() {
     setDownloading(true);
-    for (let i = 0; i < slides.length; i++) {
-      const proxyUrl = `/api/tiktok-download?url=${encodeURIComponent(slides[i])}`;
-      const res = await fetch(proxyUrl);
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objUrl;
-      a.download = `tiktok-slide-${i + 1}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objUrl);
-      await new Promise((r) => setTimeout(r, 900));
+    setStav('Pripravujem obrázky…');
+    try {
+      const files = await nacitajSubory();
+      const nav = navigator as unknown as {
+        canShare?: (d: { files: File[] }) => boolean;
+        share?: (d: { files: File[]; title?: string }) => Promise<void>;
+      };
+      if (nav.canShare && nav.share && nav.canShare({ files })) {
+        setStav('');
+        await nav.share({ files, title: nadpis });
+      } else {
+        setStav('Sťahujem…');
+        for (const f of files) {
+          stiahniSubor(f);
+          await new Promise((r) => setTimeout(r, 500));
+        }
+        setStav('');
+      }
+    } catch {
+      // používateľ zrušil systémové menu = v poriadku
+      setStav('');
     }
     setDownloading(false);
   }
@@ -69,10 +104,13 @@ export default function TikTokClient({
         ))}
       </div>
 
-      {/* Stiahnuť všetko */}
-      <button onClick={downloadAll} disabled={downloading} style={{ ...btn, backgroundColor: '#c8f135', color: '#000', marginBottom: 12 }}>
-        {downloading ? 'Sťahujem...' : '↓ Stiahnuť všetkých 5 slidov'}
+      {/* Uložiť všetko do galérie / zdieľať */}
+      <button onClick={ulozitVsetko} disabled={downloading} style={{ ...btn, backgroundColor: '#c8f135', color: '#000', marginBottom: 8 }}>
+        {downloading ? (stav || 'Pracujem…') : `⤓ Uložiť všetkých ${slides.length} do galérie`}
       </button>
+      <p style={{ color: '#888', fontSize: 12, textAlign: 'center', margin: '0 0 16px' }}>
+        Otvorí sa systémové menu → <b style={{ color: '#c8f135' }}>Uložiť do galérie</b> (alebo rovno zdieľať do TikToku).
+      </p>
 
       {/* Caption */}
       {caption && (
