@@ -89,6 +89,11 @@ export default function VideoQueue({ videos }: { videos: ClabVideo[] }) {
     [next[i], next[j]] = [next[j], next[i]];
     zapisFrontu(next);
   }
+  // Aktuálne (vrchné) video pošle na koniec fronty — navrch príde ďalšie.
+  function naKoniec(id: string) {
+    zapisFrontu([...fronta.filter((x) => x !== id), id]);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   function vyhod(id: string) {
     ulozSkip([...skip, id]);
     setCopied(false);
@@ -219,7 +224,25 @@ export default function VideoQueue({ videos }: { videos: ClabVideo[] }) {
         <div style={{ height: '100%', width: `${(hotove / (hotove + fronta.length)) * 100}%`, background: '#c8f135', transition: 'width .3s' }} />
       </div>
 
-      <h1 style={{ fontSize: 20, fontWeight: 800, marginBottom: 12 }}>{active.nadpis}</h1>
+      <h1 style={{ fontSize: 20, fontWeight: 800, marginBottom: 10 }}>{active.nadpis}</h1>
+
+      {/* Ovládanie aktuálneho videa — dá sa aj toto vrchné posunúť/vyhodiť */}
+      {fronta.length > 1 && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          <button
+            onClick={() => naKoniec(active.id)}
+            style={{ flex: 1, padding: '9px 8px', borderRadius: 9, border: '1px solid #2a2a2a', background: '#1a1a1a', color: '#ccc', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+          >
+            ⇊ Dať nižšie (postnem neskôr)
+          </button>
+          <button
+            onClick={() => vyhod(active.id)}
+            style={{ flex: '0 0 auto', padding: '9px 14px', borderRadius: 9, border: '1px solid #3a1e1e', background: '#1a1a1a', color: '#ff6b6b', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+          >
+            ✕ Vyhodiť
+          </button>
+        </div>
+      )}
 
       {/* Video */}
       <video
