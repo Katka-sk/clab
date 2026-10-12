@@ -34,11 +34,14 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
   const [busy, setBusy] = useState('');
   const [ukazVyhodene, setUkazVyhodene] = useState(false);
 
+  // Stav z telefónu sa dá prečítať až po načítaní v prehliadači (na serveri localStorage nie je).
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setDone(nacitaj(DONE_KEY));
     setOrder(nacitaj(ORDER_KEY));
     setSkip(nacitaj(SKIP_KEY));
     setLoaded(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const byId = useMemo(() => new Map(kusy.map((k) => [k.id, k])), [kusy]);
@@ -126,7 +129,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
           <button onClick={() => setS([])} style={{ ...btn, background: C.paper, color: C.accent, border: `1px solid ${C.line}`, marginBottom: 10 }}>↩︎ Vrátiť vyhodené do fronty</button>
         )}
         {hotove > 0 && (
-          <button onClick={vratPosledny} style={{ ...btn, background: C.paper, color: C.muted, border: `1px solid ${C.line}` }}>↩︎ Vrátiť posledný „Hotovo"</button>
+          <button onClick={vratPosledny} style={{ ...btn, background: C.paper, color: C.muted, border: `1px solid ${C.line}` }}>↩︎ Vrátiť posledný „Hotovo“</button>
         )}
       </div>
     );
@@ -169,7 +172,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
         <p style={{ ...lbl, color: C.accent }}>Pred zverejnením v TikToku</p>
         <div>☐ <b>AI štítok zapnúť</b> (Viac možností → AI-generated content). Dodatočne sa pridať nedá.</div>
         <div>☐ Hudba z TikToku, potichu{active.typ === 'video' ? ' (10–20 %, hlas musí byť počuť)' : ''}.</div>
-        <div>☐ Nepísať „link in bio".</div>
+        <div>☐ Nepísať „link in bio“.</div>
       </div>
 
       <div style={{ background: C.paper, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 12 }}>
@@ -182,7 +185,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
       </div>
 
       <button onClick={hotovo} style={{ ...btn, background: C.okbg, color: C.ok, border: `1px solid #BFDCC8`, marginTop: 6 }}>✅ Hotovo — ukáž ďalší</button>
-      <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0', fontFamily: sans }}>„Hotovo" ťukni až po zverejnení. Zostáva {fronta.length}.</p>
+      <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0', fontFamily: sans }}>„Hotovo“ ťukni až po zverejnení. Zostáva {fronta.length}.</p>
 
       {fronta.length > 1 && (
         <div style={{ display: 'flex', gap: 8, marginTop: 14, fontFamily: sans }}>
@@ -213,7 +216,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
       {(vyhodene.length > 0 || hotove > 0) && (
         <div style={{ marginTop: 18, fontFamily: sans }}>
           {hotove > 0 && (
-            <button onClick={vratPosledny} style={{ background: 'transparent', border: 'none', color: C.muted, fontSize: 12, cursor: 'pointer', padding: '4px 0', display: 'block' }}>↩︎ Vrátiť posledný „Hotovo" (ťukla som omylom)</button>
+            <button onClick={vratPosledny} style={{ background: 'transparent', border: 'none', color: C.muted, fontSize: 12, cursor: 'pointer', padding: '4px 0', display: 'block' }}>↩︎ Vrátiť posledný „Hotovo“ (ťukla som omylom)</button>
           )}
           {vyhodene.length > 0 && (
             <>
