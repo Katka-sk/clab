@@ -1,5 +1,5 @@
 // Generované z Mindborn/podklady/video/tiktok/oktober15.json cez fronta_export.py — needitovať ručne.
-export type MbKus = { id: string; nazov: string; typ: 'karusel' | 'video'; den: string; caption: string; hashtags: string; slajdy?: string[]; video?: string };
+export type MbKus = { id: string; nazov: string; typ: 'karusel' | 'video' | 'citat'; den: string; caption: string; hashtags: string; slajdy?: string[]; video?: string };
 
 export const KUSY: MbKus[] = [
   {
@@ -60,6 +60,15 @@ export const KUSY: MbKus[] = [
     ]
   },
   {
+    "id": "C04-som-v-pohode",
+    "nazov": "Citát · všetci si myslia, že som v pohode",
+    "typ": "citat",
+    "den": "So 17.10. (2.)",
+    "caption": "Gratitude and struggling don't cancel each other out. Free 12-min meditation for when pregnancy after infertility is still hard: mindborn.io 🎧",
+    "hashtags": "#pregnancyafterinfertility #ivfpregnancy #ttc #pregnancyafterivf #ttccommunity",
+    "video": "/mb/C04-som-v-pohode.mp4"
+  },
+  {
     "id": "V02-transfer-rano",
     "nazov": "Ráno pred transferom",
     "typ": "video",
@@ -110,6 +119,15 @@ export const KUSY: MbKus[] = [
     "video": "/mb/V03-tww-telo.mp4"
   },
   {
+    "id": "C01-just-relax",
+    "nazov": "Citát · „just relax“",
+    "typ": "citat",
+    "den": "Št 22.10.",
+    "caption": "Free 13-min meditation for any night of the wait. Nothing is asked of you — not even calm: mindborn.io 🎧",
+    "hashtags": "#twoweekwait #ttc #justrelax #ivf #ttccommunity",
+    "video": "/mb/C01-just-relax.mp4"
+  },
+  {
     "id": "K06-negtest-dovolenie",
     "nazov": "Negatívny test · dovolenia na dnes",
     "typ": "karusel",
@@ -140,6 +158,24 @@ export const KUSY: MbKus[] = [
       "/mb/K07-pozitivny-strach/05.jpg",
       "/mb/K07-pozitivny-strach/06.jpg"
     ]
+  },
+  {
+    "id": "C05-najdlhsi-mesiac",
+    "nazov": "Citát · najdlhší mesiac",
+    "typ": "citat",
+    "den": "So 24.10. (2.)",
+    "caption": "Day one or day nine — test day isn't tonight. Free 13-min meditation for any night of the wait: mindborn.io 🎧",
+    "hashtags": "#twoweekwait #tww #ttc #ivf #ttccommunity",
+    "video": "/mb/C05-najdlhsi-mesiac.mp4"
+  },
+  {
+    "id": "C02-chcem-svoje",
+    "nazov": "Citát · chcem svoje tehotenstvo",
+    "typ": "citat",
+    "den": "Ne 25.10.",
+    "caption": "That's not a bad heart. That's a heart that wants something very much. Free 13-min meditation for when everyone is pregnant but you: mindborn.io 🎧",
+    "hashtags": "#ttc #infertility #pregnancyannouncement #ttccommunity #infertilitysupport",
+    "video": "/mb/C02-chcem-svoje.mp4"
   },
   {
     "id": "V04-tww-zakriknut",
@@ -180,6 +216,15 @@ export const KUSY: MbKus[] = [
       "/mb/K09-tww-po-transfere/04.jpg",
       "/mb/K09-tww-po-transfere/05.jpg"
     ]
+  },
+  {
+    "id": "C03-kazde-svetlo",
+    "nazov": "Citát · test pri každom svetle",
+    "typ": "citat",
+    "den": "Št 29.10.",
+    "caption": "You don't have to explain it to anyone. Free 10-min meditation for after a negative test: mindborn.io 🎧",
+    "hashtags": "#negativepregnancytest #bfn #ttc #infertility #ttccommunity",
+    "video": "/mb/C03-kazde-svetlo.mp4"
   },
   {
     "id": "K10-tehotna-zle",

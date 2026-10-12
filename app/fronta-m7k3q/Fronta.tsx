@@ -145,7 +145,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
         <div style={{ height: '100%', width: `${spolu ? (hotove / spolu) * 100 : 0}%`, background: C.accent, transition: 'width .3s' }} />
       </div>
 
-      <p style={{ ...lbl, marginBottom: 4 }}>{active.typ === 'karusel' ? `Karusel · ${active.slajdy!.length} obrázkov` : 'Video'} · návrh na {active.den}</p>
+      <p style={{ ...lbl, marginBottom: 4 }}>{active.typ === 'karusel' ? `Karusel · ${active.slajdy!.length} obrázkov` : active.typ === 'citat' ? 'Citát · video bez hlasu' : 'Video s hlasom'} · návrh na {active.den}</p>
       <h1 style={{ fontSize: 22, lineHeight: 1.25, margin: '0 0 14px' }}>{active.nazov}</h1>
 
       {active.typ === 'karusel' ? (
@@ -171,7 +171,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
       <div style={{ background: C.soft, borderRadius: 14, padding: '14px 16px', marginBottom: 12, fontFamily: sans, fontSize: 14, lineHeight: 1.5 }}>
         <p style={{ ...lbl, color: C.accent }}>Pred zverejnením v TikToku</p>
         <div>☐ <b>AI štítok zapnúť</b> (Viac možností → AI-generated content). Dodatočne sa pridať nedá.</div>
-        <div>☐ Hudba z TikToku, potichu{active.typ === 'video' ? ' (10–20 %, hlas musí byť počuť)' : ''}.</div>
+        <div>☐ {active.typ === 'citat' ? 'Pekná hudba z TikToku — tu môže byť naplno, video nemá hlas.' : active.typ === 'video' ? 'Hudba z TikToku potichu (10–20 %, hlas musí byť počuť).' : 'Hudba z TikToku, potichu.'}</div>
         <div>☐ Nepísať „link in bio“.</div>
       </div>
 
@@ -203,7 +203,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
               <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 12, padding: 8, marginBottom: 8 }}>
                 <button onClick={() => dajPrve(id)} style={{ flex: 1, textAlign: 'left', background: 'transparent', border: 'none', color: C.ink, fontSize: 15, cursor: 'pointer', padding: '4px 2px', fontFamily: 'inherit' }}>
                   {k.nazov}
-                  <span style={{ display: 'block', color: C.muted, fontSize: 11, marginTop: 2, fontFamily: sans }}>{k.den} · {k.typ} · ťuk = dať ako prvý</span>
+                  <span style={{ display: 'block', color: C.muted, fontSize: 11, marginTop: 2, fontFamily: sans }}>{k.den} · {k.typ === 'citat' ? 'citát' : k.typ} · ťuk = dať ako prvý</span>
                 </button>
                 <button onClick={() => posun(id, -1)} disabled={i === 0} style={{ ...ctrl, opacity: i === 0 ? 0.35 : 1 }} aria-label="Vyššie">↑</button>
                 <button onClick={() => posun(id, 1)} disabled={i === dalsie.length - 1} style={{ ...ctrl, opacity: i === dalsie.length - 1 ? 0.35 : 1 }} aria-label="Nižšie">↓</button>
