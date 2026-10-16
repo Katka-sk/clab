@@ -10,7 +10,6 @@ const SKIP_KEY = 'mb-fronta-skip-v1'; // vyhodené — skryté, dajú sa vráti�
 
 // Schválené Katarínou 17.10.2026 (marketing/FABLE-PRIBEHY-SYSTEM-A-KARUSELY-2026-10-17.md)
 const BIO = 'Quiet company for the longer road to motherhood.\nFree meditations ↓\nmindborn.io';
-const ODPOVED = 'They’re fictional stories that reflect feelings I know from my own journey.';
 
 const C = {
   bg: '#FBF6EF', paper: '#FFFFFF', ink: '#3B2A55', muted: '#7D7090', line: '#EADFEF',
@@ -128,22 +127,14 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
   const ctrl: React.CSSProperties = { flex: '0 0 auto', width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.line}`, background: C.paper, color: C.ink, fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: sans };
   const lbl: React.CSSProperties = { fontFamily: sans, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: C.muted, margin: '0 0 8px' };
 
-  const trvale = (
-    <div style={{ marginTop: 30, fontFamily: sans }}>
-      <div style={{ background: C.paper, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 12 }}>
-        <p style={lbl}>Ak sa niekto v komentároch opýta, či sú príbehy skutočné</p>
-        <p style={{ fontSize: 15, lineHeight: 1.5, margin: '0 0 12px' }}>{ODPOVED}</p>
-        <button onClick={() => kopirujText(ODPOVED, 'odpoved')} style={{ ...btn, padding: 12, fontSize: 14, background: kopia === 'odpoved' ? C.okbg : C.soft, color: kopia === 'odpoved' ? C.ok : C.ink }}>
-          {kopia === 'odpoved' ? '✓ Skopírované' : 'Kopírovať odpoveď'}
-        </button>
-      </div>
-      <div style={{ background: C.paper, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16 }}>
-        <p style={lbl}>Bio účtu (Upraviť profil → Bio)</p>
-        <p style={{ fontSize: 15, lineHeight: 1.5, margin: '0 0 12px', whiteSpace: 'pre-line' }}>{BIO}</p>
-        <button onClick={() => kopirujText(BIO, 'bio')} style={{ ...btn, padding: 12, fontSize: 14, background: kopia === 'bio' ? C.okbg : C.soft, color: kopia === 'bio' ? C.ok : C.ink }}>
-          {kopia === 'bio' ? '✓ Skopírované' : 'Kopírovať bio'}
-        </button>
-      </div>
+  // Bio sa ukáže len pri prvom kuse — po prvom „Hotovo“ zmizne.
+  const bio = (
+    <div style={{ background: C.paper, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 12, fontFamily: sans }}>
+      <p style={lbl}>Bio účtu — zmeň pred prvým príspevkom (Upraviť profil → Bio)</p>
+      <p style={{ fontSize: 15, lineHeight: 1.5, margin: '0 0 12px', whiteSpace: 'pre-line' }}>{BIO}</p>
+      <button onClick={() => kopirujText(BIO, 'bio')} style={{ ...btn, padding: 12, fontSize: 14, background: kopia === 'bio' ? C.okbg : C.soft, color: kopia === 'bio' ? C.ok : C.ink }}>
+        {kopia === 'bio' ? '✓ Skopírované' : 'Kopírovať bio'}
+      </button>
     </div>
   );
 
@@ -163,7 +154,6 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
         {hotove > 0 && (
           <button onClick={vratPosledny} style={{ ...btn, background: C.paper, color: C.muted, border: `1px solid ${C.line}` }}>↩︎ Vrátiť posledný „Hotovo“</button>
         )}
-        <div style={{ textAlign: 'left' }}>{trvale}</div>
       </div>
     );
   }
@@ -209,6 +199,8 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
         <div>☐ {active.typ === 'citat' ? 'Pekná hudba z TikToku — tu môže byť naplno, video nemá hlas.' : active.typ === 'video' ? 'Hudba z TikToku potichu (10–20 %, hlas musí byť počuť).' : 'Hudba z TikToku, potichu.'}</div>
         <div>☐ Nepísať „link in bio“.</div>
       </div>
+
+      {hotove === 0 && bio}
 
       <div style={{ background: C.paper, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 12 }}>
         <p style={lbl}>Popis</p>
@@ -269,7 +261,6 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
         </div>
       )}
 
-      {trvale}
     </div>
   );
 }

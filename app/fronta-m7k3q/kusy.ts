@@ -1,6 +1,8 @@
 // Generované z Mindborn/podklady/video/tiktok/oktober15.json cez fronta_export.py — needitovať ručne.
 export type MbKus = { id: string; nazov: string; typ: 'karusel' | 'video' | 'citat'; den: string; caption: string; hashtags: string; slajdy?: string[]; video?: string };
 
+
+
 export const KUSY: MbKus[] = [
   {
     "id": "C01",
