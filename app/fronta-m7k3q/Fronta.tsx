@@ -8,6 +8,10 @@ const DONE_KEY = 'mb-fronta-done-v1'; // postnuté — zmiznú z fronty
 const ORDER_KEY = 'mb-fronta-order-v1'; // vlastné poradie (pole id)
 const SKIP_KEY = 'mb-fronta-skip-v1'; // vyhodené — skryté, dajú sa vrátiť
 
+// Schválené Katarínou 17.10.2026 (marketing/FABLE-PRIBEHY-SYSTEM-A-KARUSELY-2026-10-17.md)
+const BIO = 'Quiet company for the longer road to motherhood.\nFree meditations ↓\nmindborn.io';
+const ODPOVED = 'They’re fictional stories that reflect feelings I know from my own journey.';
+
 const C = {
   bg: '#FBF6EF', paper: '#FFFFFF', ink: '#3B2A55', muted: '#7D7090', line: '#EADFEF',
   accent: '#6E4E9E', pink: '#F2BCC4', soft: '#F3ECF8', ok: '#2F6B45', okbg: '#E6F2EA', warn: '#A4462A',
@@ -31,6 +35,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
   const [skip, setSkip] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [kopia, setKopia] = useState('');
   const [busy, setBusy] = useState('');
   const [ukazVyhodene, setUkazVyhodene] = useState(false);
 
@@ -82,8 +87,8 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
       const urls = active.typ === 'karusel' ? active.slajdy! : [active.video!];
       const files = await Promise.all(urls.map(async (u, i) => {
         const b = await (await fetch(u)).blob();
-        const ext = active.typ === 'karusel' ? 'jpg' : 'mp4';
-        return new File([b], `${active.id}-${String(i + 1).padStart(2, '0')}.${ext}`, { type: b.type || (ext === 'jpg' ? 'image/jpeg' : 'video/mp4') });
+        const ext = u.split('.').pop() || (active.typ === 'karusel' ? 'png' : 'mp4');
+        return new File([b], `${active.id}-${String(i + 1).padStart(2, '0')}.${ext}`, { type: b.type || (ext === 'mp4' ? 'video/mp4' : `image/${ext === 'jpg' ? 'jpeg' : ext}`) });
       }));
       const nav = navigator as unknown as { canShare?: (d: { files: File[] }) => boolean; share?: (d: { files: File[] }) => Promise<void> };
       if (nav.canShare && nav.share && nav.canShare({ files })) {
@@ -101,6 +106,14 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
     setBusy('');
   }
 
+  function kopirujText(t: string, id: string) {
+    const ok = () => { setKopia(id); setTimeout(() => setKopia(''), 2000); };
+    navigator.clipboard.writeText(t).then(ok).catch(() => {
+      const x = document.createElement('textarea'); x.value = t; document.body.appendChild(x);
+      x.select(); document.execCommand('copy'); x.remove(); ok();
+    });
+  }
+
   function kopiruj() {
     const ok = () => { setCopied(true); setTimeout(() => setCopied(false), 2000); };
     navigator.clipboard.writeText(fullCaption).then(ok).catch(() => {
@@ -114,6 +127,25 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
   const btn: React.CSSProperties = { display: 'block', width: '100%', padding: 16, borderRadius: 14, border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', textAlign: 'center', fontFamily: sans };
   const ctrl: React.CSSProperties = { flex: '0 0 auto', width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.line}`, background: C.paper, color: C.ink, fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: sans };
   const lbl: React.CSSProperties = { fontFamily: sans, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: C.muted, margin: '0 0 8px' };
+
+  const trvale = (
+    <div style={{ marginTop: 30, fontFamily: sans }}>
+      <div style={{ background: C.paper, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 12 }}>
+        <p style={lbl}>Ak sa niekto v komentároch opýta, či sú príbehy skutočné</p>
+        <p style={{ fontSize: 15, lineHeight: 1.5, margin: '0 0 12px' }}>{ODPOVED}</p>
+        <button onClick={() => kopirujText(ODPOVED, 'odpoved')} style={{ ...btn, padding: 12, fontSize: 14, background: kopia === 'odpoved' ? C.okbg : C.soft, color: kopia === 'odpoved' ? C.ok : C.ink }}>
+          {kopia === 'odpoved' ? '✓ Skopírované' : 'Kopírovať odpoveď'}
+        </button>
+      </div>
+      <div style={{ background: C.paper, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16 }}>
+        <p style={lbl}>Bio účtu (Upraviť profil → Bio)</p>
+        <p style={{ fontSize: 15, lineHeight: 1.5, margin: '0 0 12px', whiteSpace: 'pre-line' }}>{BIO}</p>
+        <button onClick={() => kopirujText(BIO, 'bio')} style={{ ...btn, padding: 12, fontSize: 14, background: kopia === 'bio' ? C.okbg : C.soft, color: kopia === 'bio' ? C.ok : C.ink }}>
+          {kopia === 'bio' ? '✓ Skopírované' : 'Kopírovať bio'}
+        </button>
+      </div>
+    </div>
+  );
 
   if (!loaded) return <div style={wrap} />;
 
@@ -131,6 +163,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
         {hotove > 0 && (
           <button onClick={vratPosledny} style={{ ...btn, background: C.paper, color: C.muted, border: `1px solid ${C.line}` }}>↩︎ Vrátiť posledný „Hotovo“</button>
         )}
+        <div style={{ textAlign: 'left' }}>{trvale}</div>
       </div>
     );
   }
@@ -170,7 +203,9 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
 
       <div style={{ background: C.soft, borderRadius: 14, padding: '14px 16px', marginBottom: 12, fontFamily: sans, fontSize: 14, lineHeight: 1.5 }}>
         <p style={{ ...lbl, color: C.accent }}>Pred zverejnením v TikToku</p>
-        <div>☐ <b>AI štítok zapnúť</b> (Viac možností → AI-generated content). Dodatočne sa pridať nedá.</div>
+        {active.typ === 'karusel'
+          ? <div>☐ AI štítok <b>netreba</b> — je to len text.</div>
+          : <div>☐ <b>AI štítok zapnúť</b> (Viac možností → AI-generated content). Dodatočne sa pridať nedá.</div>}
         <div>☐ {active.typ === 'citat' ? 'Pekná hudba z TikToku — tu môže byť naplno, video nemá hlas.' : active.typ === 'video' ? 'Hudba z TikToku potichu (10–20 %, hlas musí byť počuť).' : 'Hudba z TikToku, potichu.'}</div>
         <div>☐ Nepísať „link in bio“.</div>
       </div>
@@ -233,6 +268,8 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
           )}
         </div>
       )}
+
+      {trvale}
     </div>
   );
 }
