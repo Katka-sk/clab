@@ -5,21 +5,19 @@ export type MbKus = { id: string; nazov: string; typ: 'karusel' | 'video' | 'cit
 
 export const KUSY: MbKus[] = [
   {
-    "id": "C01",
-    "nazov": "Príbeh · The first honest answer",
+    "id": "C06",
+    "nazov": "Zoznam · What “I’m fine” meant",
     "typ": "karusel",
     "den": "Ne 18.10.",
-    "caption": "Good news can bring fear with it. Sometimes the person who helps most is the one who makes room for the whole answer.",
-    "hashtags": "#PregnancyAfterInfertility #PregnancyAnxiety #EarlyPregnancy #EmotionalSupport #Mindborn",
+    "caption": "Some days, “I’m fine” is all you have the energy to say. There can be a lot inside that answer.",
+    "hashtags": "#TryingToConceive #InfertilitySupport #TTCCommunity #EmotionalSupport #Mindborn",
     "slajdy": [
-      "/mb/C01-the-first-honest-answer/01.png",
-      "/mb/C01-the-first-honest-answer/02.png",
-      "/mb/C01-the-first-honest-answer/03.png",
-      "/mb/C01-the-first-honest-answer/04.png",
-      "/mb/C01-the-first-honest-answer/05.png",
-      "/mb/C01-the-first-honest-answer/06.png",
-      "/mb/C01-the-first-honest-answer/07.png",
-      "/mb/C01-the-first-honest-answer/08.png"
+      "/mb/C06-5-things-im-fine/01.png",
+      "/mb/C06-5-things-im-fine/02.png",
+      "/mb/C06-5-things-im-fine/03.png",
+      "/mb/C06-5-things-im-fine/04.png",
+      "/mb/C06-5-things-im-fine/05.png",
+      "/mb/C06-5-things-im-fine/06.png"
     ]
   },
   {
@@ -32,19 +30,21 @@ export const KUSY: MbKus[] = [
     "video": "/mb/V02-transfer-rano.mp4"
   },
   {
-    "id": "C06",
-    "nazov": "Zoznam · What “I’m fine” meant",
+    "id": "C01",
+    "nazov": "Príbeh · The first honest answer",
     "typ": "karusel",
     "den": "Ut 20.10.",
-    "caption": "Some days, “I’m fine” is all you have the energy to say. There can be a lot inside that answer.",
-    "hashtags": "#TryingToConceive #InfertilitySupport #TTCCommunity #EmotionalSupport #Mindborn",
+    "caption": "Good news can bring fear with it. Sometimes the person who helps most is the one who makes room for the whole answer.",
+    "hashtags": "#PregnancyAfterInfertility #PregnancyAnxiety #EarlyPregnancy #EmotionalSupport #Mindborn",
     "slajdy": [
-      "/mb/C06-5-things-im-fine/01.png",
-      "/mb/C06-5-things-im-fine/02.png",
-      "/mb/C06-5-things-im-fine/03.png",
-      "/mb/C06-5-things-im-fine/04.png",
-      "/mb/C06-5-things-im-fine/05.png",
-      "/mb/C06-5-things-im-fine/06.png"
+      "/mb/C01-the-first-honest-answer/01.png",
+      "/mb/C01-the-first-honest-answer/02.png",
+      "/mb/C01-the-first-honest-answer/03.png",
+      "/mb/C01-the-first-honest-answer/04.png",
+      "/mb/C01-the-first-honest-answer/05.png",
+      "/mb/C01-the-first-honest-answer/06.png",
+      "/mb/C01-the-first-honest-answer/07.png",
+      "/mb/C01-the-first-honest-answer/08.png"
     ]
   },
   {
