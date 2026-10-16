@@ -9,7 +9,7 @@ const ORDER_KEY = 'mb-fronta-order-v1'; // vlastné poradie (pole id)
 const SKIP_KEY = 'mb-fronta-skip-v1'; // vyhodené — skryté, dajú sa vrátiť
 
 // Schválené Katarínou 17.10.2026 (marketing/FABLE-PRIBEHY-SYSTEM-A-KARUSELY-2026-10-17.md)
-const BIO = 'Quiet company for the longer road to motherhood.\nFree meditations ↓\nmindborn.io';
+const BIO = 'Quiet company for the longer road to motherhood.\nFree meditations → mindborn.io';
 
 const C = {
   bg: '#FBF6EF', paper: '#FFFFFF', ink: '#3B2A55', muted: '#7D7090', line: '#EADFEF',
