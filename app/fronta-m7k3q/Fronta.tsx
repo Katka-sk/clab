@@ -198,6 +198,7 @@ export default function Fronta({ kusy }: { kusy: MbKus[] }) {
           : <div>☐ <b>AI štítok zapnúť</b> (Viac možností → AI-generated content). Dodatočne sa pridať nedá.</div>}
         <div>☐ {active.typ === 'citat' ? 'Pekná hudba z TikToku — tu môže byť naplno, video nemá hlas.' : active.typ === 'video' ? 'Hudba z TikToku potichu (10–20 %, hlas musí byť počuť).' : 'Hudba z TikToku, potichu.'}</div>
         <div>☐ Nepísať „link in bio“.</div>
+        {active.pozn && <div style={{ marginTop: 8, color: C.warn, fontWeight: 700 }}>⚠️ {active.pozn}</div>}
       </div>
 
       {hotove === 0 && bio}

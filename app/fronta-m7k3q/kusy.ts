@@ -1,5 +1,5 @@
 // Generované z Mindborn/podklady/video/tiktok/oktober15.json cez fronta_export.py — needitovať ručne.
-export type MbKus = { id: string; nazov: string; typ: 'karusel' | 'video' | 'citat'; den: string; caption: string; hashtags: string; slajdy?: string[]; video?: string };
+export type MbKus = { id: string; nazov: string; typ: 'karusel' | 'video' | 'citat'; den: string; caption: string; hashtags: string; slajdy?: string[]; video?: string; pozn?: string };
 
 
 
@@ -8,7 +8,7 @@ export const KUSY: MbKus[] = [
     "id": "C06",
     "nazov": "Zoznam · What “I’m fine” meant",
     "typ": "karusel",
-    "den": "Ne 18.10.",
+    "den": "So 17.10.",
     "caption": "Some days, “I’m fine” is all you have the energy to say. There can be a lot inside that answer.",
     "hashtags": "#TryingToConceive #InfertilitySupport #TTCCommunity #EmotionalSupport #Mindborn",
     "slajdy": [
@@ -19,6 +19,25 @@ export const KUSY: MbKus[] = [
       "/mb/C06-5-things-im-fine/05.png",
       "/mb/C06-5-things-im-fine/06.png"
     ]
+  },
+  {
+    "id": "C02",
+    "nazov": "Príbeh · I meant every word",
+    "typ": "karusel",
+    "den": "Ne 18.10. večer",
+    "caption": "You can wish her well and need some distance. Both can be true on the same day.",
+    "hashtags": "#TryingToConceive #InfertilitySupport #TTCCommunity #Friendship #Mindborn",
+    "slajdy": [
+      "/mb/C02-i-meant-every-word/01.png",
+      "/mb/C02-i-meant-every-word/02.png",
+      "/mb/C02-i-meant-every-word/03.png",
+      "/mb/C02-i-meant-every-word/04.png",
+      "/mb/C02-i-meant-every-word/05.png",
+      "/mb/C02-i-meant-every-word/06.png",
+      "/mb/C02-i-meant-every-word/07.png",
+      "/mb/C02-i-meant-every-word/08.png"
+    ],
+    "pozn": "Zvuk LEN z Commercial Sounds (Pridať zvuk → Sounds → Commercial Sounds) — tento kus pôjde do TikTok Promote za 20 € (USA, UK, Kanada, Austrália; ženy 25–44). S bežnou piesňou sa propagovať nedá."
   },
   {
     "id": "V02-transfer-rano",
@@ -45,24 +64,6 @@ export const KUSY: MbKus[] = [
       "/mb/C01-the-first-honest-answer/06.png",
       "/mb/C01-the-first-honest-answer/07.png",
       "/mb/C01-the-first-honest-answer/08.png"
-    ]
-  },
-  {
-    "id": "C02",
-    "nazov": "Príbeh · I meant every word",
-    "typ": "karusel",
-    "den": "St 21.10.",
-    "caption": "You can wish her well and need some distance. Both can be true on the same day.",
-    "hashtags": "#TryingToConceive #InfertilitySupport #TTCCommunity #Friendship #Mindborn",
-    "slajdy": [
-      "/mb/C02-i-meant-every-word/01.png",
-      "/mb/C02-i-meant-every-word/02.png",
-      "/mb/C02-i-meant-every-word/03.png",
-      "/mb/C02-i-meant-every-word/04.png",
-      "/mb/C02-i-meant-every-word/05.png",
-      "/mb/C02-i-meant-every-word/06.png",
-      "/mb/C02-i-meant-every-word/07.png",
-      "/mb/C02-i-meant-every-word/08.png"
     ]
   },
   {
