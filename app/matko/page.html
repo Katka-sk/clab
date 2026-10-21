@@ -358,7 +358,16 @@
     color: var(--muted); cursor: pointer; margin-left: 8px; white-space: nowrap;
   }
   .swap:hover { border-color: var(--accent); color: var(--accent); }
-  .slot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .slot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .swapbtns { display: flex; gap: 6px; flex: none; }
+  .swap { margin-left: 0; }
+  .swap-back { border-color: var(--ok); color: var(--ok); }
+  .swap-back:hover { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+  .tagzmena {
+    display: inline-block; margin-left: 7px; padding: 2px 7px;
+    border-radius: 99px; background: var(--accent-soft); color: var(--accent);
+    font-size: 0.62rem; letter-spacing: 0.05em;
+  }
   .slot b { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
   [hidden] { display: none !important; }
 </style>
@@ -967,24 +976,55 @@
       [["Raňajky", ran, "r", R_KEYS], ["Obed", obe, "o", O_KEYS]].forEach(function (pair) {
         var label = pair[0], jedlo = pair[1], slot = pair[2], keys = pair[3];
 
+        var kluc = "w" + wi + "d" + di + slot;
+        var zmenene = !!zmeny[kluc];
+
         var row = document.createElement("div");
         row.className = "slot";
+
         var lb = document.createElement("b");
         lb.textContent = label;
+        if (zmenene) {
+          var tag = document.createElement("span");
+          tag.className = "tagzmena";
+          tag.textContent = "zmenené";
+          lb.appendChild(tag);
+        }
         row.appendChild(lb);
+
+        var btns = document.createElement("span");
+        btns.className = "swapbtns";
+
+        if (zmenene) {
+          var bk = document.createElement("button");
+          bk.className = "swap swap-back";
+          bk.type = "button";
+          bk.textContent = "vrátiť";
+          bk.addEventListener("click", function () {
+            delete zmeny[kluc];
+            save("matko-zmeny-v1", zmeny);
+            renderTyzden();
+            renderNakup();
+          });
+          btns.appendChild(bk);
+        }
+
         var sw = document.createElement("button");
         sw.className = "swap";
         sw.type = "button";
         sw.textContent = "zmeniť";
         sw.addEventListener("click", function () {
-          var k = "w" + wi + "d" + di + slot;
           var cur = slot === "r" ? planFor(wi, di).r : planFor(wi, di).o;
-          zmeny[k] = cyklus(keys, cur);
+          var dalsie = cyklus(keys, cur);
+          var povodne = TYZDNE[wi].d[di][slot === "r" ? 0 : 1];
+          if (dalsie === povodne) delete zmeny[kluc];
+          else zmeny[kluc] = dalsie;
           save("matko-zmeny-v1", zmeny);
           renderTyzden();
           renderNakup();
         });
-        row.appendChild(sw);
+        btns.appendChild(sw);
+        row.appendChild(btns);
         card.appendChild(row);
 
         var bx = document.createElement("div");
