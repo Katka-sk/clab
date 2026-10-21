@@ -331,6 +331,35 @@
   .itxt b { font-weight: 600; display: block; font-size: 0.93rem; }
   .itxt small { display: block; color: var(--muted); font-size: 0.8rem; line-height: 1.35; margin-top: 1px; }
   .emptycol { color: var(--muted); font-size: 0.85rem; padding: 8px 2px; font-style: italic; }
+  /* prepinac tyzdna */
+  .weekbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 12px; margin-bottom: 16px;
+  }
+  .weekbar .wmid { text-align: center; min-width: 0; flex: 1; }
+  .weekbar .wname { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+  .weekbar .wdates { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .weekbar .wnow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ok); }
+  .navbtn {
+    appearance: none; font: inherit; font-size: 1.1rem; line-height: 1;
+    width: 40px; height: 40px; flex: none; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--surface-2);
+    color: var(--fg); cursor: pointer;
+  }
+  .navbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .navbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .daycard h4 { font-family: var(--font-display); font-size: 1.12rem; margin: 0 0 2px; }
+  .daycard .dd { font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; margin-bottom: 10px; }
+  .swap {
+    appearance: none; font: inherit; font-size: 0.74rem; font-weight: 700;
+    letter-spacing: 0.03em; padding: 4px 10px; border-radius: 99px;
+    border: 1px solid var(--line); background: var(--surface-2);
+    color: var(--muted); cursor: pointer; margin-left: 8px; white-space: nowrap;
+  }
+  .swap:hover { border-color: var(--accent); color: var(--accent); }
+  .slot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .slot b { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
   [hidden] { display: none !important; }
 </style>
 
@@ -344,9 +373,10 @@
     </div>
     <nav role="tablist" aria-label="Sekcie">
       <button role="tab" id="t-tyzden" aria-controls="tyzden" aria-selected="true">Týždeň</button>
-      <button role="tab" id="t-kusky" aria-controls="kusky" aria-selected="false">Kúsky</button>
       <button role="tab" id="t-nakup" aria-controls="nakup" aria-selected="false">Nákup</button>
+      <button role="tab" id="t-kusky" aria-controls="kusky" aria-selected="false">Kúsky</button>
       <button role="tab" id="t-recepty" aria-controls="recepty" aria-selected="false">Recepty</button>
+      <button role="tab" id="t-mama" aria-controls="mama" aria-selected="false">Pre mamu</button>
       <button role="tab" id="t-pravidla" aria-controls="pravidla" aria-selected="false">Pravidlá</button>
       <button role="tab" id="t-zapis" aria-controls="zapis" aria-selected="false">Zápis</button>
     </nav>
@@ -357,71 +387,26 @@
 
   <!-- ============ TÝŽDEŇ ============ -->
   <section id="tyzden" role="tabpanel" aria-labelledby="t-tyzden">
-    <h2>Čo má jesť</h2>
-    <p class="lede">Pri každom jedle sú <b>dve veci naraz</b> — niečo do misky na lyžičku a vedľa kúsky do ruky.</p>
+    <div class="weekbar">
+      <button class="navbtn" id="wprev" aria-label="Predchádzajúci týždeň">‹</button>
+      <div class="wmid">
+        <div class="wname" id="wname"></div>
+        <div class="wdates" id="wdates"></div>
+        <div class="wnow" id="wnow"></div>
+      </div>
+      <button class="navbtn" id="wnext" aria-label="Nasledujúci týždeň">›</button>
+    </div>
+
+    <p class="lede">Štyri týždne sa striedajú dokola, takže mesiac je naplánovaný dopredu. Šípkami sa posúvaš, tlačidlom <b>zmeniť</b> vymeníš konkrétne jedlo za inú možnosť.</p>
 
     <div class="rule">
       <p><strong>Vajíčko do každého obeda</strong></p>
       <p>Do obeda sa <b>vmieša žĺtok a kúsok bielka z vajca uvareného natvrdo.</b> Nie je to samostatné jedlo — len sa to zamieša do toho, čo je v miske.</p>
-      <p><b>Ako najjednoduchšie:</b> uvarte <b>vajcia natvrdo</b> a nechajte ich v chladničke. Pri obede olúpte jedno, žĺtok rozmačkajte vidličkou priamo do jedla a pridajte <b>malý kúsok bielka</b> nadrobno.</p>
-      <p><b>Ako uvariť natvrdo:</b> vriaca voda → vajce dnu → <b>14 minút</b> → studená voda (zastaví varenie a lepšie sa lúpe). Uvarte naraz 4–5 a nechajte v chladničke <b>neolúpané</b> — tak vydržia týždeň. Olúpané len 2–3 dni.</p>
-      <p><b>Vajce musí byť vždy úplne uvarené</b> — žiadny tekutý žĺtok.</p>
-      <p style="margin-bottom:0"><b>Alternatíva:</b> rozšľahané surové vajce vliať na konci varenia do horúceho jedla za stáleho miešania — uvarí sa okamžite a v jedle sa stratí. Funguje pri omáčke aj pri šošovici.</p>
+      <p><b>Ako uvariť:</b> vriaca voda → vajce dnu → <b>14 minút</b> → studená voda. Uvariť naraz 4–5 a nechať v chladničke <b>neolúpané</b> (vydržia týždeň).</p>
+      <p style="margin-bottom:0"><b>Vždy úplne uvarené</b> — žiadny tekutý žĺtok.</p>
     </div>
 
-    <div class="card">
-      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Pondelok</h4>
-      <div class="forhim"><b>Raňajky — ovsená kaša</b><br>
-      <b>Do misky:</b> kaša uvarená hustejšie, na plnotučnom mlieku<br>
-      <b>Do ruky:</b> banán nakrájaný <b>pozdĺžne na prúžky</b>, nie na kolieska — prúžok sa lepšie drží</div>
-      <div class="forhim" style="margin-top:8px"><b>Obed — mäsová omáčka s cestovinami</b><br>
-      <b>Do misky:</b> 3–4 lyžice omáčky rozmačkané vidličkou + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
-      <b>Do ruky:</b> 5–6 celých cestovín · navrch štipka strúhaného syra</div>
-      <div class="chips"><span class="chip">železo</span><span class="chip">pšenica</span></div>
-    </div>
-
-    <div class="card">
-      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Utorok</h4>
-      <div class="forhim"><b>Raňajky — toast s hummusom</b><br>
-      <b>Do ruky:</b> biely toast zľahka opečený, natretý hummusom, nakrájaný na <b>prúžky asi 2 cm široké</b> · k tomu olúpaná mäkká hruška na prúžky<br>
-      <b>Do misky:</b> netreba nič, prípadne lyžička hummusu na namáčanie</div>
-      <div class="forhim" style="margin-top:8px"><b>Obed — losos so zemiakmi a brokolicou</b><br>
-      <b>Do misky:</b> zemiaková kaša s rozdrobeným lososom (<b>kosti prebrať prstami</b>) + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
-      <b>Do ruky:</b> 3–4 ružičky brokolice, mäkké ale celé</div>
-      <div class="chips"><span class="chip">sezam + cícer</span><span class="chip">ryba / omega-3</span></div>
-    </div>
-
-    <div class="card">
-      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Streda</h4>
-      <div class="forhim"><b>Raňajky — praženica</b><br>
-      <b>Do misky:</b> ½ vajca ako praženica, nadrobno<br>
-      <b>Do ruky:</b> prúžky toastu · praženica sa dá chytať aj prstami po kúskoch</div>
-      <div class="forhim" style="margin-top:8px"><b>Obed — kuracie s mrkvou a ryžou</b><br>
-      <b>Do misky:</b> ryža s trochou šťavy, zamiešaná s nadrobno nakrájaným kuracím + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
-      <b>Do ruky:</b> kuracie a mrkva v <b>prúžkoch, nie kockách</b></div>
-      <div class="chips"><span class="chip">vajce navyše</span><span class="chip">železo</span></div>
-    </div>
-
-    <div class="card">
-      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Štvrtok</h4>
-      <div class="forhim"><b>Raňajky — ovsená kaša s jogurtom</b><br>
-      <b>Do misky:</b> ovsená kaša, do nej vmiešaný biely jogurt a rozmačkané ovocie (hruška alebo banán). <b>Čistý jogurt neje</b> — vždy ho treba zamiešať do kaše s ovocím<br>
-      <b>Do ruky:</b> ryžový chlebíček celý, nech si odhryzne · prúžok banánu</div>
-      <div class="forhim" style="margin-top:8px"><b>Obed — hustá šošovicová polievka</b><br>
-      <b>Do misky:</b> nechať hustú, má držať na lyžičke + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
-      <b>Do ruky:</b> 2–3 prúžky toastu na namáčanie</div>
-      <div class="chips"><span class="chip">mliečne</span><span class="chip">strukoviny</span></div>
-    </div>
-
-    <div class="card">
-      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Piatok</h4>
-      <div class="forhim"><b>Raňajky — toast s Lučinou</b><br>
-      <b>Do ruky:</b> biely toast zľahka opečený, natretý Lučinou, nakrájaný na <b>prúžky asi 2 cm široké</b> · k tomu prúžok banánu alebo mäkkej hrušky<br>
-      <b>Do misky:</b> netreba nič</div>
-      <div class="forhim" style="margin-top:8px"><b>Obed — mäsová omáčka s cestovinami</b><br>
-      Zvyšok z pondelka, alebo nová. Rovnako ako v pondelok.</div>
-      <div class="chips"><span class="chip">mliečne</span><span class="chip">železo</span></div>
-    </div>
+    <div id="dni"></div>
 
     <div class="rule">
       <p><strong>Každý večer — mama</strong></p>
@@ -434,10 +419,47 @@
     </div>
   </section>
 
+  <!-- ============ NÁKUP ============ -->
+  <section id="nakup" role="tabpanel" aria-labelledby="t-nakup" hidden>
+    <p class="lede" id="nakuplede"></p>
+
+    <div class="card">
+      <h2 style="margin-bottom:12px">Na jedlá tohto týždňa</h2>
+      <div class="cols">
+        <div class="col col-buy">
+          <div class="colhead"><b>Kúpiť</b><span class="n" data-n="a-buy"></span></div>
+          <ul class="shop" data-run="a" data-col="buy"></ul>
+        </div>
+        <div class="col col-have">
+          <div class="colhead"><b>Máme</b><span class="n" data-n="a-have"></span></div>
+          <ul class="shop" data-run="a" data-col="have"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:4px">Stále na sklade</h2>
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:12px">Nezávisí od týždňa — len kontrola, či niečo nedošlo.</p>
+      <div class="cols">
+        <div class="col col-buy">
+          <div class="colhead"><b>Kúpiť</b><span class="n" data-n="b-buy"></span></div>
+          <ul class="shop" data-run="b" data-col="buy"></ul>
+        </div>
+        <div class="col col-have">
+          <div class="colhead"><b>Máme</b><span class="n" data-n="b-have"></span></div>
+          <ul class="shop" data-run="b" data-col="have"></ul>
+        </div>
+      </div>
+      <div class="btnrow" style="margin-top:14px">
+        <button class="btn" id="clear">Vrátiť všetko do Kúpiť</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ KÚSKY ============ -->
   <section id="kusky" role="tabpanel" aria-labelledby="t-kusky" hidden>
     <h2>Čo sú tie kúsky do ruky</h2>
-    <p class="lede">Ku každému jedlu idú <b>2–3 kúsky na tácku</b>, nech si ich vezme sám. Tu je zoznam, z čoho vyberať.</p>
+    <p class="lede">Ku každému jedlu idú <b>2–3 kúsky na tácku</b>, nech si ich vezme sám.</p>
 
     <div class="rule">
       <p><strong>Tvar je dôležitejší než to, čo to je</strong></p>
@@ -470,7 +492,7 @@
         <li><b>Brokolica</b> — ružička celá, stonka slúži ako držadlo</li>
         <li><b>Zemiak</b> — uvarený, na hranolčeky</li>
         <li><b>Cuketa</b> — dusená, na prúžky</li>
-        <li><b>Batat</b> — pečený, na prúžky</li>
+        <li><b>Hrášok</b> — po zrnkách, uvarený domäkka</li>
       </ul>
     </div>
 
@@ -484,7 +506,7 @@
       <ul style="margin:0;padding-left:20px">
         <li><b>Kuracie</b> — prúžky pozdĺž vlákien, dusené domäkka</li>
         <li><b>Mäsová guľka</b> — mäkká, menšia</li>
-        <li><b>Losos</b> — väčšie vločky, <b>kosti preberené prstami</b></li>
+        <li><b>Losos alebo treska</b> — väčšie vločky, <b>kosti preberené prstami</b></li>
       </ul>
     </div>
 
@@ -493,56 +515,19 @@
       <ul style="margin:0;padding-left:20px">
         <li><b>Strúhaný syr</b> — nie kocky</li>
         <li><b>Praženica</b> — po kúskoch, chytá sa prstami</li>
-        <li><b>Omeleta</b> — nakrájaná na prúžky</li>
+        <li><b>Lievance</b> — nakrájané na prúžky</li>
       </ul>
     </div>
 
     <div class="no">
       <h3>Toto nie</h3>
       <ul>
-        <li><b>Kocky</b> čohokoľvek — stratia sa mu v dlani a sú horší tvar aj na dusenie</li>
-        <li><b>Kolieska</b> — klobásy, párku, banánu · ak už, tak krájať pozdĺžne</li>
+        <li><b>Kocky</b> čohokoľvek — stratia sa mu v dlani</li>
+        <li><b>Kolieska</b> — klobásy, párku, banánu · ak už, tak pozdĺžne</li>
         <li><b>Surová tvrdá mrkva a jablko</b> — postrúhať alebo uvariť</li>
-        <li><b>Celé hrozno a cherry paradajky</b> — krájať pozdĺžne na štvrtiny</li>
+        <li><b>Celé hrozno a cherry paradajky</b> — pozdĺžne na štvrtiny</li>
         <li><b>Orechy a arašidy</b> v kúskoch · popcorn · tvrdé cukríky</li>
       </ul>
-    </div>
-  </section>
-
-  <!-- ============ NÁKUP ============ -->
-  <section id="nakup" role="tabpanel" aria-labelledby="t-nakup" hidden>
-    <p class="lede">Všetko je na začiatku v stĺpci <b>Kúpiť</b>. Ťukni na položku, ktorú máš doma, a presunie sa do <b>Máme</b>. Ťuknutím späť sa vráti.</p>
-
-    <div class="card">
-      <h2 style="margin-bottom:12px">Na obedy</h2>
-      <div class="cols">
-        <div class="col col-buy">
-          <div class="colhead"><b>Kúpiť</b><span class="n" data-n="a-buy"></span></div>
-          <ul class="shop" data-run="a" data-col="buy"></ul>
-        </div>
-        <div class="col col-have">
-          <div class="colhead"><b>Máme</b><span class="n" data-n="a-have"></span></div>
-          <ul class="shop" data-run="a" data-col="have"></ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-bottom:4px">Na raňajky</h2>
-      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:12px">Tu sa nič nevarí — natrieť, nakrájať, podať.</p>
-      <div class="cols">
-        <div class="col col-buy">
-          <div class="colhead"><b>Kúpiť</b><span class="n" data-n="b-buy"></span></div>
-          <ul class="shop" data-run="b" data-col="buy"></ul>
-        </div>
-        <div class="col col-have">
-          <div class="colhead"><b>Máme</b><span class="n" data-n="b-have"></span></div>
-          <ul class="shop" data-run="b" data-col="have"></ul>
-        </div>
-      </div>
-      <div class="btnrow" style="margin-top:14px">
-        <button class="btn" id="clear">Vrátiť všetko do Kúpiť</button>
-      </div>
     </div>
   </section>
 
@@ -556,68 +541,81 @@
     <div class="card">
       <h3>Ako mu to podávať</h3>
       <p><b>Dve lyžičky.</b> Jednu drží on — bude ňou mávať a búchať, to je nácvik. Druhou kŕmite vy. <b>Sám si lyžičku naložiť ešte nevie</b>, to príde okolo 15.–18. mesiaca.</p>
-      <p><b>Naloženú lyžičku mu podajte do ruky.</b> Toto je ten hlavný trik — nalože ju vy a dáte mu ju, nech si ju sám strčí do úst. Takto sa to naučí najrýchlejšie.</p>
-      <p><b>Kúsky do ruky</b> berie prstami, tam lyžička netreba.</p>
-      <p><b>Miska:</b> radšej prísavná, alebo jedlo rovno na tácku stoličky — menej lietania.</p>
-      <p><b>Stolička:</b> sedí vzpriamene, ideálne s oporou pre nôžky. Keď nohy visia, horšie sa prehĺta aj sústredí.</p>
-      <p><b>Voda v pohári ku každému jedlu</b> — otvorený pohárik alebo slamka, nie fľaša. Pár hltov stačí.</p>
-      <p style="margin-bottom:0">A počítajte s tým, že <b>polovica skončí na zemi.</b> To nie je zlyhanie, to je súčasť učenia.</p>
+      <p><b>Naloženú lyžičku mu podajte do ruky.</b> Toto je ten hlavný trik — naložíte ju vy a dáte mu ju, nech si ju sám strčí do úst.</p>
+      <p><b>Miska</b> radšej prísavná, alebo jedlo rovno na tácku. <b>Stolička</b> — sedí vzpriamene, ideálne s oporou pre nôžky.</p>
+      <p style="margin-bottom:0"><b>Voda v pohári ku každému jedlu</b> — otvorený pohárik alebo slamka, nie fľaša. A počítajte s tým, že polovica skončí na zemi.</p>
     </div>
 
     <div class="card">
       <h3>V akom stave mu to dať</h3>
       <p>Matkova miska sú <b>vždy dve veci naraz:</b> niečo husté na lyžičku a vedľa 3–4 kúsky, čo si chytí sám.</p>
-      <p><b>Na lyžičku:</b> rozmačkané <b>vidličkou</b> na hustú kašu — nie rozmixované dohladka. V kaši majú byť cítiť malé kúsky, práve na tých sa učí žuť. Kaša sa má dať nabrať tak, že z lyžičky nesteká.</p>
-      <p style="margin-bottom:0"><b>Do ruky:</b> kúsky <b>dlhé ako prst dospelého, hrubé ako malíček</b> — musia mu trčať z pästičky. Zovretú dlaň ešte neotvorí, takže čo sa mu stratí v ruke, to nezje. Preto prúžky, nie kocky. A musia ísť <b>rozpučiť medzi palcom a ukazovákom</b> — ak nejdú, sú pritvrdé, variť ďalej.</p>
+      <p><b>Na lyžičku:</b> rozmačkané <b>vidličkou</b> na hustú kašu — nie rozmixované dohladka. Kaša sa má dať nabrať tak, že z lyžičky nesteká.</p>
+      <p style="margin-bottom:0"><b>Do ruky:</b> prúžky, nie kocky — zoznam je v záložke Kúsky.</p>
+    </div>
+
+    <div id="recepty-zoznam"></div>
+  </section>
+
+  <!-- ============ PRE MAMU ============ -->
+  <section id="mama" role="tabpanel" aria-labelledby="t-mama" hidden>
+    <h2>Čo robíš ty</h2>
+    <p class="lede">Veci mimo opatrovateľky — alergény, ktoré si riešiš sama, a bežná starostlivosť.</p>
+
+    <div class="rule">
+      <p><strong>Arašidové maslo — 2× týždenne</strong></p>
+      <p><b>½ lyžičky hladkého</b> vmiešanej do ovsenej kaše alebo jogurtu. Zloženie ideálne „100 % arašidy", bez cukru a soli.</p>
+      <p style="margin-bottom:0"><b>Nikdy kúsky ani celé arašidy</b> — riziko zadusenia do ~4–5 rokov. Ani veľká hruda masla samostatne, aj tá sa vie prilepiť.</p>
     </div>
 
     <div class="card">
-      <div class="meal">
-        <h4>1 · Mäsová omáčka s cestovinami</h4>
-        <div class="when">~25 min · pondelok a piatok</div>
-        <p>Je to <b>vlastne boloňská omáčka, len bez soli a bez korenia.</b></p>
-        <p><b>Suroviny:</b> 1 malá cibuľa · 200 g mletého mäsa · 2–3 lyžice paradajkového pretlaku · lyžica oleja · cestoviny · <b>1 vajce uvarené natvrdo</b></p>
-        <p>1. Cibuľu nadrobno, opražiť na oleji do sklovita — 3 minúty<br>
-        2. Pridať mleté mäso, rozmiešať vidličkou, aby nezostali hrudy, opražiť kým nezbelie — 5 minút<br>
-        3. Pridať pretlak a asi deci vody, prikryť, dusiť 15 minút<br>
-        4. Cestoviny podľa návodu, pokojne o 2 minúty dlhšie</p>
-        <div class="forhim"><b>Do misky:</b> 3–4 lyžice omáčky rozmačkané vidličkou<br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> 5–6 celých cestovín · navrch štipka strúhaného syra</div>
-      </div>
+      <h3>Prečo to musí ísť pravidelne</h3>
+      <p style="margin-bottom:0">Raz zavedený alergén treba jesť <b>~2× týždenne.</b> Vynechanie na mesiace je presne to, čo spôsobilo celú tú anabázu s pšenicou — mal ju naposledy 18.5. a potom sa musela celá znovu zavádzať od troch kúskov piškóty.</p>
+    </div>
 
-      <div class="meal">
-        <h4>2 · Losos so zemiakmi a brokolicou</h4>
-        <div class="when">~25 min · utorok</div>
-        <p><b>Suroviny:</b> 1 filet lososa (~100 g) · 2 zemiaky · pár ružičiek brokolice · lyžička masla · <b>1 vajce uvarené natvrdo</b></p>
-        <p>1. Zemiaky olúpať, nakrájať, variť 20 minút<br>
-        2. Po desiatich minútach prihodiť do tej istej vody brokolicu<br>
-        3. Losos 15 minút v rúre na 180 °C<br>
-        4. Zemiaky rozmačkať s lyžičkou masla a trochou vody z varenia</p>
-        <div class="forhim"><b>Do misky:</b> zemiaková kaša s lososom — rybu <b>rozdrobiť prstami a prebrať kosti</b><br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> 3–4 ružičky brokolice, mäkké ale celé</div>
+    <div class="card">
+      <h3>Ešte zaviesť — orechy</h3>
+      <p>Jediná skupina, ktorú ešte nemal. Vždy <b>ráno, v zdravý deň, jedna nová vec naraz</b>, s odstupom 3 dní.</p>
+      <div class="tscroll">
+        <table>
+          <thead><tr><th>#</th><th>Čo</th><th>Ako</th></tr></thead>
+          <tbody>
+            <tr><td>1.</td><td>Mandľové maslo</td><td>½ lyžičky vmiešanej do kaše alebo jogurtu</td></tr>
+            <tr><td>2.</td><td>o 3 dni znova</td><td>väčšia porcia</td></tr>
+            <tr><td>3.</td><td>Lieskovcové maslo</td><td>rovnako</td></tr>
+            <tr><td>4.</td><td>Kešu maslo</td><td>neskôr, rovnako</td></tr>
+          </tbody>
+        </table>
       </div>
+      <p style="margin-bottom:0">Reakciu zapísať do denníka — <b>aj keď sa nič nestane.</b> Práve „nič" je ten dôležitý údaj.</p>
+    </div>
 
-      <div class="meal">
-        <h4>3 · Kuracie s mrkvou a ryžou</h4>
-        <div class="when">~30 min · streda</div>
-        <p><b>Suroviny:</b> 1 kuracie prsia · 2 mrkvy · ryža · <b>1 vajce uvarené natvrdo</b></p>
-        <p>1. Mäso nakrájať na kúsky, mrkvu na kolieska<br>
-        2. Dať do hrnca, zaliať vodou akurát po vrch, prikryť<br>
-        3. Dusiť 20–25 minút, kým nie je mrkva úplne mäkká<br>
-        4. Ryžu zvlášť, pokojne rozvarenejšiu — lepšie drží na lyžičke</p>
-        <div class="forhim"><b>Do misky:</b> ryža so šťavou a nadrobno nakrájaným kuracím<br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> kuracie a mrkva v prúžkoch</div>
-      </div>
+    <div class="card">
+      <h3>Čo má zavedené</h3>
+      <p style="margin-bottom:0">Pšenica ✓ · vajce ✓ · mliečne ✓ · sezam ✓ · arašid ✓ · strukoviny ✓ · ryby ✓ (losos v pohárikoch)<br>
+      Chýbajú už len <b>orechy</b>.</p>
+    </div>
 
-      <div class="meal">
-        <h4>4 · Hustá šošovicová polievka</h4>
-        <div class="when">~25 min · štvrtok · najjednoduchšia zo všetkých</div>
-        <p><b>Suroviny:</b> 1 hrnček červenej šošovice · 1 mrkva · 1 zemiak · 1 malá cibuľa · <b>1 vajce uvarené natvrdo</b></p>
-        <p>1. Všetko nakrájať nadrobno a dať do hrnca. <b>Šošovica sa nemusí namáčať</b><br>
-        2. Zaliať vodou asi 3 cm nad obsah<br>
-        3. Variť 20–25 minút, kým sa nerozvarí. <b>Mixovať netreba</b>, rozpadne sa sama<br>
-        4. Prihustá → doliať vodu · pririedka → variť ďalej</p>
-        <div class="forhim"><b>Do misky:</b> nechať hustú, má držať na lyžičke<br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> 2–3 prúžky toastu na namáčanie</div>
-      </div>
+    <div class="rule">
+      <p><strong>Zuby — 2× denne</strong></p>
+      <p><b>Pasta s fluoridom 1000–1100 ppm</b>, množstvo <b>ako zrnko ryže</b>. Pasta bez fluoridu je takmer zbytočná.</p>
+      <p><b>Umývaš ty</b> — sám si ich nevyčistí asi do 7–8 rokov. Polož si ho hlavičkou do lona a čisti <b>zozadu</b>.</p>
+      <p><b>Vypľuť, neoplachovať vodou</b> — opláchnutie zmyje fluorid.</p>
+      <p style="margin-bottom:0">Keďže zaspáva s mliečkom, <b>umývaj skôr večer</b> (po večeri alebo po kúpaní), nie až tesne pred spaním. Lepšie než neumývať vôbec.</p>
+    </div>
 
-      <p style="margin:14px 0 0;color:var(--muted);font-size:0.92rem">Porcia na začiatok ~3–4 lyžice, ďalej podľa chuti. <b>Netlačiť.</b> Po prvom roku chuť do jedla prirodzene klesá, lebo sa spomalí rast — ráta sa celodenný príjem, nie jednotlivé jedlo.</p>
+    <div class="card">
+      <h3>Vitamín D</h3>
+      <p style="margin-bottom:0">Je október a ideme do zimy — <b>spýtaj sa pediatričky, či pokračovať.</b> V druhom roku sa bežne dáva 400–600 IU denne; veľa rodičov po roku prestane, hoci cez zimu sa to odporúča.</p>
+    </div>
+
+    <div class="card">
+      <h3>Soľ a cukor</h3>
+      <p style="margin-bottom:0">Limit soli v 1–3 rokoch je <b>~2 g denne</b> — minie sa rýchlo pri slaných snackoch, šunke a syroch. Bez pridaného cukru, žiadne sladené nápoje. <b>Med už môže</b> (botulizmus hrozí len do 12 mesiacov), ale je to stále cukor.</p>
+    </div>
+
+    <div class="card">
+      <h3>Chuť do jedla</h3>
+      <p style="margin-bottom:0">Po prvom roku <b>prirodzene klesá</b> — rast sa spomalí a v druhom roku dieťa priberie asi polovicu toho, čo v prvom. Ráta sa <b>celodenný príjem</b>, nie jednotlivé jedlo. Menšie porcie nie sú problém.</p>
     </div>
   </section>
 
@@ -628,14 +626,14 @@
 
     <div class="card">
       <h3>Môže jesť všetko bežné</h3>
-      <p><b>Alergia na pšenicu sa vyriešila</b> — chlieb, cestoviny, piškóty a rožky sú v poriadku, netreba sa báť. Rovnako <b>vajce, mliečne, arašidové maslo, sezam, strukoviny a ryby</b> — všetko má zavedené a znáša.</p>
+      <p><b>Alergia na pšenicu sa vyriešila</b> — chlieb, cestoviny, piškóty a rožky sú v poriadku, netreba sa báť. Rovnako <b>vajce, mliečne, sezam, strukoviny a ryby</b> — všetko má zavedené a znáša.</p>
       <p style="margin-bottom:0">Jediné, čo <b>ešte nemal a zatiaľ nedávať:</b> orechy (mandle, lieskovce, kešu). Tie zavádzame doma.</p>
     </div>
 
     <div class="card">
       <h3>Zásady</h3>
       <ul style="margin:0;padding-left:20px">
-        <li><b>Do každého obeda vmiešať žĺtok a kúsok bielka</b> z vajca <b>uvareného natvrdo</b> (14 min) — nikdy nie surové ani mäkké</li>
+        <li><b>Do každého obeda vmiešať žĺtok a kúsok bielka</b> z vajca uvareného natvrdo (14 min) — nikdy nie surové ani mäkké</li>
         <li>Jedlo <b>rozmačkané vidličkou, nie rozmixované</b></li>
         <li><b>Toast zľahka opiecť</b> a krájať na prúžky — čerstvý mäkký chlieb sa v ústach zlepí do gule</li>
         <li><b>Čistý jogurt neje</b> — vždy zamiešať do ovsenej kaše s ovocím</li>
@@ -740,14 +738,141 @@
 <script>
 (function () {
   "use strict";
+  /* ====================== DÁTA ====================== */
+  var RANAJKY = {
+    kasa:   { t: "Ovsená kaša na plnotučnom mlieku",
+              m: "kaša uvarená hustejšie",
+              r: "banán pozdĺžne na prúžky, nie na kolieska",
+              sur: ["Ovsené vločky", "Banány"] },
+    kasaJog:{ t: "Ovsená kaša s jogurtom a ovocím",
+              m: "kaša, do nej vmiešaný biely jogurt a rozmačkané ovocie. <b>Čistý jogurt neje</b> — vždy do kaše",
+              r: "ryžový chlebíček celý · prúžok banánu",
+              sur: ["Ovsené vločky", "Biely jogurt", "Banány"] },
+    hummus: { t: "Toast s hummusom",
+              m: "netreba nič, prípadne lyžička hummusu na namáčanie",
+              r: "biely toast zľahka opečený, natretý hummusom, prúžky ~2 cm · olúpaná mäkká hruška",
+              sur: ["Toastový chlieb", "Hummus", "Hrušky"] },
+    lucina: { t: "Toast s Lučinou",
+              m: "netreba nič",
+              r: "biely toast zľahka opečený, natretý Lučinou, prúžky ~2 cm · prúžok banánu",
+              sur: ["Toastový chlieb", "Lučina natural", "Banány"] },
+    prazenica:{ t: "Praženica z ½ vajca",
+              m: "½ vajca ako praženica, nadrobno",
+              r: "prúžky toastu · praženica sa dá chytať aj prstami",
+              sur: ["Vajcia", "Toastový chlieb"] },
+    lievance:{ t: "Lievance",
+              m: "netreba — vajce je v nich zapečené, neurobí objem",
+              r: "nakrájané na prúžky, rovno do ruky",
+              sur: ["Vajcia", "Hladká múka", "Mlieko"] }
+  };
 
-  /* ---------- tabs ---------- */
-  var TABS = ["tyzden", "kusky", "nakup", "recepty", "pravidla", "zapis"];
+  var OBEDY = {
+    omacka: { t: "Mäsová omáčka s cestovinami",
+      m: "3–4 lyžice omáčky rozmačkané vidličkou",
+      r: "5–6 celých cestovín · navrch štipka strúhaného syra",
+      sur: ["Mleté mäso 200 g", "Paradajkový pretlak", "Cibuľa", "Cestoviny penne/fusilli", "Eidam na strúhanie"],
+      cas: "~25 min",
+      pop: "Je to <b>boloňská omáčka, len bez soli a korenia.</b>",
+      kroky: ["Cibuľu nadrobno, opražiť na oleji do sklovita — 3 minúty",
+              "Pridať mleté mäso, rozmiešať vidličkou, opražiť kým nezbelie — 5 minút",
+              "Pridať 2–3 lyžice pretlaku a deci vody, prikryť, dusiť 15 minút",
+              "Cestoviny podľa návodu, pokojne o 2 minúty dlhšie"] },
+    losos: { t: "Losos so zemiakmi a brokolicou",
+      m: "zemiaková kaša s lososom — rybu <b>rozdrobiť prstami a prebrať kosti</b>",
+      r: "3–4 ružičky brokolice, mäkké ale celé",
+      sur: ["Losos 1 filet", "Zemiaky", "Brokolica", "Maslo"],
+      cas: "~25 min",
+      pop: "",
+      kroky: ["Zemiaky olúpať, nakrájať, variť 20 minút",
+              "Po desiatich minútach prihodiť do tej istej vody brokolicu",
+              "Losos 15 minút v rúre na 180 °C",
+              "Zemiaky rozmačkať s lyžičkou masla a trochou vody z varenia"] },
+    kura: { t: "Kuracie s mrkvou a ryžou",
+      m: "ryža so šťavou a nadrobno nakrájaným kuracím",
+      r: "kuracie a mrkva v prúžkoch, nie kockách",
+      sur: ["Kuracie prsia 1 ks", "Mrkva", "Ryža"],
+      cas: "~30 min",
+      pop: "Najjemnejšie zo všetkých.",
+      kroky: ["Mäso nakrájať na kúsky, mrkvu na kolieska",
+              "Dať do hrnca, zaliať vodou akurát po vrch, prikryť",
+              "Dusiť 20–25 minút, kým nie je mrkva úplne mäkká",
+              "Ryžu zvlášť, pokojne rozvarenejšiu — lepšie drží na lyžičke"] },
+    sosovica: { t: "Hustá šošovicová polievka",
+      m: "nechať hustú, má držať na lyžičke",
+      r: "2–3 prúžky toastu na namáčanie",
+      sur: ["Červená šošovica", "Mrkva", "Zemiaky", "Cibuľa"],
+      cas: "~25 min",
+      pop: "Najjednoduchšia zo všetkých a najviac železa.",
+      kroky: ["Všetko nakrájať nadrobno a dať do hrnca. <b>Šošovica sa nemusí namáčať</b>",
+              "Zaliať vodou asi 3 cm nad obsah",
+              "Variť 20–25 minút. <b>Mixovať netreba</b>, rozpadne sa sama",
+              "Prihustá → doliať vodu · pririedka → variť ďalej"] },
+    gulky: { t: "Mäsové guľky s kuskusom",
+      m: "kuskus navlhko, guľka rozmačkaná vidličkou",
+      r: "2–3 menšie guľky — mäkké, držia sa v ruke",
+      sur: ["Mleté mäso 200 g", "Kuskus", "Vajcia", "Cibuľa"],
+      cas: "~30 min",
+      pop: "Do mäsa sa zapečie vajce — vybaví sa tým vajce bez toho, aby urobilo objem.",
+      kroky: ["Do mletého mäsa zamiešať rozšľahané vajce a jemne nasekanú cibuľu",
+              "Formovať malé guľky — Matkove menšie a bez soli",
+              "Opiecť na panvici a podliať vodou, prikryť, dusiť 15 minút",
+              "Kuskus zaliať vriacou vodou, nechať 5 minút napučať"] },
+    rizoto: { t: "Zeleninové rizoto so syrom",
+      m: "rizoto je husté samo od seba, netreba nič upravovať",
+      r: "prúžky dusenej cukety alebo mrkvy · strúhaný syr navrch",
+      sur: ["Ryža", "Cuketa", "Mrkva", "Cibuľa", "Eidam na strúhanie"],
+      cas: "~30 min",
+      pop: "Konzistencia sedí sama, netreba mačkať.",
+      kroky: ["Cibuľu a zeleninu nakrájať nadrobno, opražiť na oleji",
+              "Pridať ryžu, zaliať vodou a za občasného miešania variť 20 minút",
+              "Dolievať vodu, kým ryža nie je mäkká",
+              "Na konci vmiešať strúhaný syr"] },
+    polievka: { t: "Kuracia polievka s drobnými cestovinami",
+      m: "hustejšia polievka s cestovinami a nadrobno nakrájaným mäsom",
+      r: "prúžky uvarenej mrkvy · kuracie v prúžkoch",
+      sur: ["Kuracie prsia 1 ks", "Mrkva", "Petržlen", "Drobné cestoviny"],
+      cas: "~30 min",
+      pop: "Dobrá na deň, keď je prechladnutý.",
+      kroky: ["Mäso a zeleninu dať do hrnca, zaliať vodou, variť 25 minút",
+              "Mäso vybrať, nakrájať nadrobno a vrátiť späť",
+              "Cestoviny uvariť zvlášť a pridať až do misky",
+              "Matkovu porciu vybrať pred solením"] },
+    treska: { t: "Treska so zemiakovou kašou a hráškom",
+      m: "zemiaková kaša s rozdrobenou treskou — <b>kosti prebrať prstami</b>",
+      r: "hrášok po zrnkách · prúžky uvarenej mrkvy",
+      sur: ["Treska 1 filet", "Zemiaky", "Hrášok", "Maslo"],
+      cas: "~25 min",
+      pop: "Jemnejšia a lacnejšia alternatíva k lososovi.",
+      kroky: ["Zemiaky variť 20 minút, posledných 5 minút prihodiť hrášok",
+              "Tresku dusiť v troche vody alebo piecť 12 minút na 180 °C",
+              "Zemiaky rozmačkať s maslom",
+              "Rybu rozdrobiť a <b>dôkladne prebrať kosti</b>"] }
+  };
+
+  var DNI = ["Pondelok", "Utorok", "Streda", "Štvrtok", "Piatok"];
+
+  var TYZDNE = [
+    { n: "Týždeň 1", d: [["kasa","omacka"],["hummus","losos"],["prazenica","kura"],["kasaJog","sosovica"],["lucina","omacka"]] },
+    { n: "Týždeň 2", d: [["kasaJog","gulky"],["lucina","treska"],["lievance","rizoto"],["kasa","polievka"],["hummus","gulky"]] },
+    { n: "Týždeň 3", d: [["prazenica","kura"],["kasaJog","losos"],["hummus","sosovica"],["lievance","omacka"],["kasa","rizoto"]] },
+    { n: "Týždeň 4", d: [["lucina","gulky"],["prazenica","polievka"],["kasaJog","treska"],["hummus","kura"],["lievance","sosovica"]] }
+  ];
+
+  /* vždy na sklade, nezávisle od týždňa */
+  var STALE = [
+    ["Vajcia", "žĺtok + kúsok bielka do každého obeda · uvarené natvrdo, 14 min"],
+    ["Toastový chlieb — biely", "prúžky ku všetkému · zľahka opiecť"],
+    ["Ryžové chlebíčky — NESLANÉ", ""],
+    ["Poháriky", "večer ostáva ako doteraz"],
+    ["Olej, maslo", ""]
+  ];
+
+  /* ====================== TABY ====================== */
+  var TABS = ["tyzden", "nakup", "kusky", "recepty", "mama", "pravidla", "zapis"];
   function showTab(name) {
     if (TABS.indexOf(name) === -1) name = TABS[0];
     TABS.forEach(function (t) {
-      var panel = document.getElementById(t);
-      var btn = document.getElementById("t-" + t);
+      var panel = document.getElementById(t), btn = document.getElementById("t-" + t);
       if (!panel || !btn) return;
       var on = t === name;
       panel.hidden = !on;
@@ -765,120 +890,227 @@
   var initial = (location.hash || "").replace("#", "");
   showTab(TABS.indexOf(initial) !== -1 ? initial : "tyzden");
 
-  /* ---------- nakup: dva stlpce, per viewer ---------- */
-  var ITEMS = {
-    a: [
-      ["a-mlete", "Mleté mäso", "200 g · obed Po a Pi"],
-      ["a-pretlak", "Paradajkový pretlak + cibuľa", "obed Po a Pi"],
-      ["a-cestoviny", "Cestoviny — penne alebo fusilli", "hrubšie tvary sa lepšie chytajú"],
-      ["a-losos", "Losos — 1 filet", "obed Ut"],
-      ["a-brokolica", "Brokolica", "obed Ut"],
-      ["a-kura", "Kuracie prsia — 1 ks", "obed St"],
-      ["a-ryza", "Ryža", "obed St"],
-      ["a-sosovica", "Červená šošovica", "obed Št · nemusí sa namáčať"],
-      ["a-zemiaky", "Zemiaky a mrkva", "obed Ut, St a Št"],
-      ["a-maslo", "Maslo", ""]
-    ],
-    b: [
-      ["b-vajcia", "Vajcia", "žĺtok + kúsok bielka do každého obeda · uvarené natvrdo, 14 min"],
-      ["b-vlocky", "Ovsené vločky — jemné", "raňajky Po a Št"],
-      ["b-hummus", "Hummus — hotový", "raňajky Ut"],
-      ["b-jogurt", "Biely jogurt", "raňajky Št · len do kaše s ovocím, čistý neje"],
-      ["b-zerve", "Lučina natural", "raňajky Pi · smotanový syr na natieranie"],
-      ["b-toast", "Toastový chlieb — biely", "míňa sa najrýchlejšie · zľahka opiecť, krájať na prúžky"],
-      ["b-banan", "Banány a mäkké hrušky", ""],
-      ["b-ryzove", "Ryžové chlebíčky — NESLANÉ", ""],
-      ["b-poharik", "Poháriky", "večer ostáva ako doteraz"]
-    ]
-  };
-
-  var KEY = "matko-nakup-v3";
-  function loadHave() {
-    try { var r = localStorage.getItem(KEY); return r ? JSON.parse(r) : {}; }
-    catch (e) { return {}; }
+  /* ====================== STAV ====================== */
+  function ls(k, d) {
+    try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch (e) { return d; }
   }
-  function saveHave(o) {
-    try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {}
-  }
-  var have = loadHave();
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
-  function makeLi(item, inHave) {
+  var offset = 0;
+  var zmeny = ls("matko-zmeny-v1", {});
+  var have = ls("matko-mame-v1", {});
+
+  var R_KEYS = Object.keys(RANAJKY);
+  var O_KEYS = Object.keys(OBEDY);
+
+  function mondayOf(d) {
+    var x = new Date(d.getTime());
+    x.setHours(0, 0, 0, 0);
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    return x;
+  }
+  var baseMonday = mondayOf(new Date());
+
+  function shownMonday() {
+    var m = new Date(baseMonday.getTime());
+    m.setDate(m.getDate() + offset * 7);
+    return m;
+  }
+  function weekIndex(m) {
+    var w = Math.floor(m.getTime() / 86400000 / 7);
+    return ((w % 4) + 4) % 4;
+  }
+  function dmy(d) { return d.getDate() + "." + (d.getMonth() + 1) + "."; }
+
+  /* efektívny plán dňa po prípadnej zmene */
+  function planFor(wi, di) {
+    var base = TYZDNE[wi].d[di];
+    return {
+      r: zmeny["w" + wi + "d" + di + "r"] || base[0],
+      o: zmeny["w" + wi + "d" + di + "o"] || base[1]
+    };
+  }
+  function cyklus(keys, cur) {
+    var i = keys.indexOf(cur);
+    return keys[(i + 1) % keys.length];
+  }
+
+  /* ====================== TÝŽDEŇ ====================== */
+  function renderTyzden() {
+    var m = shownMonday(), wi = weekIndex(m);
+    var pia = new Date(m.getTime()); pia.setDate(pia.getDate() + 4);
+
+    document.getElementById("wname").textContent = TYZDNE[wi].n;
+    document.getElementById("wdates").textContent = dmy(m) + " – " + dmy(pia) + pia.getFullYear();
+    document.getElementById("wnow").textContent = offset === 0 ? "tento týždeň" : "";
+
+    var box = document.getElementById("dni");
+    box.innerHTML = "";
+
+    DNI.forEach(function (den, di) {
+      var p = planFor(wi, di);
+      var ran = RANAJKY[p.r], obe = OBEDY[p.o];
+      var d = new Date(m.getTime()); d.setDate(d.getDate() + di);
+
+      var card = document.createElement("div");
+      card.className = "card daycard";
+
+      var h = document.createElement("h4");
+      h.textContent = den;
+      card.appendChild(h);
+
+      var dd = document.createElement("div");
+      dd.className = "dd";
+      dd.textContent = dmy(d);
+      card.appendChild(dd);
+
+      [["Raňajky", ran, "r", R_KEYS], ["Obed", obe, "o", O_KEYS]].forEach(function (pair) {
+        var label = pair[0], jedlo = pair[1], slot = pair[2], keys = pair[3];
+
+        var row = document.createElement("div");
+        row.className = "slot";
+        var lb = document.createElement("b");
+        lb.textContent = label;
+        row.appendChild(lb);
+        var sw = document.createElement("button");
+        sw.className = "swap";
+        sw.type = "button";
+        sw.textContent = "zmeniť";
+        sw.addEventListener("click", function () {
+          var k = "w" + wi + "d" + di + slot;
+          var cur = slot === "r" ? planFor(wi, di).r : planFor(wi, di).o;
+          zmeny[k] = cyklus(keys, cur);
+          save("matko-zmeny-v1", zmeny);
+          renderTyzden();
+          renderNakup();
+        });
+        row.appendChild(sw);
+        card.appendChild(row);
+
+        var bx = document.createElement("div");
+        bx.className = "forhim";
+        bx.innerHTML = "<b>" + jedlo.t + "</b><br><b>Do misky:</b> " + jedlo.m +
+          (slot === "o" ? " + <b>žĺtok a kúsok bielka</b>" : "") +
+          "<br><b>Do ruky:</b> " + jedlo.r;
+        bx.style.marginBottom = slot === "r" ? "10px" : "0";
+        card.appendChild(bx);
+      });
+
+      box.appendChild(card);
+    });
+  }
+
+  document.getElementById("wprev").addEventListener("click", function () { offset--; renderTyzden(); renderNakup(); });
+  document.getElementById("wnext").addEventListener("click", function () { offset++; renderTyzden(); renderNakup(); });
+
+  /* ====================== NÁKUP ====================== */
+  function surovinyTyzdna() {
+    var m = shownMonday(), wi = weekIndex(m), out = [], seen = {};
+    DNI.forEach(function (_, di) {
+      var p = planFor(wi, di);
+      RANAJKY[p.r].sur.concat(OBEDY[p.o].sur).forEach(function (x) {
+        if (!seen[x]) { seen[x] = 1; out.push([x, ""]); }
+      });
+    });
+    return out;
+  }
+
+  function makeLi(nazov, popis, inHave, onToggle) {
     var li = document.createElement("li");
-    li.setAttribute("data-item", item[0]);
     li.tabIndex = 0;
     li.setAttribute("role", "button");
-
     var ar = document.createElement("span");
     ar.className = "arrow";
-    ar.textContent = inHave ? "\u2190" : "\u2713";
+    ar.textContent = inHave ? "←" : "✓";
     li.appendChild(ar);
-
     var tx = document.createElement("span");
     tx.className = "itxt";
     var b = document.createElement("b");
-    b.textContent = item[1];
+    b.textContent = nazov;
     tx.appendChild(b);
-    if (item[2]) {
+    if (popis) {
       var sm = document.createElement("small");
-      sm.textContent = item[2];
+      sm.innerHTML = popis;
       tx.appendChild(sm);
     }
     li.appendChild(tx);
-
-    function toggle() {
-      if (have[item[0]]) delete have[item[0]];
-      else have[item[0]] = 1;
-      saveHave(have);
-      renderShop();
-    }
-    li.addEventListener("click", toggle);
+    li.addEventListener("click", onToggle);
     li.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); }
     });
     return li;
   }
 
-  function renderShop() {
-    ["a", "b"].forEach(function (run) {
-      var buy = document.querySelector('ul.shop[data-run="' + run + '"][data-col="buy"]');
-      var hav = document.querySelector('ul.shop[data-run="' + run + '"][data-col="have"]');
-      if (!buy || !hav) return;
-      buy.innerHTML = "";
-      hav.innerHTML = "";
-      var nb = 0, nh = 0;
-      ITEMS[run].forEach(function (item) {
-        var inHave = !!have[item[0]];
-        (inHave ? hav : buy).appendChild(makeLi(item, inHave));
-        if (inHave) nh++; else nb++;
+  function renderZoznam(run, polozky) {
+    var buy = document.querySelector('ul.shop[data-run="' + run + '"][data-col="buy"]');
+    var hav = document.querySelector('ul.shop[data-run="' + run + '"][data-col="have"]');
+    if (!buy || !hav) return;
+    buy.innerHTML = ""; hav.innerHTML = "";
+    var nb = 0, nh = 0;
+    polozky.forEach(function (it) {
+      var key = it[0];
+      var inHave = !!have[key];
+      var li = makeLi(it[0], it[1], inHave, function () {
+        if (have[key]) delete have[key]; else have[key] = 1;
+        save("matko-mame-v1", have);
+        renderNakup();
       });
-      if (!nb) {
-        var e1 = document.createElement("div");
-        e1.className = "emptycol";
-        e1.textContent = "Nič netreba kúpiť";
-        buy.appendChild(e1);
-      }
-      if (!nh) {
-        var e2 = document.createElement("div");
-        e2.className = "emptycol";
-        e2.textContent = "Ťukni na položku vľavo";
-        hav.appendChild(e2);
-      }
-      var cb = document.querySelector('[data-n="' + run + '-buy"]');
-      var ch = document.querySelector('[data-n="' + run + '-have"]');
-      if (cb) cb.textContent = nb;
-      if (ch) ch.textContent = nh;
+      (inHave ? hav : buy).appendChild(li);
+      if (inHave) nh++; else nb++;
     });
+    if (!nb) { var e1 = document.createElement("div"); e1.className = "emptycol"; e1.textContent = "Nič netreba kúpiť"; buy.appendChild(e1); }
+    if (!nh) { var e2 = document.createElement("div"); e2.className = "emptycol"; e2.textContent = "Ťukni na položku vľavo"; hav.appendChild(e2); }
+    var cb = document.querySelector('[data-n="' + run + '-buy"]');
+    var ch = document.querySelector('[data-n="' + run + '-have"]');
+    if (cb) cb.textContent = nb;
+    if (ch) ch.textContent = nh;
   }
-  renderShop();
+
+  function renderNakup() {
+    var m = shownMonday(), wi = weekIndex(m);
+    var pia = new Date(m.getTime()); pia.setDate(pia.getDate() + 4);
+    document.getElementById("nakuplede").innerHTML =
+      "Zoznam pre <b>" + TYZDNE[wi].n + "</b> (" + dmy(m) + " – " + dmy(pia) + ") — mení sa podľa toho, " +
+      "ktorý týždeň máš vybratý a aké jedlá si v ňom vymenila. Ťukni na položku, ktorú máš doma, a presunie sa do <b>Máme</b>.";
+    renderZoznam("a", surovinyTyzdna());
+    renderZoznam("b", STALE);
+  }
 
   var clearBtn = document.getElementById("clear");
   if (clearBtn) clearBtn.addEventListener("click", function () {
-    have = {};
-    saveHave(have);
-    renderShop();
+    have = {}; save("matko-mame-v1", have); renderNakup();
   });
 
-  /* ---------- log: shared store ---------- */
+  /* ====================== RECEPTY ====================== */
+  function renderRecepty() {
+    var box = document.getElementById("recepty-zoznam");
+    box.innerHTML = "";
+    var card = document.createElement("div");
+    card.className = "card";
+    O_KEYS.forEach(function (k, i) {
+      var j = OBEDY[k];
+      var d = document.createElement("div");
+      d.className = "meal";
+      var html = "<h4>" + (i + 1) + " · " + j.t + "</h4>" +
+        '<div class="when">' + j.cas + "</div>";
+      if (j.pop) html += "<p>" + j.pop + "</p>";
+      html += "<p><b>Suroviny:</b> " + j.sur.join(" · ") + " · <b>1 vajce uvarené natvrdo</b></p><p>";
+      j.kroky.forEach(function (krok, n) { html += (n + 1) + ". " + krok + "<br>"; });
+      html += "</p>" +
+        '<div class="forhim"><b>Do misky:</b> ' + j.m +
+        "<br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno" +
+        "<br><b>Do ruky:</b> " + j.r + "</div>";
+      d.innerHTML = html;
+      card.appendChild(d);
+    });
+    box.appendChild(card);
+  }
+
+  renderTyzden();
+  renderNakup();
+  renderRecepty();
+
+  /* ====================== ZÁPIS ====================== */
   var dateEl = document.getElementById("z-datum");
   if (dateEl) {
     var now = new Date();
@@ -899,13 +1131,12 @@
   function fmtDate(s) {
     if (!s || typeof s !== "string") return "";
     var p = s.split("-");
-    if (p.length !== 3) return s;
-    return Number(p[2]) + "." + Number(p[1]) + "." + p[0];
+    return p.length === 3 ? Number(p[2]) + "." + Number(p[1]) + "." + p[0] : s;
   }
 
-  function renderEntries(docs) {
+  function renderEntries(list) {
     if (!entriesEl) return;
-    if (!docs.length) {
+    if (!list.length) {
       entriesEl.innerHTML = "";
       entriesEl.appendChild(emptyEl);
       emptyEl.hidden = false;
@@ -913,20 +1144,17 @@
     }
     emptyEl.hidden = true;
     entriesEl.innerHTML = "";
-    docs.forEach(function (v) {
+    list.forEach(function (v) {
       var row = document.createElement("div");
       row.className = "entry";
-
       var dd = document.createElement("div");
       dd.className = "d";
       dd.textContent = fmtDate(v.datum);
       row.appendChild(dd);
-
       var f = document.createElement("div");
       f.className = "f";
       f.textContent = v.jedlo || "(bez názvu)";
       row.appendChild(f);
-
       var meta = document.createElement("div");
       meta.className = "meta";
       var pair = VZAL[v.vzal] || ["", "v-nie"];
@@ -940,7 +1168,6 @@
       if (v.poznamka) tail += " · " + v.poznamka;
       if (tail) meta.appendChild(document.createTextNode(tail));
       row.appendChild(meta);
-
       entriesEl.appendChild(row);
     });
   }
@@ -951,35 +1178,36 @@
     statusEl.hidden = !msg;
   }
 
+  function formBody() {
+    return {
+      datum: document.getElementById("z-datum").value || "",
+      jedlo: (document.getElementById("z-jedlo").value || "").trim(),
+      vzal: document.getElementById("z-vzal").value,
+      zuval: document.getElementById("z-zuval").value,
+      davil: document.getElementById("z-davil").checked,
+      poznamka: (document.getElementById("z-pozn").value || "").trim(),
+      createdAt: new Date().toISOString()
+    };
+  }
+  function clearForm() {
+    document.getElementById("z-jedlo").value = "";
+    document.getElementById("z-pozn").value = "";
+    document.getElementById("z-davil").checked = false;
+  }
+
   var LKEY = "matko-zapis-v1";
-  function localLoad() {
-    try { var r = localStorage.getItem(LKEY); return r ? JSON.parse(r) : []; } catch (e) { return []; }
-  }
-  function localSave(list) {
-    try { localStorage.setItem(LKEY, JSON.stringify(list)); } catch (e) {}
-  }
   function startLocal() {
     if (formCard) formCard.hidden = false;
-    renderEntries(localLoad());
+    renderEntries(ls(LKEY, []));
     if (!saveBtn) return;
     saveBtn.addEventListener("click", function () {
-      var jedlo = (document.getElementById("z-jedlo").value || "").trim();
-      if (!jedlo) { setStatus("Napíš, čo si ponúkla."); return; }
-      var list = localLoad();
-      list.unshift({
-        datum: document.getElementById("z-datum").value || "",
-        jedlo: jedlo,
-        vzal: document.getElementById("z-vzal").value,
-        zuval: document.getElementById("z-zuval").value,
-        davil: document.getElementById("z-davil").checked,
-        poznamka: (document.getElementById("z-pozn").value || "").trim(),
-        createdAt: new Date().toISOString()
-      });
-      localSave(list.slice(0, 200));
-      document.getElementById("z-jedlo").value = "";
-      document.getElementById("z-pozn").value = "";
-      document.getElementById("z-davil").checked = false;
-      renderEntries(localLoad());
+      var body = formBody();
+      if (!body.jedlo) { setStatus("Napíš, čo si ponúkla."); return; }
+      var list = ls(LKEY, []);
+      list.unshift(body);
+      save(LKEY, list.slice(0, 200));
+      clearForm();
+      renderEntries(ls(LKEY, []));
       setStatus("Uložené do tohto zariadenia.");
       setTimeout(function () { setStatus(""); }, 2500);
     });
@@ -1003,30 +1231,17 @@
     var col = db.collection("zapis");
     col.orderBy("createdAt", "desc").limit(60).onSnapshot(
       function (snap) { renderEntries(snap.docs.map(function (d) { return d.data() || {}; })); },
-      function (err) {
-        if (emptyEl) emptyEl.textContent = "Zápisy sa teraz nepodarilo načítať (" + err.code + ").";
-      }
+      function (err) { if (emptyEl) emptyEl.textContent = "Zápisy sa teraz nepodarilo načítať (" + err.code + ")."; }
     );
 
     if (saveBtn) saveBtn.addEventListener("click", async function () {
-      var jedlo = (document.getElementById("z-jedlo").value || "").trim();
-      if (!jedlo) { setStatus("Napíš, čo si ponúkla."); return; }
+      var body = formBody();
+      if (!body.jedlo) { setStatus("Napíš, čo si ponúkla."); return; }
       saveBtn.disabled = true;
       setStatus("Ukladám…");
-      var body = {
-        datum: document.getElementById("z-datum").value || "",
-        jedlo: jedlo,
-        vzal: document.getElementById("z-vzal").value,
-        zuval: document.getElementById("z-zuval").value,
-        davil: document.getElementById("z-davil").checked,
-        poznamka: (document.getElementById("z-pozn").value || "").trim(),
-        createdAt: new Date().toISOString()
-      };
       try {
         await col.doc().set(body);
-        document.getElementById("z-jedlo").value = "";
-        document.getElementById("z-pozn").value = "";
-        document.getElementById("z-davil").checked = false;
+        clearForm();
         setStatus("Uložené.");
         setTimeout(function () { setStatus(""); }, 2500);
       } catch (e) {
@@ -1036,9 +1251,7 @@
         } else {
           setStatus("Nepodarilo sa uložiť. Skús to prosím znova.");
         }
-      } finally {
-        saveBtn.disabled = false;
-      }
+      } finally { saveBtn.disabled = false; }
     });
   })();
 })();
