@@ -89,8 +89,7 @@ export const KUSY: MbKus[] = [
       "/mb/C03-wanting-it-and-fearing-it/04.png",
       "/mb/C03-wanting-it-and-fearing-it/05.png",
       "/mb/C03-wanting-it-and-fearing-it/06.png",
-      "/mb/C03-wanting-it-and-fearing-it/07.png",
-      "/mb/C03-wanting-it-and-fearing-it/08.png"
+      "/mb/C03-wanting-it-and-fearing-it/07.png"
     ]
   },
   {
