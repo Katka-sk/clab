@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Matkov jedálniček</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  :root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; font: 14px system-ui, -apple-system, sans-serif; }
+  img { max-width: 100%; }
+  /* Layout: phone-first single column, sticky tab bar, content grouped into task cards */
+  :root {
+    --bg: #f1f4ee;
+    --surface: #ffffff;
+    --surface-2: #e9eee5;
+    --fg: #1b241e;
+    --muted: #68776b;
+    --line: #d7dfd2;
+    --accent: #73335a;
+    --accent-soft: #f6e9f0;
+    --ok: #3e6b4b;
+    --ok-soft: #e4efe5;
+    --warn: #8a5718;
+    --warn-soft: #f7ecdd;
+    --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+    --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141813;
+      --surface: #1d231c;
+      --surface-2: #262e25;
+      --fg: #e7ede6;
+      --muted: #94a395;
+      --line: #2f392e;
+      --accent: #e9a6c6;
+      --accent-soft: #33212b;
+      --ok: #7fba8c;
+      --ok-soft: #1e2d21;
+      --warn: #d6a35f;
+      --warn-soft: #2e2416;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141813;
+    --surface: #1d231c;
+    --surface-2: #262e25;
+    --fg: #e7ede6;
+    --muted: #94a395;
+    --line: #2f392e;
+    --accent: #e9a6c6;
+    --accent-soft: #33212b;
+    --ok: #7fba8c;
+    --ok-soft: #1e2d21;
+    --warn: #d6a35f;
+    --warn-soft: #2e2416;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-text-size-adjust: 100%;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    background: var(--surface);
+    z-index: 10;
+  }
+  * { box-sizing: border-box; }
+
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  /* ---- header + tabs ---- */
+  .topbar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 11;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-block: 12px 8px;
+    flex-wrap: wrap;
+  }
+  .brand h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .brand .age {
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  nav {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    appearance: none;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--muted);
+    padding: 9px 12px 11px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    border-radius: 6px 6px 0 0;
+  }
+  nav button[aria-selected="true"] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  main { padding-block: 20px 56px; }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin: 0 0 4px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin: 0 0 10px;
+    font-weight: 700;
+  }
+  p { margin: 0 0 12px; }
+  .lede { color: var(--muted); margin-bottom: 20px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card > :last-child { margin-bottom: 0; }
+
+  .rule {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .rule strong { color: var(--accent); }
+  .rule > :last-child { margin-bottom: 0; }
+
+  /* ---- shopping list ---- */
+  .runhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .runhead h2 { margin: 0; }
+  .count {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  ul.shop { list-style: none; margin: 0 0 14px; padding: 0; }
+  ul.shop li { border-top: 1px solid var(--line); }
+  ul.shop li:first-child { border-top: 0; }
+  ul.shop label {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 11px 2px;
+    cursor: pointer;
+  }
+  ul.shop input { margin: 3px 0 0; width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
+  .itxt { min-width: 0; }
+  .itxt b { font-weight: 600; }
+  .itxt small { display: block; color: var(--muted); font-size: 0.82rem; line-height: 1.4; }
+  ul.shop input:checked + .itxt b { text-decoration: line-through; color: var(--muted); font-weight: 500; }
+  .star { color: var(--accent); font-weight: 700; }
+
+  .btn {
+    appearance: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ---- meals ---- */
+  .meal { border-top: 1px solid var(--line); padding-block: 16px; }
+  .meal:first-of-type { border-top: 0; padding-top: 0; }
+  .meal h4 {
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  .meal .when { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+  .forhim {
+    background: var(--surface-2);
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 0.93rem;
+  }
+  .forhim b { color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+  .chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 3px 9px;
+    border-radius: 99px;
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+
+  /* ---- tables ---- */
+  .tscroll { overflow-x: auto; margin-bottom: 14px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  td:first-child { font-weight: 600; }
+
+  .no { background: var(--warn-soft); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .no h3 { color: var(--warn); }
+  .no ul { margin: 0; padding-left: 20px; }
+  .no li { margin-bottom: 5px; }
+
+  /* ---- log ---- */
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 5px; }
+  input[type="text"], input[type="date"], select, textarea {
+    font: inherit;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--fg);
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 420px) { .two { grid-template-columns: 1fr; } }
+  .checkrow { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .checkrow input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .checkrow label { font-size: 0.95rem; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--fg); margin: 0; }
+
+  .entry { border-top: 1px solid var(--line); padding-block: 12px; }
+  .entry:first-child { border-top: 0; padding-top: 0; }
+  .entry .d { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .entry .f { font-weight: 600; }
+  .entry .meta { font-size: 0.88rem; color: var(--muted); }
+  .verdict { font-weight: 700; }
+  .v-ano { color: var(--ok); }
+  .v-trochu { color: var(--warn); }
+  .v-nie { color: var(--muted); }
+  .empty { color: var(--muted); font-size: 0.95rem; text-align: center; padding: 22px 8px; }
+  .status { font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
+  /* shopping rows with mám / treba */
+  ul.shop li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 2px;
+    flex-wrap: wrap;
+  }
+  ul.shop .itxt { flex: 1 1 140px; }
+  .states { display: flex; gap: 6px; flex: none; }
+  .st {
+    appearance: none;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 7px 11px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .st:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  li[data-state="mam"] .st[data-s="mam"] {
+    background: var(--ok-soft);
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+  li[data-state="treba"] .st[data-s="treba"] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  li[data-state="mam"] .itxt b { text-decoration: line-through; color: var(--muted); font-weight: 500; }
+  ul.shop.only-treba li[data-state="mam"] { display: none; }
+  .filterrow { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .btn-sm { font-size: 0.8rem; padding: 7px 12px; }
+  .btn.on { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+  [hidden] { display: none !important; }
+</style>
+
+</head>
+<body>
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Matkov jedálniček</h1>
+      <span class="age">13 mesiacov</span>
+    </div>
+    <nav role="tablist" aria-label="Sekcie">
+      <button role="tab" id="t-tyzden" aria-controls="tyzden" aria-selected="true">Týždeň</button>
+      <button role="tab" id="t-kusky" aria-controls="kusky" aria-selected="false">Kúsky</button>
+      <button role="tab" id="t-nakup" aria-controls="nakup" aria-selected="false">Nákup</button>
+      <button role="tab" id="t-recepty" aria-controls="recepty" aria-selected="false">Recepty</button>
+      <button role="tab" id="t-pravidla" aria-controls="pravidla" aria-selected="false">Pravidlá</button>
+      <button role="tab" id="t-zapis" aria-controls="zapis" aria-selected="false">Zápis</button>
+    </nav>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- ============ TÝŽDEŇ ============ -->
+  <section id="tyzden" role="tabpanel" aria-labelledby="t-tyzden">
+    <h2>Čo má jesť</h2>
+    <p class="lede">Pri každom jedle sú <b>dve veci naraz</b> — niečo do misky na lyžičku a vedľa kúsky do ruky.</p>
+
+    <div class="rule">
+      <p><strong>Vajíčko do každého obeda</strong></p>
+      <p>Do obeda sa <b>vmieša žĺtok a kúsok bielka z vajca uvareného natvrdo.</b> Nie je to samostatné jedlo — len sa to zamieša do toho, čo je v miske.</p>
+      <p><b>Ako najjednoduchšie:</b> uvarte <b>vajcia natvrdo</b> a nechajte ich v chladničke. Pri obede olúpte jedno, žĺtok rozmačkajte vidličkou priamo do jedla a pridajte <b>malý kúsok bielka</b> nadrobno.</p>
+      <p><b>Ako uvariť natvrdo:</b> vriaca voda → vajce dnu → <b>14 minút</b> → studená voda (zastaví varenie a lepšie sa lúpe). Uvarte naraz 4–5 a nechajte v chladničke <b>neolúpané</b> — tak vydržia týždeň. Olúpané len 2–3 dni.</p>
+      <p><b>Vajce musí byť vždy úplne uvarené</b> — žiadny tekutý žĺtok.</p>
+      <p style="margin-bottom:0"><b>Alternatíva:</b> rozšľahané surové vajce vliať na konci varenia do horúceho jedla za stáleho miešania — uvarí sa okamžite a v jedle sa stratí. Funguje pri omáčke aj pri šošovici.</p>
+    </div>
+
+    <div class="card">
+      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Pondelok</h4>
+      <div class="forhim"><b>Raňajky — ovsená kaša</b><br>
+      <b>Do misky:</b> kaša uvarená hustejšie, na plnotučnom mlieku<br>
+      <b>Do ruky:</b> banán nakrájaný <b>pozdĺžne na prúžky</b>, nie na kolieska — prúžok sa lepšie drží</div>
+      <div class="forhim" style="margin-top:8px"><b>Obed — mäsová omáčka s cestovinami</b><br>
+      <b>Do misky:</b> 3–4 lyžice omáčky rozmačkané vidličkou + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
+      <b>Do ruky:</b> 5–6 celých cestovín · navrch štipka strúhaného syra</div>
+      <div class="chips"><span class="chip">železo</span><span class="chip">pšenica</span></div>
+    </div>
+
+    <div class="card">
+      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Utorok</h4>
+      <div class="forhim"><b>Raňajky — toast s hummusom</b><br>
+      <b>Do ruky:</b> biely toast zľahka opečený, natretý hummusom, nakrájaný na <b>prúžky asi 2 cm široké</b> · k tomu olúpaná mäkká hruška na prúžky<br>
+      <b>Do misky:</b> netreba nič, prípadne lyžička hummusu na namáčanie</div>
+      <div class="forhim" style="margin-top:8px"><b>Obed — losos so zemiakmi a brokolicou</b><br>
+      <b>Do misky:</b> zemiaková kaša s rozdrobeným lososom (<b>kosti prebrať prstami</b>) + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
+      <b>Do ruky:</b> 3–4 ružičky brokolice, mäkké ale celé</div>
+      <div class="chips"><span class="chip">sezam + cícer</span><span class="chip">ryba / omega-3</span></div>
+    </div>
+
+    <div class="card">
+      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Streda</h4>
+      <div class="forhim"><b>Raňajky — praženica</b><br>
+      <b>Do misky:</b> ½ vajca ako praženica, nadrobno<br>
+      <b>Do ruky:</b> prúžky toastu · praženica sa dá chytať aj prstami po kúskoch</div>
+      <div class="forhim" style="margin-top:8px"><b>Obed — kuracie s mrkvou a ryžou</b><br>
+      <b>Do misky:</b> ryža s trochou šťavy, zamiešaná s nadrobno nakrájaným kuracím + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
+      <b>Do ruky:</b> kuracie a mrkva v <b>prúžkoch, nie kockách</b></div>
+      <div class="chips"><span class="chip">vajce navyše</span><span class="chip">železo</span></div>
+    </div>
+
+    <div class="card">
+      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Štvrtok</h4>
+      <div class="forhim"><b>Raňajky — ovsená kaša s jogurtom</b><br>
+      <b>Do misky:</b> ovsená kaša, do nej vmiešaný biely jogurt a rozmačkané ovocie (hruška alebo banán). <b>Čistý jogurt neje</b> — vždy ho treba zamiešať do kaše s ovocím<br>
+      <b>Do ruky:</b> ryžový chlebíček celý, nech si odhryzne · prúžok banánu</div>
+      <div class="forhim" style="margin-top:8px"><b>Obed — hustá šošovicová polievka</b><br>
+      <b>Do misky:</b> nechať hustú, má držať na lyžičke + <b>žĺtok a kúsok bielka z vajca uvareného natvrdo</b><br>
+      <b>Do ruky:</b> 2–3 prúžky toastu na namáčanie</div>
+      <div class="chips"><span class="chip">mliečne</span><span class="chip">strukoviny</span></div>
+    </div>
+
+    <div class="card">
+      <h4 style="font-family:var(--font-display);font-size:1.15rem;margin:0 0 10px">Piatok</h4>
+      <div class="forhim"><b>Raňajky — toast s Lučinou</b><br>
+      <b>Do ruky:</b> biely toast zľahka opečený, natretý Lučinou, nakrájaný na <b>prúžky asi 2 cm široké</b> · k tomu prúžok banánu alebo mäkkej hrušky<br>
+      <b>Do misky:</b> netreba nič</div>
+      <div class="forhim" style="margin-top:8px"><b>Obed — mäsová omáčka s cestovinami</b><br>
+      Zvyšok z pondelka, alebo nová. Rovnako ako v pondelok.</div>
+      <div class="chips"><span class="chip">mliečne</span><span class="chip">železo</span></div>
+    </div>
+
+    <div class="rule">
+      <p><strong>Každý večer — mama</strong></p>
+      <p style="margin-bottom:0">Pohárik ako doteraz, len doň vmiešaj lyžicu <b>drobných cestovín alebo strúhaného syra.</b> A polož popri tom <b>2–3 kúsky na tácku</b> — nemusí ich zjesť.</p>
+    </div>
+
+    <div class="card">
+      <h3>Víkend</h3>
+      <p style="margin-bottom:0">Varíte vy. Môže byť zvyšok z piatka, praženica za desať minút, alebo to isté, čo jete vy — len <b>vyberte mu porciu pred solením.</b></p>
+    </div>
+  </section>
+
+  <!-- ============ KÚSKY ============ -->
+  <section id="kusky" role="tabpanel" aria-labelledby="t-kusky" hidden>
+    <h2>Čo sú tie kúsky do ruky</h2>
+    <p class="lede">Ku každému jedlu idú <b>2–3 kúsky na tácku</b>, nech si ich vezme sám. Tu je zoznam, z čoho vyberať.</p>
+
+    <div class="rule">
+      <p><strong>Tvar je dôležitejší než to, čo to je</strong></p>
+      <p><b>Dlhé ako prst dospelého, hrubé ako malíček.</b> Musia mu trčať z pästičky — zovretú dlaň ešte neotvorí, takže čo sa mu celé stratí v ruke, to nezje.</p>
+      <p style="margin-bottom:0"><b>Preto prúžky, nie kocky.</b> A kúsok musí ísť <b>rozpučiť medzi palcom a ukazovákom</b> — ak nejde, je pritvrdý, treba variť ďalej.</p>
+    </div>
+
+    <div class="card">
+      <h3>Pečivo</h3>
+      <ul style="margin:0;padding-left:20px">
+        <li><b>Biely toast</b> — zľahka opečený, prúžky asi 2 cm široké</li>
+        <li><b>Ryžový chlebíček</b> — celý, nech si odhryzne (neslaný)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Ovocie — mäkké, olúpané</h3>
+      <ul style="margin:0;padding-left:20px">
+        <li><b>Banán</b> — pozdĺžne na prúžky, <b>nie na kolieska</b></li>
+        <li><b>Mäkká hruška</b> — olúpaná, na prúžky</li>
+        <li><b>Avokádo</b> — na prúžky</li>
+        <li><b>Broskyňa alebo marhuľa</b> — mäkká, olúpaná</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Zelenina — uvarená domäkka</h3>
+      <ul style="margin:0;padding-left:20px">
+        <li><b>Mrkva</b> — prúžky, uvarená tak, aby sa dala rozpučiť prstami</li>
+        <li><b>Brokolica</b> — ružička celá, stonka slúži ako držadlo</li>
+        <li><b>Zemiak</b> — uvarený, na hranolčeky</li>
+        <li><b>Cuketa</b> — dusená, na prúžky</li>
+        <li><b>Batat</b> — pečený, na prúžky</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Cestoviny</h3>
+      <p style="margin-bottom:0"><b>Penne alebo fusilli</b>, uvarené mäkšie — <b>celé, nekrájať.</b> Veľký tvar sa chytá lepšie než malý.</p>
+    </div>
+
+    <div class="card">
+      <h3>Mäso a ryba</h3>
+      <ul style="margin:0;padding-left:20px">
+        <li><b>Kuracie</b> — prúžky pozdĺž vlákien, dusené domäkka</li>
+        <li><b>Mäsová guľka</b> — mäkká, menšia</li>
+        <li><b>Losos</b> — väčšie vločky, <b>kosti preberené prstami</b></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Syr a vajce</h3>
+      <ul style="margin:0;padding-left:20px">
+        <li><b>Strúhaný syr</b> — nie kocky</li>
+        <li><b>Praženica</b> — po kúskoch, chytá sa prstami</li>
+        <li><b>Omeleta</b> — nakrájaná na prúžky</li>
+      </ul>
+    </div>
+
+    <div class="no">
+      <h3>Toto nie</h3>
+      <ul>
+        <li><b>Kocky</b> čohokoľvek — stratia sa mu v dlani a sú horší tvar aj na dusenie</li>
+        <li><b>Kolieska</b> — klobásy, párku, banánu · ak už, tak krájať pozdĺžne</li>
+        <li><b>Surová tvrdá mrkva a jablko</b> — postrúhať alebo uvariť</li>
+        <li><b>Celé hrozno a cherry paradajky</b> — krájať pozdĺžne na štvrtiny</li>
+        <li><b>Orechy a arašidy</b> v kúskoch · popcorn · tvrdé cukríky</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ NÁKUP ============ -->
+  <section id="nakup" role="tabpanel" aria-labelledby="t-nakup" hidden>
+    <p class="lede">Prejdi si to doma a označ <b>Mám</b> alebo <b>Treba</b>. Potom si zapni <b>Len čo treba</b> a v obchode vidíš iba to podstatné.</p>
+
+    <div class="card">
+      <div class="runhead">
+        <h2>Na obedy</h2>
+        <span class="count" data-count="a"></span>
+      </div>
+      <div class="filterrow"><button class="btn btn-sm filter" data-for="a">Len čo treba</button></div>
+      <ul class="shop" data-run="a">
+        <li data-item="a-mlete"><div class="itxt"><b>Mleté mäso</b><small>200 g · obed Po a Pi</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-pretlak"><div class="itxt"><b>Paradajkový pretlak + cibuľa</b><small>obed Po a Pi</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-cestoviny"><div class="itxt"><b>Cestoviny — penne alebo fusilli</b><small>hrubšie tvary sa lepšie chytajú</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-losos"><div class="itxt"><b>Losos — 1 filet</b><small>obed Ut</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-brokolica"><div class="itxt"><b>Brokolica</b><small>obed Ut</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-kura"><div class="itxt"><b>Kuracie prsia — 1 ks</b><small>obed St</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-ryza"><div class="itxt"><b>Ryža</b><small>obed St</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-sosovica"><div class="itxt"><b>Červená šošovica</b><small>obed Št · nemusí sa namáčať</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-zemiaky"><div class="itxt"><b>Zemiaky a mrkva</b><small>obed Ut, St a Št</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="a-maslo"><div class="itxt"><b>Maslo</b></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="runhead">
+        <h2>Na raňajky</h2>
+        <span class="count" data-count="b"></span>
+      </div>
+      <p style="color:var(--muted);font-size:0.9rem">Tu sa nič nevarí — natrieť, nakrájať, podať.</p>
+      <div class="filterrow"><button class="btn btn-sm filter" data-for="b">Len čo treba</button></div>
+      <ul class="shop" data-run="b">
+        <li data-item="b-vlocky"><div class="itxt"><b>Ovsené vločky — jemné</b><small>raňajky Po</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-hummus"><div class="itxt"><b>Hummus — hotový</b><small>raňajky Ut</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-vajcia"><div class="itxt"><b>Vajcia</b><small>žĺtok + kúsok bielka do <b>každého</b> obeda · <b>vždy uvarené natvrdo</b>, 14 min · variť dopredu</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-jogurt"><div class="itxt"><b>Biely jogurt</b><small>raňajky Št · vždy len do ovsenej kaše s ovocím, nie samotný</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-zerve"><div class="itxt"><b>Lučina natural</b><small>raňajky Pi · smotanový syr na natieranie</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-toast"><div class="itxt"><b>Toastový chlieb — biely</b><small>míňa sa najrýchlejšie · zľahka opiecť a krájať na prúžky</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-banan"><div class="itxt"><b>Banány a mäkké hrušky</b></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-ryzove"><div class="itxt"><b>Ryžové chlebíčky — NESLANÉ</b></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+        <li data-item="b-poharik"><div class="itxt"><b>Poháriky</b><small>večer ostáva ako doteraz</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
+      </ul>
+      <div class="btnrow">
+        <button class="btn" id="clear">Vymazať označenia</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RECEPTY ============ -->
+  <section id="recepty" role="tabpanel" aria-labelledby="t-recepty" hidden>
+    <div class="rule">
+      <p><strong>Pri všetkom platí jedno:</strong></p>
+      <p style="margin-bottom:0"><b>Nesoliť a nekoreniť</b>, kým nie je Matkova porcia vonku. Potom si dochuťte, ako chcete.</p>
+    </div>
+
+    <div class="card">
+      <h3>Ako mu to podávať</h3>
+      <p><b>Dve lyžičky.</b> Jednu drží on — bude ňou mávať a búchať, to je nácvik. Druhou kŕmite vy. <b>Sám si lyžičku naložiť ešte nevie</b>, to príde okolo 15.–18. mesiaca.</p>
+      <p><b>Naloženú lyžičku mu podajte do ruky.</b> Toto je ten hlavný trik — nalože ju vy a dáte mu ju, nech si ju sám strčí do úst. Takto sa to naučí najrýchlejšie.</p>
+      <p><b>Kúsky do ruky</b> berie prstami, tam lyžička netreba.</p>
+      <p><b>Miska:</b> radšej prísavná, alebo jedlo rovno na tácku stoličky — menej lietania.</p>
+      <p><b>Stolička:</b> sedí vzpriamene, ideálne s oporou pre nôžky. Keď nohy visia, horšie sa prehĺta aj sústredí.</p>
+      <p><b>Voda v pohári ku každému jedlu</b> — otvorený pohárik alebo slamka, nie fľaša. Pár hltov stačí.</p>
+      <p style="margin-bottom:0">A počítajte s tým, že <b>polovica skončí na zemi.</b> To nie je zlyhanie, to je súčasť učenia.</p>
+    </div>
+
+    <div class="card">
+      <h3>V akom stave mu to dať</h3>
+      <p>Matkova miska sú <b>vždy dve veci naraz:</b> niečo husté na lyžičku a vedľa 3–4 kúsky, čo si chytí sám.</p>
+      <p><b>Na lyžičku:</b> rozmačkané <b>vidličkou</b> na hustú kašu — nie rozmixované dohladka. V kaši majú byť cítiť malé kúsky, práve na tých sa učí žuť. Kaša sa má dať nabrať tak, že z lyžičky nesteká.</p>
+      <p style="margin-bottom:0"><b>Do ruky:</b> kúsky <b>dlhé ako prst dospelého, hrubé ako malíček</b> — musia mu trčať z pästičky. Zovretú dlaň ešte neotvorí, takže čo sa mu stratí v ruke, to nezje. Preto prúžky, nie kocky. A musia ísť <b>rozpučiť medzi palcom a ukazovákom</b> — ak nejdú, sú pritvrdé, variť ďalej.</p>
+    </div>
+
+    <div class="card">
+      <div class="meal">
+        <h4>1 · Mäsová omáčka s cestovinami</h4>
+        <div class="when">~25 min · pondelok a piatok</div>
+        <p>Je to <b>vlastne boloňská omáčka, len bez soli a bez korenia.</b></p>
+        <p><b>Suroviny:</b> 1 malá cibuľa · 200 g mletého mäsa · 2–3 lyžice paradajkového pretlaku · lyžica oleja · cestoviny · <b>1 vajce uvarené natvrdo</b></p>
+        <p>1. Cibuľu nadrobno, opražiť na oleji do sklovita — 3 minúty<br>
+        2. Pridať mleté mäso, rozmiešať vidličkou, aby nezostali hrudy, opražiť kým nezbelie — 5 minút<br>
+        3. Pridať pretlak a asi deci vody, prikryť, dusiť 15 minút<br>
+        4. Cestoviny podľa návodu, pokojne o 2 minúty dlhšie</p>
+        <div class="forhim"><b>Do misky:</b> 3–4 lyžice omáčky rozmačkané vidličkou<br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> 5–6 celých cestovín · navrch štipka strúhaného syra</div>
+      </div>
+
+      <div class="meal">
+        <h4>2 · Losos so zemiakmi a brokolicou</h4>
+        <div class="when">~25 min · utorok</div>
+        <p><b>Suroviny:</b> 1 filet lososa (~100 g) · 2 zemiaky · pár ružičiek brokolice · lyžička masla · <b>1 vajce uvarené natvrdo</b></p>
+        <p>1. Zemiaky olúpať, nakrájať, variť 20 minút<br>
+        2. Po desiatich minútach prihodiť do tej istej vody brokolicu<br>
+        3. Losos 15 minút v rúre na 180 °C<br>
+        4. Zemiaky rozmačkať s lyžičkou masla a trochou vody z varenia</p>
+        <div class="forhim"><b>Do misky:</b> zemiaková kaša s lososom — rybu <b>rozdrobiť prstami a prebrať kosti</b><br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> 3–4 ružičky brokolice, mäkké ale celé</div>
+      </div>
+
+      <div class="meal">
+        <h4>3 · Kuracie s mrkvou a ryžou</h4>
+        <div class="when">~30 min · streda</div>
+        <p><b>Suroviny:</b> 1 kuracie prsia · 2 mrkvy · ryža · <b>1 vajce uvarené natvrdo</b></p>
+        <p>1. Mäso nakrájať na kúsky, mrkvu na kolieska<br>
+        2. Dať do hrnca, zaliať vodou akurát po vrch, prikryť<br>
+        3. Dusiť 20–25 minút, kým nie je mrkva úplne mäkká<br>
+        4. Ryžu zvlášť, pokojne rozvarenejšiu — lepšie drží na lyžičke</p>
+        <div class="forhim"><b>Do misky:</b> ryža so šťavou a nadrobno nakrájaným kuracím<br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> kuracie a mrkva v prúžkoch</div>
+      </div>
+
+      <div class="meal">
+        <h4>4 · Hustá šošovicová polievka</h4>
+        <div class="when">~25 min · štvrtok · najjednoduchšia zo všetkých</div>
+        <p><b>Suroviny:</b> 1 hrnček červenej šošovice · 1 mrkva · 1 zemiak · 1 malá cibuľa · <b>1 vajce uvarené natvrdo</b></p>
+        <p>1. Všetko nakrájať nadrobno a dať do hrnca. <b>Šošovica sa nemusí namáčať</b><br>
+        2. Zaliať vodou asi 3 cm nad obsah<br>
+        3. Variť 20–25 minút, kým sa nerozvarí. <b>Mixovať netreba</b>, rozpadne sa sama<br>
+        4. Prihustá → doliať vodu · pririedka → variť ďalej</p>
+        <div class="forhim"><b>Do misky:</b> nechať hustú, má držať na lyžičke<br><b>+ vajce (uvarené natvrdo):</b> rozmačkať doň <b>žĺtok</b> a pridať <b>malý kúsok uvareného bielka</b> nadrobno<br><b>Do ruky:</b> 2–3 prúžky toastu na namáčanie</div>
+      </div>
+
+      <p style="margin:14px 0 0;color:var(--muted);font-size:0.92rem">Porcia na začiatok ~3–4 lyžice, ďalej podľa chuti. <b>Netlačiť.</b> Po prvom roku chuť do jedla prirodzene klesá, lebo sa spomalí rast — ráta sa celodenný príjem, nie jednotlivé jedlo.</p>
+    </div>
+  </section>
+
+  <!-- ============ PRAVIDLÁ ============ -->
+  <section id="pravidla" role="tabpanel" aria-labelledby="t-pravidla" hidden>
+    <h2>Matko — jedlo</h2>
+    <p class="lede">Táto stránka je na odovzdanie opatrovateľke. Matko má 13 mesiacov.</p>
+
+    <div class="card">
+      <h3>Môže jesť všetko bežné</h3>
+      <p><b>Alergia na pšenicu sa vyriešila</b> — chlieb, cestoviny, piškóty a rožky sú v poriadku, netreba sa báť. Rovnako <b>vajce, mliečne, arašidové maslo, sezam, strukoviny a ryby</b> — všetko má zavedené a znáša.</p>
+      <p style="margin-bottom:0">Jediné, čo <b>ešte nemal a zatiaľ nedávať:</b> orechy (mandle, lieskovce, kešu). Tie zavádzame doma.</p>
+    </div>
+
+    <div class="card">
+      <h3>Zásady</h3>
+      <ul style="margin:0;padding-left:20px">
+        <li><b>Do každého obeda vmiešať žĺtok a kúsok bielka</b> z vajca <b>uvareného natvrdo</b> (14 min) — nikdy nie surové ani mäkké</li>
+        <li>Jedlo <b>rozmačkané vidličkou, nie rozmixované</b></li>
+        <li><b>Toast zľahka opiecť</b> a krájať na prúžky — čerstvý mäkký chlieb sa v ústach zlepí do gule</li>
+        <li><b>Čistý jogurt neje</b> — vždy zamiešať do ovsenej kaše s ovocím</li>
+        <li>Ku každému jedlu <b>2–3 kúsky na tácku</b>, nech si ich vezme sám</li>
+        <li><b>Dve lyžičky</b> — jednu drží on, druhou kŕmite vy</li>
+        <li><b>Prosím nesoliť</b> — pozor aj na slané snacky, šunku a bujóny</li>
+        <li>Vždy <b>posediačky</b> a pod dohľadom</li>
+      </ul>
+    </div>
+
+    <div class="no">
+      <h3>Nedávať — riziko zadusenia</h3>
+      <ul>
+        <li><b>celé alebo nalámané orechy a arašidy</b> — hladké maslo áno, kúsky nie</li>
+        <li><b>celé hrozno a cherry paradajky</b> → krájať <b>pozdĺžne na štvrtiny</b></li>
+        <li><b>kolieska klobásy a párku</b> → krájať pozdĺžne</li>
+        <li><b>kocky syra</b> → radšej strúhaný alebo prúžky</li>
+        <li><b>surová tvrdá mrkva a jablko</b> → postrúhať alebo uvariť</li>
+        <li>popcorn, tvrdé cukríky, veľká hruda orieškového masla</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Keď sa zadúša vs. keď sa len dáví</h3>
+      <p>Pri učení žuvania je <b>dávenie bežné a nie je nebezpečné:</b></p>
+      <div class="tscroll">
+        <table>
+          <thead><tr><th>Dávenie — normálne</th><th>Zadúšanie — núdza</th></tr></thead>
+          <tbody>
+            <tr><td><b>Hlučné</b> — kašle, grgne</td><td><b>Ticho</b>, nevydá zvuk</td></tr>
+            <tr><td>Červená tvár, slzia oči</td><td>Modrie</td></tr>
+            <tr><td>Jazykom tlačí jedlo dopredu</td><td>Nemôže kašľať ani dýchať</td></tr>
+            <tr><td><b>Nechať ho, zvládne to sám</b></td><td>Okamžite zasiahnuť</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-bottom:0">Pri dávení prosím <b>nestrkať mu prsty do úst</b> a nebrať hneď jedlo — tým sa to zhorší.</p>
+    </div>
+
+    <div class="card">
+      <h3>Prosím zapíšte</h3>
+      <p style="margin-bottom:0">Ak dostane <b>niečo nové</b>, čo ešte nemal, napíšte mi to — čo a kedy. Vedieme si denník kvôli vyrážkam. Ďakujem!</p>
+    </div>
+  </section>
+
+  <!-- ============ ZÁPIS ============ -->
+  <section id="zapis" role="tabpanel" aria-labelledby="t-zapis" hidden>
+    <h2>Ako mu to ide</h2>
+    <p class="lede">Prvé dni to väčšinou vyzerá ako neúspech a posun je vidno až po dvoch týždňoch. Preto sa to oplatí zapisovať.</p>
+
+    <div class="card" id="form-card" hidden>
+      <h3>Nový zápis</h3>
+      <div class="two">
+        <div class="field">
+          <label for="z-datum">Dátum</label>
+          <input type="date" id="z-datum">
+        </div>
+        <div class="field">
+          <label for="z-vzal">Zobral?</label>
+          <select id="z-vzal">
+            <option value="ano">Áno</option>
+            <option value="trochu">Trochu</option>
+            <option value="nie">Nie</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="z-jedlo">Čo ponúknuté do ruky</label>
+        <input type="text" id="z-jedlo" placeholder="napr. prúžky toastu s hummusom">
+      </div>
+      <div class="field">
+        <label for="z-zuval">Žuval, alebo len cmúľal?</label>
+        <select id="z-zuval">
+          <option value="">— neviem / nesledovala som</option>
+          <option value="zuval">Žuval</option>
+          <option value="cmulal">Len cmúľal</option>
+        </select>
+      </div>
+      <div class="checkrow">
+        <input type="checkbox" id="z-davil">
+        <label for="z-davil">Dávil sa</label>
+      </div>
+      <div class="field">
+        <label for="z-pozn">Poznámka</label>
+        <input type="text" id="z-pozn" placeholder="nepovinné">
+      </div>
+      <div class="btnrow">
+        <button class="btn btn-primary" id="save">Uložiť zápis</button>
+      </div>
+      <div class="status" id="status" hidden></div>
+    </div>
+
+    <div class="card">
+      <h3>Posledné zápisy</h3>
+      <div id="entries">
+        <div class="empty" id="empty-state">Zatiaľ žiadny zápis. Prvý pridaj po najbližšom jedle — stačí jedna veta.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- tabs ---------- */
+  var TABS = ["tyzden", "kusky", "nakup", "recepty", "pravidla", "zapis"];
+  function showTab(name) {
+    if (TABS.indexOf(name) === -1) name = TABS[0];
+    TABS.forEach(function (t) {
+      var panel = document.getElementById(t);
+      var btn = document.getElementById("t-" + t);
+      if (!panel || !btn) return;
+      var on = t === name;
+      panel.hidden = !on;
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+  }
+  TABS.forEach(function (t) {
+    var btn = document.getElementById("t-" + t);
+    if (btn) btn.addEventListener("click", function () {
+      showTab(t);
+      try { history.replaceState(null, "", "#" + t); } catch (e) {}
+      window.scrollTo(0, 0);
+    });
+  });
+  var initial = (location.hash || "").replace("#", "");
+  showTab(TABS.indexOf(initial) !== -1 ? initial : "tyzden");
+
+  /* ---------- shopping: mám / treba, per viewer ---------- */
+  var KEY = "matko-nakup-v2";
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+  function saveState(obj) {
+    try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch (e) {}
+  }
+  var state = loadState();
+  var items = Array.prototype.slice.call(document.querySelectorAll("ul.shop li[data-item]"));
+
+  function paint(li) {
+    var id = li.getAttribute("data-item");
+    var s = state[id];
+    if (s) li.setAttribute("data-state", s);
+    else li.removeAttribute("data-state");
+  }
+
+  function updateCounts() {
+    ["a", "b"].forEach(function (run) {
+      var ul = document.querySelector('ul.shop[data-run="' + run + '"]');
+      if (!ul) return;
+      var lis = ul.querySelectorAll("li[data-item]");
+      var treba = 0, undecided = 0;
+      Array.prototype.forEach.call(lis, function (li) {
+        var s = state[li.getAttribute("data-item")];
+        if (s === "treba") treba++;
+        else if (!s) undecided++;
+      });
+      var el = document.querySelector('[data-count="' + run + '"]');
+      if (!el) return;
+      el.textContent = treba > 0
+        ? "kúpiť: " + treba
+        : (undecided === lis.length ? lis.length + " položiek" : "nič netreba");
+    });
+  }
+
+  items.forEach(function (li) {
+    paint(li);
+    Array.prototype.forEach.call(li.querySelectorAll("button.st"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = li.getAttribute("data-item");
+        var want = btn.getAttribute("data-s");
+        if (state[id] === want) delete state[id];
+        else state[id] = want;
+        saveState(state);
+        paint(li);
+        updateCounts();
+      });
+    });
+  });
+  updateCounts();
+
+  Array.prototype.forEach.call(document.querySelectorAll("button.filter"), function (btn) {
+    btn.addEventListener("click", function () {
+      var ul = document.querySelector('ul.shop[data-run="' + btn.getAttribute("data-for") + '"]');
+      if (!ul) return;
+      var on = ul.classList.toggle("only-treba");
+      btn.classList.toggle("on", on);
+      btn.textContent = on ? "Zobraziť všetko" : "Len čo treba";
+    });
+  });
+
+  var clearBtn = document.getElementById("clear");
+  if (clearBtn) clearBtn.addEventListener("click", function () {
+    state = {};
+    saveState(state);
+    items.forEach(paint);
+    updateCounts();
+  });
+
+  /* ---------- log: shared store ---------- */
+  var dateEl = document.getElementById("z-datum");
+  if (dateEl) {
+    var now = new Date();
+    dateEl.value = now.getFullYear() + "-" +
+      String(now.getMonth() + 1).padStart(2, "0") + "-" +
+      String(now.getDate()).padStart(2, "0");
+  }
+
+  var entriesEl = document.getElementById("entries");
+  var emptyEl = document.getElementById("empty-state");
+  var statusEl = document.getElementById("status");
+  var formCard = document.getElementById("form-card");
+  var saveBtn = document.getElementById("save");
+
+  var VZAL = { ano: ["Zobral", "v-ano"], trochu: ["Zobral trochu", "v-trochu"], nie: ["Nezobral", "v-nie"] };
+  var ZUVAL = { zuval: "žuval", cmulal: "len cmúľal" };
+
+  function fmtDate(s) {
+    if (!s || typeof s !== "string") return "";
+    var p = s.split("-");
+    if (p.length !== 3) return s;
+    return Number(p[2]) + "." + Number(p[1]) + "." + p[0];
+  }
+
+  function renderEntries(docs) {
+    if (!entriesEl) return;
+    if (!docs.length) {
+      entriesEl.innerHTML = "";
+      entriesEl.appendChild(emptyEl);
+      emptyEl.hidden = false;
+      return;
+    }
+    emptyEl.hidden = true;
+    entriesEl.innerHTML = "";
+    docs.forEach(function (v) {
+      var row = document.createElement("div");
+      row.className = "entry";
+
+      var dd = document.createElement("div");
+      dd.className = "d";
+      dd.textContent = fmtDate(v.datum);
+      row.appendChild(dd);
+
+      var f = document.createElement("div");
+      f.className = "f";
+      f.textContent = v.jedlo || "(bez názvu)";
+      row.appendChild(f);
+
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      var pair = VZAL[v.vzal] || ["", "v-nie"];
+      var span = document.createElement("span");
+      span.className = "verdict " + pair[1];
+      span.textContent = pair[0];
+      meta.appendChild(span);
+      var tail = "";
+      if (ZUVAL[v.zuval]) tail += " · " + ZUVAL[v.zuval];
+      if (v.davil) tail += " · dávil sa";
+      if (v.poznamka) tail += " · " + v.poznamka;
+      if (tail) meta.appendChild(document.createTextNode(tail));
+      row.appendChild(meta);
+
+      entriesEl.appendChild(row);
+    });
+  }
+
+  function setStatus(msg) {
+    if (!statusEl) return;
+    statusEl.textContent = msg || "";
+    statusEl.hidden = !msg;
+  }
+
+  /* ---- lokalny zapis (web verzia bez prihlasenia) ---- */
+  var LKEY = "matko-zapis-v1";
+  function localLoad() {
+    try { var r = localStorage.getItem(LKEY); return r ? JSON.parse(r) : []; }
+    catch (e) { return []; }
+  }
+  function localSave(list) {
+    try { localStorage.setItem(LKEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function startLocal() {
+    if (formCard) formCard.hidden = false;
+    renderEntries(localLoad());
+    if (!saveBtn) return;
+    saveBtn.addEventListener("click", function () {
+      var jedlo = (document.getElementById("z-jedlo").value || "").trim();
+      if (!jedlo) { setStatus("Napíš, čo si ponúkla."); return; }
+      var list = localLoad();
+      list.unshift({
+        datum: document.getElementById("z-datum").value || "",
+        jedlo: jedlo,
+        vzal: document.getElementById("z-vzal").value,
+        zuval: document.getElementById("z-zuval").value,
+        davil: document.getElementById("z-davil").checked,
+        poznamka: (document.getElementById("z-pozn").value || "").trim(),
+        createdAt: new Date().toISOString()
+      });
+      localSave(list.slice(0, 200));
+      document.getElementById("z-jedlo").value = "";
+      document.getElementById("z-pozn").value = "";
+      document.getElementById("z-davil").checked = false;
+      renderEntries(localLoad());
+      setStatus("Uložené do tohto zariadenia.");
+      setTimeout(function () { setStatus(""); }, 2500);
+    });
+  }
+
+  (async function () {
+    var db = null, user = null;
+    var hasClaude = typeof window.claude === "object" && window.claude && typeof window.claude.use === "function";
+    if (hasClaude) {
+      try { db = await window.claude.use("db"); } catch (e) { db = null; }
+      try { user = await window.claude.use("user"); } catch (e) { user = null; }
+    }
+    if (!db) { startLocal(); return; }
+
+    var mayWrite = true;
+    if (user && typeof user.can === "function") {
+      try { mayWrite = user.can("data.write") !== false; } catch (e) { mayWrite = true; }
+    }
+    if (formCard) formCard.hidden = !mayWrite;
+
+    var col = db.collection("zapis");
+    col.orderBy("createdAt", "desc").limit(60).onSnapshot(
+      function (snap) { renderEntries(snap.docs.map(function (d) { return d.data() || {}; })); },
+      function (err) {
+        if (emptyEl) emptyEl.textContent = "Zápisy sa teraz nepodarilo načítať (" + err.code + ").";
+      }
+    );
+
+    if (saveBtn) saveBtn.addEventListener("click", async function () {
+      var jedlo = (document.getElementById("z-jedlo").value || "").trim();
+      if (!jedlo) { setStatus("Napíš, čo si ponúkla."); return; }
+      saveBtn.disabled = true;
+      setStatus("Ukladám…");
+      var body = {
+        datum: document.getElementById("z-datum").value || "",
+        jedlo: jedlo,
+        vzal: document.getElementById("z-vzal").value,
+        zuval: document.getElementById("z-zuval").value,
+        davil: document.getElementById("z-davil").checked,
+        poznamka: (document.getElementById("z-pozn").value || "").trim(),
+        createdAt: new Date().toISOString()
+      };
+      try {
+        await col.doc().set(body);
+        document.getElementById("z-jedlo").value = "";
+        document.getElementById("z-pozn").value = "";
+        document.getElementById("z-davil").checked = false;
+        setStatus("Uložené.");
+        setTimeout(function () { setStatus(""); }, 2500);
+      } catch (e) {
+        if (e && e.code === "invalid_argument") {
+          setStatus("Nemáš práva zapisovať — zobrazujem len na čítanie.");
+          if (formCard) formCard.hidden = true;
+        } else {
+          setStatus("Nepodarilo sa uložiť. Skús to prosím znova.");
+        }
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+  })();
+})();
+</script>
+
+</body>
+</html>
