@@ -53,7 +53,7 @@ export const KUSY: MbKus[] = [
     "nazov": "Príbeh · The first honest answer",
     "typ": "karusel",
     "den": "Ut 20.10.",
-    "caption": "Good news can bring fear with it. Sometimes the person who helps most is the one who makes room for the whole answer.",
+    "caption": "Everyone else said “Finally!”",
     "hashtags": "#PregnancyAfterInfertility #PregnancyAnxiety #EarlyPregnancy #EmotionalSupport #Mindborn",
     "slajdy": [
       "/mb/C01-the-first-honest-answer/01.png",
@@ -80,7 +80,7 @@ export const KUSY: MbKus[] = [
     "nazov": "Zamyslenie · Wanting it and fearing it",
     "typ": "karusel",
     "den": "Pi 23.10.",
-    "caption": "Wanting this pregnancy never meant knowing how it would feel. There is room for the feelings you didn’t expect.",
+    "caption": "Nobody warned me about this part.",
     "hashtags": "#PregnancyAfterInfertility #PregnancyAnxiety #PregnancyFeelings #EmotionalSupport #Mindborn",
     "slajdy": [
       "/mb/C03-wanting-it-and-fearing-it/01.png",
@@ -98,7 +98,7 @@ export const KUSY: MbKus[] = [
     "nazov": "Príbeh · At the supermarket",
     "typ": "karusel",
     "den": "So 24.10.",
-    "caption": "Some ordinary purchases carry more than anyone can see. Especially when you’d hoped this month would be different.",
+    "caption": "He thought he’d bought the wrong ones.",
     "hashtags": "#TryingToConceive #TTCCommunity #InfertilitySupport #FertilityJourney #Mindborn",
     "slajdy": [
       "/mb/C08-at-the-supermarket/01.png",
@@ -125,7 +125,7 @@ export const KUSY: MbKus[] = [
     "nazov": "Zamyslenie · Nothing new",
     "typ": "karusel",
     "den": "Ut 27.10.",
-    "caption": "An update is a small part of a much longer week. There’s more happening than the news someone is waiting to hear.",
+    "caption": "“Any news?” “Nothing new.”",
     "hashtags": "#TryingToConceive #IVFJourney #InfertilitySupport #TTCCommunity #Mindborn",
     "slajdy": [
       "/mb/C09-nothing-new/01.png",
@@ -142,7 +142,7 @@ export const KUSY: MbKus[] = [
     "nazov": "Príbeh · My mother’s earrings",
     "typ": "karusel",
     "den": "St 28.10.",
-    "caption": "Some mornings, you just want to hear a familiar voice. Even when you don’t have anything you’re ready to explain.",
+    "caption": "They weren’t even mine.",
     "hashtags": "#TryingToConceive #IVFJourney #InfertilitySupport #MotherDaughter #Mindborn",
     "slajdy": [
       "/mb/C05-my-mothers-earrings/01.png",
@@ -160,7 +160,7 @@ export const KUSY: MbKus[] = [
     "nazov": "Príbeh · This try",
     "typ": "karusel",
     "den": "Pi 30.10.",
-    "caption": "There may be another try. This one still mattered.",
+    "caption": "She was trying to help. I know.",
     "hashtags": "#IVFJourney #FailedTransfer #InfertilitySupport #TryingToConceive #Mindborn",
     "slajdy": [
       "/mb/C04-this-try/01.png",
