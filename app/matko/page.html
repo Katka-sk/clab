@@ -300,46 +300,37 @@
   .v-nie { color: var(--muted); }
   .empty { color: var(--muted); font-size: 0.95rem; text-align: center; padding: 22px 8px; }
   .status { font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
-  /* shopping rows with mám / treba */
+  /* nakup: dva stlpce Kupit / Mame */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } }
+  .col { min-width: 0; }
+  .colhead {
+    display: flex; align-items: baseline; gap: 7px;
+    margin: 0 0 8px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--line);
+  }
+  .colhead b { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .colhead .n { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .col-buy .colhead { border-bottom-color: var(--accent); }
+  .col-buy .colhead b { color: var(--accent); }
+  .col-have .colhead { border-bottom-color: var(--ok); }
+  .col-have .colhead b { color: var(--ok); }
+  ul.shop { list-style: none; margin: 0; padding: 0; min-height: 34px; }
   ul.shop li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 2px;
-    flex-wrap: wrap;
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 9px 10px; margin-bottom: 6px;
+    border: 1px solid var(--line); border-radius: 9px;
+    background: var(--surface); cursor: pointer;
   }
-  ul.shop .itxt { flex: 1 1 140px; }
-  .states { display: flex; gap: 6px; flex: none; }
-  .st {
-    appearance: none;
-    font: inherit;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    padding: 7px 11px;
-    border-radius: 99px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--muted);
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .st:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  li[data-state="mam"] .st[data-s="mam"] {
-    background: var(--ok-soft);
-    border-color: var(--ok);
-    color: var(--ok);
-  }
-  li[data-state="treba"] .st[data-s="treba"] {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  li[data-state="mam"] .itxt b { text-decoration: line-through; color: var(--muted); font-weight: 500; }
-  ul.shop.only-treba li[data-state="mam"] { display: none; }
-  .filterrow { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-  .btn-sm { font-size: 0.8rem; padding: 7px 12px; }
-  .btn.on { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+  ul.shop li:hover { border-color: var(--accent); }
+  ul.shop li:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .col-have ul.shop li { background: var(--ok-soft); border-color: transparent; }
+  .arrow { flex: none; font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+  .col-have .arrow { color: var(--ok); }
+  .itxt { min-width: 0; flex: 1; }
+  .itxt b { font-weight: 600; display: block; font-size: 0.93rem; }
+  .itxt small { display: block; color: var(--muted); font-size: 0.8rem; line-height: 1.35; margin-top: 1px; }
+  .emptycol { color: var(--muted); font-size: 0.85rem; padding: 8px 2px; font-style: italic; }
   [hidden] { display: none !important; }
 </style>
 
@@ -520,48 +511,37 @@
 
   <!-- ============ NÁKUP ============ -->
   <section id="nakup" role="tabpanel" aria-labelledby="t-nakup" hidden>
-    <p class="lede">Prejdi si to doma a označ <b>Mám</b> alebo <b>Treba</b>. Potom si zapni <b>Len čo treba</b> a v obchode vidíš iba to podstatné.</p>
+    <p class="lede">Všetko je na začiatku v stĺpci <b>Kúpiť</b>. Ťukni na položku, ktorú máš doma, a presunie sa do <b>Máme</b>. Ťuknutím späť sa vráti.</p>
 
     <div class="card">
-      <div class="runhead">
-        <h2>Na obedy</h2>
-        <span class="count" data-count="a"></span>
+      <h2 style="margin-bottom:12px">Na obedy</h2>
+      <div class="cols">
+        <div class="col col-buy">
+          <div class="colhead"><b>Kúpiť</b><span class="n" data-n="a-buy"></span></div>
+          <ul class="shop" data-run="a" data-col="buy"></ul>
+        </div>
+        <div class="col col-have">
+          <div class="colhead"><b>Máme</b><span class="n" data-n="a-have"></span></div>
+          <ul class="shop" data-run="a" data-col="have"></ul>
+        </div>
       </div>
-      <div class="filterrow"><button class="btn btn-sm filter" data-for="a">Len čo treba</button></div>
-      <ul class="shop" data-run="a">
-        <li data-item="a-mlete"><div class="itxt"><b>Mleté mäso</b><small>200 g · obed Po a Pi</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-pretlak"><div class="itxt"><b>Paradajkový pretlak + cibuľa</b><small>obed Po a Pi</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-cestoviny"><div class="itxt"><b>Cestoviny — penne alebo fusilli</b><small>hrubšie tvary sa lepšie chytajú</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-losos"><div class="itxt"><b>Losos — 1 filet</b><small>obed Ut</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-brokolica"><div class="itxt"><b>Brokolica</b><small>obed Ut</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-kura"><div class="itxt"><b>Kuracie prsia — 1 ks</b><small>obed St</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-ryza"><div class="itxt"><b>Ryža</b><small>obed St</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-sosovica"><div class="itxt"><b>Červená šošovica</b><small>obed Št · nemusí sa namáčať</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-zemiaky"><div class="itxt"><b>Zemiaky a mrkva</b><small>obed Ut, St a Št</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="a-maslo"><div class="itxt"><b>Maslo</b></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-      </ul>
     </div>
 
     <div class="card">
-      <div class="runhead">
-        <h2>Na raňajky</h2>
-        <span class="count" data-count="b"></span>
+      <h2 style="margin-bottom:4px">Na raňajky</h2>
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:12px">Tu sa nič nevarí — natrieť, nakrájať, podať.</p>
+      <div class="cols">
+        <div class="col col-buy">
+          <div class="colhead"><b>Kúpiť</b><span class="n" data-n="b-buy"></span></div>
+          <ul class="shop" data-run="b" data-col="buy"></ul>
+        </div>
+        <div class="col col-have">
+          <div class="colhead"><b>Máme</b><span class="n" data-n="b-have"></span></div>
+          <ul class="shop" data-run="b" data-col="have"></ul>
+        </div>
       </div>
-      <p style="color:var(--muted);font-size:0.9rem">Tu sa nič nevarí — natrieť, nakrájať, podať.</p>
-      <div class="filterrow"><button class="btn btn-sm filter" data-for="b">Len čo treba</button></div>
-      <ul class="shop" data-run="b">
-        <li data-item="b-vlocky"><div class="itxt"><b>Ovsené vločky — jemné</b><small>raňajky Po</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-hummus"><div class="itxt"><b>Hummus — hotový</b><small>raňajky Ut</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-vajcia"><div class="itxt"><b>Vajcia</b><small>žĺtok + kúsok bielka do <b>každého</b> obeda · <b>vždy uvarené natvrdo</b>, 14 min · variť dopredu</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-jogurt"><div class="itxt"><b>Biely jogurt</b><small>raňajky Št · vždy len do ovsenej kaše s ovocím, nie samotný</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-zerve"><div class="itxt"><b>Lučina natural</b><small>raňajky Pi · smotanový syr na natieranie</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-toast"><div class="itxt"><b>Toastový chlieb — biely</b><small>míňa sa najrýchlejšie · zľahka opiecť a krájať na prúžky</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-banan"><div class="itxt"><b>Banány a mäkké hrušky</b></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-ryzove"><div class="itxt"><b>Ryžové chlebíčky — NESLANÉ</b></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-        <li data-item="b-poharik"><div class="itxt"><b>Poháriky</b><small>večer ostáva ako doteraz</small></div><div class="states"><button class="st" data-s="mam">Mám</button><button class="st" data-s="treba">Treba</button></div></li>
-      </ul>
-      <div class="btnrow">
-        <button class="btn" id="clear">Vymazať označenia</button>
+      <div class="btnrow" style="margin-top:14px">
+        <button class="btn" id="clear">Vrátiť všetko do Kúpiť</button>
       </div>
     </div>
   </section>
@@ -785,78 +765,117 @@
   var initial = (location.hash || "").replace("#", "");
   showTab(TABS.indexOf(initial) !== -1 ? initial : "tyzden");
 
-  /* ---------- shopping: mám / treba, per viewer ---------- */
-  var KEY = "matko-nakup-v2";
-  function loadState() {
-    try {
-      var raw = localStorage.getItem(KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) { return {}; }
-  }
-  function saveState(obj) {
-    try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch (e) {}
-  }
-  var state = loadState();
-  var items = Array.prototype.slice.call(document.querySelectorAll("ul.shop li[data-item]"));
+  /* ---------- nakup: dva stlpce, per viewer ---------- */
+  var ITEMS = {
+    a: [
+      ["a-mlete", "Mleté mäso", "200 g · obed Po a Pi"],
+      ["a-pretlak", "Paradajkový pretlak + cibuľa", "obed Po a Pi"],
+      ["a-cestoviny", "Cestoviny — penne alebo fusilli", "hrubšie tvary sa lepšie chytajú"],
+      ["a-losos", "Losos — 1 filet", "obed Ut"],
+      ["a-brokolica", "Brokolica", "obed Ut"],
+      ["a-kura", "Kuracie prsia — 1 ks", "obed St"],
+      ["a-ryza", "Ryža", "obed St"],
+      ["a-sosovica", "Červená šošovica", "obed Št · nemusí sa namáčať"],
+      ["a-zemiaky", "Zemiaky a mrkva", "obed Ut, St a Št"],
+      ["a-maslo", "Maslo", ""]
+    ],
+    b: [
+      ["b-vajcia", "Vajcia", "žĺtok + kúsok bielka do každého obeda · uvarené natvrdo, 14 min"],
+      ["b-vlocky", "Ovsené vločky — jemné", "raňajky Po a Št"],
+      ["b-hummus", "Hummus — hotový", "raňajky Ut"],
+      ["b-jogurt", "Biely jogurt", "raňajky Št · len do kaše s ovocím, čistý neje"],
+      ["b-zerve", "Lučina natural", "raňajky Pi · smotanový syr na natieranie"],
+      ["b-toast", "Toastový chlieb — biely", "míňa sa najrýchlejšie · zľahka opiecť, krájať na prúžky"],
+      ["b-banan", "Banány a mäkké hrušky", ""],
+      ["b-ryzove", "Ryžové chlebíčky — NESLANÉ", ""],
+      ["b-poharik", "Poháriky", "večer ostáva ako doteraz"]
+    ]
+  };
 
-  function paint(li) {
-    var id = li.getAttribute("data-item");
-    var s = state[id];
-    if (s) li.setAttribute("data-state", s);
-    else li.removeAttribute("data-state");
+  var KEY = "matko-nakup-v3";
+  function loadHave() {
+    try { var r = localStorage.getItem(KEY); return r ? JSON.parse(r) : {}; }
+    catch (e) { return {}; }
+  }
+  function saveHave(o) {
+    try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  var have = loadHave();
+
+  function makeLi(item, inHave) {
+    var li = document.createElement("li");
+    li.setAttribute("data-item", item[0]);
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+
+    var ar = document.createElement("span");
+    ar.className = "arrow";
+    ar.textContent = inHave ? "\u2190" : "\u2713";
+    li.appendChild(ar);
+
+    var tx = document.createElement("span");
+    tx.className = "itxt";
+    var b = document.createElement("b");
+    b.textContent = item[1];
+    tx.appendChild(b);
+    if (item[2]) {
+      var sm = document.createElement("small");
+      sm.textContent = item[2];
+      tx.appendChild(sm);
+    }
+    li.appendChild(tx);
+
+    function toggle() {
+      if (have[item[0]]) delete have[item[0]];
+      else have[item[0]] = 1;
+      saveHave(have);
+      renderShop();
+    }
+    li.addEventListener("click", toggle);
+    li.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+    return li;
   }
 
-  function updateCounts() {
+  function renderShop() {
     ["a", "b"].forEach(function (run) {
-      var ul = document.querySelector('ul.shop[data-run="' + run + '"]');
-      if (!ul) return;
-      var lis = ul.querySelectorAll("li[data-item]");
-      var treba = 0, undecided = 0;
-      Array.prototype.forEach.call(lis, function (li) {
-        var s = state[li.getAttribute("data-item")];
-        if (s === "treba") treba++;
-        else if (!s) undecided++;
+      var buy = document.querySelector('ul.shop[data-run="' + run + '"][data-col="buy"]');
+      var hav = document.querySelector('ul.shop[data-run="' + run + '"][data-col="have"]');
+      if (!buy || !hav) return;
+      buy.innerHTML = "";
+      hav.innerHTML = "";
+      var nb = 0, nh = 0;
+      ITEMS[run].forEach(function (item) {
+        var inHave = !!have[item[0]];
+        (inHave ? hav : buy).appendChild(makeLi(item, inHave));
+        if (inHave) nh++; else nb++;
       });
-      var el = document.querySelector('[data-count="' + run + '"]');
-      if (!el) return;
-      el.textContent = treba > 0
-        ? "kúpiť: " + treba
-        : (undecided === lis.length ? lis.length + " položiek" : "nič netreba");
+      if (!nb) {
+        var e1 = document.createElement("div");
+        e1.className = "emptycol";
+        e1.textContent = "Nič netreba kúpiť";
+        buy.appendChild(e1);
+      }
+      if (!nh) {
+        var e2 = document.createElement("div");
+        e2.className = "emptycol";
+        e2.textContent = "Ťukni na položku vľavo";
+        hav.appendChild(e2);
+      }
+      var cb = document.querySelector('[data-n="' + run + '-buy"]');
+      var ch = document.querySelector('[data-n="' + run + '-have"]');
+      if (cb) cb.textContent = nb;
+      if (ch) ch.textContent = nh;
     });
   }
-
-  items.forEach(function (li) {
-    paint(li);
-    Array.prototype.forEach.call(li.querySelectorAll("button.st"), function (btn) {
-      btn.addEventListener("click", function () {
-        var id = li.getAttribute("data-item");
-        var want = btn.getAttribute("data-s");
-        if (state[id] === want) delete state[id];
-        else state[id] = want;
-        saveState(state);
-        paint(li);
-        updateCounts();
-      });
-    });
-  });
-  updateCounts();
-
-  Array.prototype.forEach.call(document.querySelectorAll("button.filter"), function (btn) {
-    btn.addEventListener("click", function () {
-      var ul = document.querySelector('ul.shop[data-run="' + btn.getAttribute("data-for") + '"]');
-      if (!ul) return;
-      var on = ul.classList.toggle("only-treba");
-      btn.classList.toggle("on", on);
-      btn.textContent = on ? "Zobraziť všetko" : "Len čo treba";
-    });
-  });
+  renderShop();
 
   var clearBtn = document.getElementById("clear");
   if (clearBtn) clearBtn.addEventListener("click", function () {
-    state = {};
-    saveState(state);
-    items.forEach(paint);
-    updateCounts();
+    have = {};
+    saveHave(have);
+    renderShop();
   });
 
   /* ---------- log: shared store ---------- */
@@ -932,11 +951,9 @@
     statusEl.hidden = !msg;
   }
 
-  /* ---- lokalny zapis (web verzia bez prihlasenia) ---- */
   var LKEY = "matko-zapis-v1";
   function localLoad() {
-    try { var r = localStorage.getItem(LKEY); return r ? JSON.parse(r) : []; }
-    catch (e) { return []; }
+    try { var r = localStorage.getItem(LKEY); return r ? JSON.parse(r) : []; } catch (e) { return []; }
   }
   function localSave(list) {
     try { localStorage.setItem(LKEY, JSON.stringify(list)); } catch (e) {}
